@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="MKEngine">
+      <UniqueIdentifier>{53E1C4C1-3FAE-1FCD-68C7-0D7554F3545B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\MKEngine\Log.h">
+      <Filter>MKEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core.h" />
+    <ClInclude Include="src\mkengine.h" />
+    <ClInclude Include="src\mkpch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\MKEngine\Log.cpp">
+      <Filter>MKEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mkpch.cpp" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,2 @@
+#define MK_API __declspec(dllexport)
+#define MK_API __declspec(dllimport)
