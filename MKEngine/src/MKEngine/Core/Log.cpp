@@ -18,14 +18,14 @@ namespace MKEngine {
 		s_clientLogger = spdlog::stdout_color_mt("App");
 		s_clientLogger->set_level(spdlog::level::trace);
 
-		MK_INFO("Log initalized!");
+		MK_LOG_INFO("Log initalized!");
 		MK_LOG_SPACE();
-		MK_INFO("Info");
-		MK_TRACE("Trace");
-		MK_DEBUG("Debug");
-		MK_WARN("Warn");
-		MK_ERROR("Error");
-		MK_CRITICAL("Critical");
+		MK_LOG_INFO("Info");
+		MK_LOG_TRACE("Trace");
+		MK_LOG_DEBUG("Debug");
+		MK_LOG_WARN("Warn");
+		MK_LOG_ERROR("Error");
+		MK_LOG_CRITICAL("Critical");
 	}
 
 	void Log::Space()

@@ -8,10 +8,10 @@ MKEngine::Application::Application()
 
 MKEngine::Application::~Application()
 {
-	MK_TRACE("Application created");
+	MK_LOG_TRACE("Application created");
 }
 
 void MKEngine::Application::Run()
 {
-	MK_TRACE("Application run");
+	MK_LOG_TRACE("Application run");
 }

@@ -9,7 +9,7 @@ public:
 
 	MKEditor()
 	{
-		MK_TRACE("MKEditor ctor");
+		MK_LOG_TRACE("MKEditor ctor");
 	}
 
 	

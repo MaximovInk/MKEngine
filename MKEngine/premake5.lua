@@ -30,16 +30,15 @@ project "MKEngine"
             "MK_BUILD_DLL",
             "MK_ENGINE",
         }
-        
+
     filter "configurations:Debug"
         defines {"MK_DEBUG","_DEBUG", "MK_ENABLE_ASSERTS"}
+        runtime "Debug"
         symbols "On"
-        buildoptions "/MDd"
 
     filter "configurations:Release"
         defines "MK_RELEASE"
+        runtime "Release"
         optimize "On"
-        buildoptions "/MD"
-		optimize "On"
 
         

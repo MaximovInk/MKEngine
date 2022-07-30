@@ -34,19 +34,19 @@ namespace MKEngine {
 
 #ifdef MK_ENABLE_LOG
 	#ifdef MK_ENGINE
-		#define MK_TRACE(...) MKEngine::Log::getCoreLogger()->trace(__VA_ARGS__)
-		#define MK_INFO(...)  MKEngine::Log::getCoreLogger()->info(__VA_ARGS__)
-		#define MK_DEBUG(...)  MKEngine::Log::getCoreLogger()->debug(__VA_ARGS__)
-		#define MK_WARN(...)  MKEngine::Log::getCoreLogger()->warn(__VA_ARGS__)
-		#define MK_ERROR(...) MKEngine::Log::getCoreLogger()->error(__VA_ARGS__)
-		#define MK_CRITICAL(...) MKEngine::Log::getCoreLogger()->critical(__VA_ARGS__)
+		#define MK_LOG_TRACE(...) MKEngine::Log::getCoreLogger()->trace(__VA_ARGS__)
+		#define MK_LOG_INFO(...)  MKEngine::Log::getCoreLogger()->info(__VA_ARGS__)
+		#define MK_LOG_DEBUG(...)  MKEngine::Log::getCoreLogger()->debug(__VA_ARGS__)
+		#define MK_LOG_WARN(...)  MKEngine::Log::getCoreLogger()->warn(__VA_ARGS__)
+		#define MK_LOG_ERROR(...) MKEngine::Log::getCoreLogger()->error(__VA_ARGS__)
+		#define MK_LOG_CRITICAL(...) MKEngine::Log::getCoreLogger()->critical(__VA_ARGS__)
 	#else
-		#define MK_TRACE(...) MKEngine::Log::getClientLogger()->trace(__VA_ARGS__)
-		#define MK_INFO(...)  ::MKEngine::Log::getClientLogger()->info(__VA_ARGS__)
-		#define MK_DEBUG(...)  MKEngine::Log::getClientLogger()->debug(__VA_ARGS__)
-		#define MK_WARN(...)  MKEngine::Log::getClientLogger()->warn(__VA_ARGS__)
-		#define MK_ERROR(...) MKEngine::Log::getClientLogger()->error(__VA_ARGS__)
-		#define MK_CRITICAL(...) MKEngine::Log::getClientLogger()->critical(__VA_ARGS__)
+		#define MK_LOG_TRACE(...) MKEngine::Log::getClientLogger()->trace(__VA_ARGS__)
+		#define MK_LOG_INFO(...)  ::MKEngine::Log::getClientLogger()->info(__VA_ARGS__)
+		#define MK_LOG_DEBUG(...)  MKEngine::Log::getClientLogger()->debug(__VA_ARGS__)
+		#define MK_LOG_WARN(...)  MKEngine::Log::getClientLogger()->warn(__VA_ARGS__)
+		#define MK_LOG_ERROR(...) MKEngine::Log::getClientLogger()->error(__VA_ARGS__)
+		#define MK_LOG_CRITICAL(...) MKEngine::Log::getClientLogger()->critical(__VA_ARGS__)
 	#endif 
 #else // ifndef MK_ENABLE_LOG
 
