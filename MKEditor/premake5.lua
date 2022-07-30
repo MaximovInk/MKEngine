@@ -13,7 +13,7 @@ project "MKEditor"
 
     includedirs{
         "%{wks.location}/MKEngine/src",
-        --"%{wks.location}/MKEngine/vendor/spdlog/include",
+        "%{wks.location}/MKEngine/vendor/spdlog/include",
     }
 
     links {
@@ -26,7 +26,7 @@ project "MKEditor"
 
         defines{
             "MK_PLATFORM_WINDOWS",
-            --"MK_ENABLE_LOG"
+            "MK_ENABLE_LOG"
         }
 
     filter "configurations:Debug"

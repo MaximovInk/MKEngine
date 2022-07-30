@@ -4,18 +4,24 @@
     <Filter Include="MKEngine">
       <UniqueIdentifier>{53E1C4C1-3FAE-1FCD-68C7-0D7554F3545B}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MKEngine\Platform">
+      <UniqueIdentifier>{074BED32-7361-EBC8-BCD8-76EA282EBC50}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\MKEngine\Log.h">
-      <Filter>MKEngine</Filter>
+    <ClInclude Include="src\Log.h" />
+    <ClInclude Include="src\MKEngine\Platform\Application.h">
+      <Filter>MKEngine\Platform</Filter>
     </ClInclude>
     <ClInclude Include="src\core.h" />
+    <ClInclude Include="src\entryPoint.h" />
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\MKEngine\Log.cpp">
-      <Filter>MKEngine</Filter>
+    <ClCompile Include="src\Log.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\Application.cpp">
+      <Filter>MKEngine\Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
   </ItemGroup>

@@ -4,4 +4,7 @@
 
 #include "core.h"
 
-#include "MKEngine/Log.h"
+#include "Log.h"
+
+#include "MKEngine/Platform/Application.h"
+#include "entryPoint.h"

@@ -103,13 +103,16 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\MKEngine\Log.h" />
+    <ClInclude Include="src\Log.h" />
+    <ClInclude Include="src\MKEngine\Platform\Application.h" />
     <ClInclude Include="src\core.h" />
+    <ClInclude Include="src\entryPoint.h" />
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\MKEngine\Log.cpp" />
+    <ClCompile Include="src\Log.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\Application.cpp" />
     <ClCompile Include="src\mkpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
