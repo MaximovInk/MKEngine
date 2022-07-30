@@ -1,9 +1,9 @@
 #pragma once
-#include "core.h"
+#include "MKEngine/Core/core.h"
 
 namespace MKEngine {
 
-	class MK_API Application {
+	class Application {
 	public:
 		Application();
 		~Application();

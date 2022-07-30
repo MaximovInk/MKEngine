@@ -1,8 +1,8 @@
 project "MKEngine"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++17"
-	staticruntime "off"
+	staticruntime "on"
 
     pchheader "mkpch.h"
     pchsource "src/mkpch.cpp"
@@ -30,20 +30,16 @@ project "MKEngine"
             "MK_BUILD_DLL",
             "MK_ENGINE",
         }
+        
+    filter "configurations:Debug"
+        defines {"MK_DEBUG","_DEBUG", "MK_ENABLE_ASSERTS"}
+        symbols "On"
+        buildoptions "/MDd"
 
-        postbuildcommands{
-            ("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/MKEditor")
-        }
-
-        filter "configurations:Debug"
-            defines {"MK_DEBUG","_DEBUG", "MK_ENABLE_ASSERTS"}
-            symbols "On"
-            buildoptions "/MDd"
-
-        filter "configurations:Release"
-            defines "MK_RELEASE"
-            optimize "On"
-            buildoptions "/MD"
-		    optimize "On"
+    filter "configurations:Release"
+        defines "MK_RELEASE"
+        optimize "On"
+        buildoptions "/MD"
+		optimize "On"
 
         

@@ -10,9 +10,7 @@
 #endif
 
 namespace MKEngine {
-
-
-	class MK_API Log
+	class Log
 	{
 	public:
 		static void Initialize();

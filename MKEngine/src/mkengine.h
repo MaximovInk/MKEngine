@@ -2,9 +2,9 @@
 
 #include "mkpch.h"
 
-#include "core.h"
+#include "MKEngine/Core/core.h"
 
-#include "Log.h"
+#include "MKEngine/Core/Log.h"
 
+#include "MKEngine/Core/entryPoint.h"
 #include "MKEngine/Platform/Application.h"
-#include "entryPoint.h"
