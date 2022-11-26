@@ -1,6 +1,6 @@
 #pragma once
 #include "Log.h"
-#include "MKEngine/Platform/Application.h"
+#include "MKEngine/Core/Application.h"
 
 extern MKEngine::Application* MKEngine::CreateApplication();
 

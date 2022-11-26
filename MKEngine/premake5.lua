@@ -18,7 +18,26 @@ project "MKEngine"
 
     includedirs{
         "./src",
-        "./vendor/spdlog/include"
+        "./vendor/spdlog/include",
+        "./vendor/sdl/include",
+
+        "./vendor/glfw/include"
+    }
+
+    libdirs{
+        "./vendor/sdl/lib/x64",
+
+        --"./vendor/glfw/lib-vc2022"
+    }
+
+    links{
+        "SDL2main.lib",
+        "SDL2.lib",
+
+        --"glfw3_mt.lib"
+        --"glfw3.lib",
+        --"glfw3dll.lib",
+
     }
 
     filter "system:windows"

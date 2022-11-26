@@ -7,11 +7,26 @@
     <Filter Include="MKEngine\Core">
       <UniqueIdentifier>{8BD10E1A-F791-8A50-C0CC-D3CD2C4CCF2C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MKEngine\Events">
+      <UniqueIdentifier>{D7712BDE-43FD-98A2-4C0E-1C97B818F5A2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MKEngine\Input">
+      <UniqueIdentifier>{9203555C-7ED1-4862-6765-B98853D224C7}</UniqueIdentifier>
+    </Filter>
     <Filter Include="MKEngine\Platform">
       <UniqueIdentifier>{074BED32-7361-EBC8-BCD8-76EA282EBC50}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MKEngine\Platform\GLFWbackend">
+      <UniqueIdentifier>{6E5508B4-DA6D-EFDD-A31A-7F770FF28377}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MKEngine\Platform\SDLbackend">
+      <UniqueIdentifier>{E10D2749-CDC8-16F5-7680-8F3F621A6185}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\MKEngine\Core\Application.h">
+      <Filter>MKEngine\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\MKEngine\Core\Log.h">
       <Filter>MKEngine\Core</Filter>
     </ClInclude>
@@ -21,19 +36,67 @@
     <ClInclude Include="src\MKEngine\Core\entryPoint.h">
       <Filter>MKEngine\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\Application.h">
+    <ClInclude Include="src\MKEngine\Events\Event.h">
+      <Filter>MKEngine\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Events\EventDispatcher.h">
+      <Filter>MKEngine\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Events\EventSystem.h">
+      <Filter>MKEngine\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Events\MouseEvent.h">
+      <Filter>MKEngine\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Events\WindowEvent.h">
+      <Filter>MKEngine\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Input\KeyCode.h">
+      <Filter>MKEngine\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Input\MouseCode.h">
+      <Filter>MKEngine\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\GLFWbackend\GLFWBackend.h">
+      <Filter>MKEngine\Platform\GLFWbackend</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h">
+      <Filter>MKEngine\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\SDLbackend\SDLBackend.h">
+      <Filter>MKEngine\Platform\SDLbackend</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\Window.h">
+      <Filter>MKEngine\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\WindowSettings.h">
       <Filter>MKEngine\Platform</Filter>
     </ClInclude>
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
+    <ClInclude Include="src\MKEngine\Core\LayerStack.h" />
+    <ClInclude Include="src\MKEngine\Core\Layer.h" />
+    <ClInclude Include="src\MKEngine\WindowsManager\WindowsManagerLayer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\MKEngine\Core\Application.cpp">
+      <Filter>MKEngine\Core</Filter>
+    </ClCompile>
     <ClCompile Include="src\MKEngine\Core\Log.cpp">
       <Filter>MKEngine\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\Application.cpp">
+    <ClCompile Include="src\MKEngine\Platform\GLFWbackend\GLFWBackend.cpp">
+      <Filter>MKEngine\Platform\GLFWbackend</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp">
       <Filter>MKEngine\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\SDLbackend\SDLBackend.cpp">
+      <Filter>MKEngine\Platform\SDLbackend</Filter>
+    </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
+    <ClCompile Include="src\MKEngine\Core\Layer.cpp" />
+    <ClCompile Include="src\MKEngine\Core\LayerStack.cpp" />
+    <ClCompile Include="src\MKEngine\WindowsManager\WindowsManagerLayer.cpp" />
   </ItemGroup>
 </Project>

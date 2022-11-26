@@ -50,10 +50,21 @@ namespace MKEngine {
 	#endif 
 #else // ifndef MK_ENABLE_LOG
 
-#define MK_TRACE(...) 
-#define MK_INFO(...)  
-#define MK_WARN(...)  
-#define MK_ERROR(...) 
-#define MK_CRITICAL(...)
+#define MK_LOG_TRACE(...) 
+#define MK_LOG_INFO(...)  
+#define MK_LOG_WARN(...)  
+#define MK_LOG_ERROR(...) 
+#define MK_LOG_CRITICAL(...)
 
 #endif //MK_ENABLE_LOG
+
+#ifdef MK_ENABLE_ASSERTS
+	#ifdef MK_ENGINE
+		#define MK_ASSERT(x,...) { if(!(x)) { MK_LOG_ERROR("Assertion failed {0}", __VA_ARGS__); __debugbreak(); } }
+	#else	
+		#define MK_ASSERT(x,...) { if(!(x)) { MK_LOG_ERROR("Assertion failed {0}", __VA_ARGS__); __debugbreak(); } }
+	#endif
+#else
+#define MK_ASSERT(x,...) 
+#define MK_CORE_ASSERT(x,...)
+#endif

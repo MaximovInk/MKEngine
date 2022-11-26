@@ -58,7 +58,7 @@
       <PrecompiledHeaderFile>mkpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>MK_PLATFORM_WINDOWS;MK_BUILD_DLL;MK_ENGINE;MK_DEBUG;_DEBUG;MK_ENABLE_ASSERTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -68,6 +68,10 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor\sdl\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -75,7 +79,7 @@
       <PrecompiledHeaderFile>mkpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>MK_PLATFORM_WINDOWS;MK_BUILD_DLL;MK_ENGINE;MK_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -89,18 +93,43 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Lib>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor\sdl\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\MKEngine\Core\Application.h" />
+    <ClInclude Include="src\MKEngine\Core\Layer.h" />
+    <ClInclude Include="src\MKEngine\Core\LayerStack.h" />
     <ClInclude Include="src\MKEngine\Core\Log.h" />
     <ClInclude Include="src\MKEngine\Core\core.h" />
     <ClInclude Include="src\MKEngine\Core\entryPoint.h" />
-    <ClInclude Include="src\MKEngine\Platform\Application.h" />
+    <ClInclude Include="src\MKEngine\Events\Event.h" />
+    <ClInclude Include="src\MKEngine\Events\EventDispatcher.h" />
+    <ClInclude Include="src\MKEngine\Events\EventSystem.h" />
+    <ClInclude Include="src\MKEngine\Events\MouseEvent.h" />
+    <ClInclude Include="src\MKEngine\Events\WindowEvent.h" />
+    <ClInclude Include="src\MKEngine\Input\KeyCode.h" />
+    <ClInclude Include="src\MKEngine\Input\MouseCode.h" />
+    <ClInclude Include="src\MKEngine\Platform\GLFWbackend\GLFWBackend.h" />
+    <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
+    <ClInclude Include="src\MKEngine\Platform\SDLbackend\SDLBackend.h" />
+    <ClInclude Include="src\MKEngine\Platform\Window.h" />
+    <ClInclude Include="src\MKEngine\Platform\WindowSettings.h" />
     <ClInclude Include="src\mkengine.h" />
+    <ClInclude Include="src\MKEngine\WindowsManager\WindowsManagerLayer.h" />
     <ClInclude Include="src\mkpch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\MKEngine\Core\Application.cpp" />
+    <ClCompile Include="src\MKEngine\Core\Layer.cpp" />
+    <ClCompile Include="src\MKEngine\Core\LayerStack.cpp" />
     <ClCompile Include="src\MKEngine\Core\Log.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\Application.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\GLFWbackend\GLFWBackend.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\SDLbackend\SDLBackend.cpp" />
+    <ClCompile Include="src\MKEngine\WindowsManager\WindowsManagerLayer.cpp" />
     <ClCompile Include="src\mkpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

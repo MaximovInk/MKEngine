@@ -15,6 +15,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <atomic>
+
 #ifdef MK_PLATFORM_WINDOWS
 #include <Windows.h>
 #endif

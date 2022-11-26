@@ -93,6 +93,11 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# Custom
+*.js
+*.html
+[Mm][Kk][Ee]ngine/vendor/glfw/docs
+
 # Chutzpah Test files
 _Chutzpah*
 
