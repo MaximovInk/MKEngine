@@ -16,15 +16,24 @@
     <Filter Include="MKEngine\Platform">
       <UniqueIdentifier>{074BED32-7361-EBC8-BCD8-76EA282EBC50}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MKEngine\Platform\GLFWbackend">
-      <UniqueIdentifier>{6E5508B4-DA6D-EFDD-A31A-7F770FF28377}</UniqueIdentifier>
+    <Filter Include="MKEngine\Platform\RendererAPI">
+      <UniqueIdentifier>{87969315-F3AE-7A3F-BC5B-0AD928330FD9}</UniqueIdentifier>
     </Filter>
     <Filter Include="MKEngine\Platform\SDLbackend">
       <UniqueIdentifier>{E10D2749-CDC8-16F5-7680-8F3F621A6185}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MKEngine\WindowsManager">
+      <UniqueIdentifier>{C8D40432-340C-4DC9-3D16-B1ECA9CC73C2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\MKEngine\Core\Application.h">
+      <Filter>MKEngine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Core\Layer.h">
+      <Filter>MKEngine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Core\LayerStack.h">
       <Filter>MKEngine\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Core\Log.h">
@@ -57,11 +66,14 @@
     <ClInclude Include="src\MKEngine\Input\MouseCode.h">
       <Filter>MKEngine\Input</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\GLFWbackend\GLFWBackend.h">
-      <Filter>MKEngine\Platform\GLFWbackend</Filter>
-    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h">
       <Filter>MKEngine\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI.h">
+      <Filter>MKEngine\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.h">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\SDLbackend\SDLBackend.h">
       <Filter>MKEngine\Platform\SDLbackend</Filter>
@@ -72,31 +84,51 @@
     <ClInclude Include="src\MKEngine\Platform\WindowSettings.h">
       <Filter>MKEngine\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="src\MKEngine\WindowsManager\WindowsManagerLayer.h">
+      <Filter>MKEngine\WindowsManager</Filter>
+    </ClInclude>
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
-    <ClInclude Include="src\MKEngine\Core\LayerStack.h" />
-    <ClInclude Include="src\MKEngine\Core\Layer.h" />
-    <ClInclude Include="src\MKEngine\WindowsManager\WindowsManagerLayer.h" />
+    <ClInclude Include="src\MKEngine\Content\contentPipeline.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Core\Application.cpp">
       <Filter>MKEngine\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\MKEngine\Core\Log.cpp">
+    <ClCompile Include="src\MKEngine\Core\Layer.cpp">
       <Filter>MKEngine\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\GLFWbackend\GLFWBackend.cpp">
-      <Filter>MKEngine\Platform\GLFWbackend</Filter>
+    <ClCompile Include="src\MKEngine\Core\LayerStack.cpp">
+      <Filter>MKEngine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Core\Log.cpp">
+      <Filter>MKEngine\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp">
       <Filter>MKEngine\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp">
+      <Filter>MKEngine\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.cpp">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\SDLbackend\SDLBackend.cpp">
       <Filter>MKEngine\Platform\SDLbackend</Filter>
     </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\Window.cpp">
+      <Filter>MKEngine\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\WindowsManager\WindowsManagerLayer.cpp">
+      <Filter>MKEngine\WindowsManager</Filter>
+    </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
-    <ClCompile Include="src\MKEngine\Core\Layer.cpp" />
-    <ClCompile Include="src\MKEngine\Core\LayerStack.cpp" />
-    <ClCompile Include="src\MKEngine\WindowsManager\WindowsManagerLayer.cpp" />
+    <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp" />
   </ItemGroup>
 </Project>

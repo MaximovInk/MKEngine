@@ -20,24 +20,24 @@ project "MKEngine"
         "./src",
         "./vendor/spdlog/include",
         "./vendor/sdl/include",
+        "./vendor/glm/include",
 
-        "./vendor/glfw/include"
+        "./vendor/vulkan/include",
+
+        "%{wks.location}/glad/"
     }
 
     libdirs{
         "./vendor/sdl/lib/x64",
-
-        --"./vendor/glfw/lib-vc2022"
+        "./vendor/vulkan/include",
+        "./vendor/vulkan/lib"
     }
 
     links{
         "SDL2main.lib",
         "SDL2.lib",
-
-        --"glfw3_mt.lib"
-        --"glfw3.lib",
-        --"glfw3dll.lib",
-
+        "vulkan-1.lib",
+        "glad"
     }
 
     filter "system:windows"

@@ -1,6 +1,9 @@
-#include "mkpch.h"
+#include <mkpch.h>
+
+#include <SDL.h>
+#include <SDL_syswm.h>
+
 #include "SDLBackend.h"
-#include "SDL.h"
 #include "MKEngine/Core/Log.h"
 #include "../Window.h"
 
@@ -13,7 +16,8 @@ namespace MKEngine {
 
 		SDLWindowData()
 		{
-
+			window = nullptr;
+			nativeWindow = nullptr;
 		}
 
 		SDLWindowData(Window* window, SDL_Window* nativeWindow)
@@ -25,7 +29,6 @@ namespace MKEngine {
 
 	std::map<std::int16_t, SDLWindowData> windows;
 
-
 	SDLBackend::SDLBackend()
 	{
 		MK_LOG_TRACE("Initializing SDL..");
@@ -36,20 +39,17 @@ namespace MKEngine {
 		if (sdlSuccess != 0)
 			return;
 
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+		RendererAPI::Make();
 
 		MK_LOG_INFO("Initialization successfully");
+		
 	}
 
 	SDLBackend::~SDLBackend()
 	{
-		MK_LOG_TRACE("MKEngine finalizing..");
+		MK_LOG_TRACE("breeeed1MKEngine fiffffffnalizing..");
+
+		RendererAPI::Destroy();
 
 		SDL_Quit();
 	}
@@ -88,10 +88,19 @@ namespace MKEngine {
 			}
 		}
 
+		/*
 		for (auto const& wnd : windows)
 		{
 			wnd.second.window->Update();
 		}
+
+		for (auto const& wnd : windows)
+		{
+			MakeCurrent(wnd.second.nativeWindow);
+			wnd.second.window->Render();
+
+		}
+		*/
 	}
 
 	void SDLBackend::SetEventCallback(const EventCallbackFn& callback)
@@ -99,11 +108,13 @@ namespace MKEngine {
 		this->eventCallback = callback;
 	}
 
-	void SDLBackend::MakeWindow(Window* window, const WindowSettings& settings)
+	void* SDLBackend::MakeWindow(Window* window, const WindowSettings& settings)
 	{
 		Uint32 flags = SDL_WINDOW_SHOWN;
 		if (settings.resizable)
 			flags |= SDL_WINDOW_RESIZABLE;
+
+		flags |= SDL_WINDOW_OPENGL;
 
 		auto nativeWindow = SDL_CreateWindow(
 			settings.Title.c_str(),
@@ -113,6 +124,39 @@ namespace MKEngine {
 			settings.Height,
 			flags);
 
+		
+		if (RendererAPI::s_API->GetContext() == nullptr) {
+			RendererAPI::s_API->SetContext(SDL_GL_CreateContext(nativeWindow));
+			RendererAPI::s_API->InitFunctions(SDL_GL_GetProcAddress);
+		}
+
 		windows[SDL_GetWindowID(nativeWindow)] = SDLWindowData(window, nativeWindow);
+
+		return nativeWindow;
+	}
+	void SDLBackend::MakeCurrent(Window* window)
+	{
+		MakeCurrent(window->GetNativeWindow());
+	}
+
+	void SDLBackend::MakeCurrent(void* nativeWindow)
+	{
+		SDL_GL_MakeCurrent((SDL_Window*)nativeWindow, RendererAPI::s_API->GetContext());
+	}
+
+	void SDLBackend::SwapWindow(Window* window)
+	{
+		SwapWindow(window->GetNativeWindow());
+	}
+
+	void SDLBackend::SwapWindow(void* nativeWindow)
+	{
+		SDL_GL_SwapWindow((SDL_Window*)nativeWindow);
+	}
+	void SDLBackend::OnEventUpdate()
+	{
+	}
+	void SDLBackend::OnRender()
+	{
 	}
 }

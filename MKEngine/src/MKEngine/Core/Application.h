@@ -20,7 +20,6 @@ namespace MKEngine {
 
 		void Close();
 
-
 	private:
 		bool m_Running = false;
 

@@ -1,9 +1,10 @@
-#include "mkpch.h"
+#include <mkpch.h>
+
+#include <chrono>
+
 #include "Application.h"
 #include "MKEngine/Core/Log.h"
 #include "MKEngine/Events/EventSystem.h"
-#include <chrono>
-
 #include "MKEngine/WindowsManager/WindowsManagerLayer.h"
 
 namespace MKEngine {
@@ -42,9 +43,6 @@ namespace MKEngine {
 		}
 
 		if ((e.GetCategoryFlags() & MKEngine::EventCategoryWindow) != 0) {
-			//MK_LOG_INFO("WINDOW EVENT");
-
-			//dispatcher.Dispatch<WindowResizedEvent>();
 		}
 	}
 
@@ -61,7 +59,9 @@ namespace MKEngine {
 
 	Application::~Application()
 	{
+		MK_LOG_TRACE("EL");
 
+		PlatformBackend::Finalize();
 	}
 
 	void Application::Run()
@@ -74,7 +74,5 @@ namespace MKEngine {
 		{
 			PlatformBackend::s_CurrentBackend->OnUpdate();
 		}
-
-		PlatformBackend::Finalize();
 	}
 }

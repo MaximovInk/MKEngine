@@ -1,13 +1,5 @@
 #include "MainWindow.h"
 
-/*
-void MKEditor::MainWindow::OnWindowResize(MKEngine::WindowResizedEvent& event)
-{
-	MK_LOG_INFO("Resize event: {}", event.ToString());
-}
-
-*/
-
 
 void MKEditor::MainWindow::FixedUpdate()
 {

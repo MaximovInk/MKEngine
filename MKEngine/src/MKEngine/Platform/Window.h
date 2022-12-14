@@ -10,12 +10,7 @@ namespace MKEngine {
 	class Window {
 	public:
 		
-		
-		Window(const WindowSettings& settings)
-		{
-			MK_LOG_INFO("base");
-			PlatformBackend::s_CurrentBackend->MakeWindow(this, settings);
-		}
+		Window(const WindowSettings& settings);
 
 		virtual ~Window() = default;
 
@@ -31,6 +26,8 @@ namespace MKEngine {
 		virtual void Update() = 0;
 		virtual void Render() = 0;
 
+		void* GetNativeWindow();
+
 		protected:
 
 			struct WindowData {
@@ -42,5 +39,6 @@ namespace MKEngine {
 
 		private:
 
+			void* _nativeWindow;
 	};
 }

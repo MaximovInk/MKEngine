@@ -17,8 +17,6 @@ namespace MKEditor {
 			settings.resizable = true;
 
 			MainWindow* wnd = new MainWindow(settings);
-			MainWindow* wnd1 = new MainWindow(MKEngine::WindowSettings("2"));
-			MainWindow* wnd2 = new MainWindow(MKEngine::WindowSettings("3"));
 		}
 	};
 

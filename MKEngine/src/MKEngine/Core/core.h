@@ -21,3 +21,7 @@ namespace MKEngine {
 }
 
 #define BIT(x) (1 << x)
+
+#ifdef _WIN32
+	#define VK_USE_PLATFORM_WIN32_KHR
+#endif

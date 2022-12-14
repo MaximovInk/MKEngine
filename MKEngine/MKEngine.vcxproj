@@ -58,7 +58,7 @@
       <PrecompiledHeaderFile>mkpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>MK_PLATFORM_WINDOWS;MK_BUILD_DLL;MK_ENGINE;MK_DEBUG;_DEBUG;MK_ENABLE_ASSERTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glm\include;vendor\vulkan\include;..\glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -69,8 +69,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>vendor\sdl\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor\sdl\lib\x64;vendor\vulkan\include;vendor\vulkan\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -79,7 +79,7 @@
       <PrecompiledHeaderFile>mkpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>MK_PLATFORM_WINDOWS;MK_BUILD_DLL;MK_ENGINE;MK_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glfw\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glm\include;vendor\vulkan\include;..\glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -94,11 +94,12 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>vendor\sdl\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor\sdl\lib\x64;vendor\vulkan\include;vendor\vulkan\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\MKEngine\Content\contentPipeline.h" />
     <ClInclude Include="src\MKEngine\Core\Application.h" />
     <ClInclude Include="src\MKEngine\Core\Layer.h" />
     <ClInclude Include="src\MKEngine\Core\LayerStack.h" />
@@ -112,27 +113,42 @@
     <ClInclude Include="src\MKEngine\Events\WindowEvent.h" />
     <ClInclude Include="src\MKEngine\Input\KeyCode.h" />
     <ClInclude Include="src\MKEngine\Input\MouseCode.h" />
-    <ClInclude Include="src\MKEngine\Platform\GLFWbackend\GLFWBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
     <ClInclude Include="src\MKEngine\Platform\SDLbackend\SDLBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\Window.h" />
     <ClInclude Include="src\MKEngine\Platform\WindowSettings.h" />
-    <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\MKEngine\WindowsManager\WindowsManagerLayer.h" />
+    <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp" />
     <ClCompile Include="src\MKEngine\Core\Application.cpp" />
     <ClCompile Include="src\MKEngine\Core\Layer.cpp" />
     <ClCompile Include="src\MKEngine\Core\LayerStack.cpp" />
     <ClCompile Include="src\MKEngine\Core\Log.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\GLFWbackend\GLFWBackend.cpp" />
     <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp" />
     <ClCompile Include="src\MKEngine\Platform\SDLbackend\SDLBackend.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\Window.cpp" />
     <ClCompile Include="src\MKEngine\WindowsManager\WindowsManagerLayer.cpp" />
     <ClCompile Include="src\mkpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\glad\glad.vcxproj">
+      <Project>{DD62977C-C999-980D-7286-7E105E9C140F}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
