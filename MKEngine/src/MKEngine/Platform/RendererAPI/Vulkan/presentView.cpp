@@ -218,7 +218,7 @@ namespace MKEngine {
 		if (surfCaps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 			createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-		if (vkCreateSwapchainKHR(device->Device, &createInfo,
+		if (vkCreateSwapchainKHR(device->LogicalDevice, &createInfo,
 			nullptr, &SwapChain) != VK_SUCCESS) {
 			MK_LOG_CRITICAL("failed to create swap chain!");
 		}
@@ -226,15 +226,15 @@ namespace MKEngine {
 		if (oldSwapchain != VK_NULL_HANDLE) {
 			for (uint32_t i = 0; i < ImageCount; i++)
 			{
-				vkDestroyImageView(device->Device, Buffers[i].view, nullptr);
+				vkDestroyImageView(device->LogicalDevice, Buffers[i].view, nullptr);
 			}
-			vkDestroySwapchainKHR(device->Device, oldSwapchain, nullptr);
+			vkDestroySwapchainKHR(device->LogicalDevice, oldSwapchain, nullptr);
 		}
 
-		vkGetSwapchainImagesKHR(device->Device, SwapChain,
+		vkGetSwapchainImagesKHR(device->LogicalDevice, SwapChain,
 			&ImageCount, nullptr);
 		Images.resize(ImageCount);
-		vkGetSwapchainImagesKHR(device->Device, SwapChain, 
+		vkGetSwapchainImagesKHR(device->LogicalDevice, SwapChain, 
 			&ImageCount, Images.data());
 
 		Buffers.resize(ImageCount);
@@ -262,13 +262,13 @@ namespace MKEngine {
 
 			viewInfo.image = Buffers[i].image;
 
-			vkCreateImageView(device->Device, &viewInfo, nullptr, &Buffers[i].view);
+			vkCreateImageView(device->LogicalDevice, &viewInfo, nullptr, &Buffers[i].view);
 		}
 	}
 
 	VkResult VulkanPresentView::AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex)
 	{
-		return vkAcquireNextImageKHR(device->Device, SwapChain, UINT64_MAX,
+		return vkAcquireNextImageKHR(device->LogicalDevice, SwapChain, UINT64_MAX,
 			presentCompleteSemaphore, (VkFence)nullptr, imageIndex);
 	}
 
@@ -294,12 +294,12 @@ namespace MKEngine {
 		{
 			for (uint32_t i = 0; i < ImageCount; i++)
 			{
-				vkDestroyImageView(device->Device, Buffers[i].view, nullptr);
+				vkDestroyImageView(device->LogicalDevice, Buffers[i].view, nullptr);
 			}
 		}
 		if (Surface != VK_NULL_HANDLE)
 		{
-			vkDestroySwapchainKHR(device->Device, SwapChain, nullptr);
+			vkDestroySwapchainKHR(device->LogicalDevice, SwapChain, nullptr);
 			//vkDestroySurfaceKHR(device->Instance, Surface, nullptr);
 		}
 

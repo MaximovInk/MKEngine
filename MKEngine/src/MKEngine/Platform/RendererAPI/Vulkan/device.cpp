@@ -114,13 +114,11 @@ namespace MKEngine {
 
 	VulkanDevice::~VulkanDevice()
 	{
-
-
 		if (CommandPool)
-			vkDestroyCommandPool(Device, CommandPool, nullptr);
+			vkDestroyCommandPool(LogicalDevice, CommandPool, nullptr);
 
-		if (Device)
-			vkDestroyDevice(Device, nullptr);
+		if (LogicalDevice)
+			vkDestroyDevice(LogicalDevice, nullptr);
 
 		if (DebugMessenger)
 			VkExtern::DestroyDebugMessanger(Instance, DebugMessenger);
@@ -129,17 +127,10 @@ namespace MKEngine {
 			vkDestroyInstance(Instance, nullptr);
 	}
 
-	int GetID(MKEngine::Window* window) {
-		return SDL_GetWindowID((SDL_Window*)window->GetNativeWindow());
-	}
-
 	void VulkanDevice::OnWindowCreate(MKEngine::Window* window) {
-		//Surface = VkExtern::CreateWindowSurface(Instance, window);
-		//TODO: OPTIMIZE (CACHE ID)
-		//surfaces[SDL_GetWindowID((SDL_Window*)window->GetNativeWindow())] = Surface;
-		
+
 		auto sdlWindow = (SDL_Window*)window->GetNativeWindow();
-		int id = GetID(window);
+		int id = window->GetID();
 		
 		auto presentView = new VulkanPresentView(this);
 		presentView->InitSurface(window);
@@ -152,13 +143,9 @@ namespace MKEngine {
 		PresentViews[id] = presentView;
 	}
 	void VulkanDevice::OnWindowDestroy(MKEngine::Window* window) {
-		//TODO: OPTIMIZE (CACHE ID)
-		//auto surface = surfaces[SDL_GetWindowID((SDL_Window*)window->GetNativeWindow())];
-		//vkDestroySurfaceKHR(Instance, surface, nullptr);
-		int id = GetID(window);
+		int id = window->GetID();
 		delete PresentViews[id];
 		int c = PresentViews.erase(id);
-		//delete PresentView;
 	}
 
 	VkResult VulkanDevice::CreateLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
@@ -255,7 +242,7 @@ namespace MKEngine {
 
 		this->EnabledFeatures = enabledFeatures;
 
-		return vkCreateDevice(PhysicalDevice, &deviceCreateInfo, nullptr, &Device);
+		return vkCreateDevice(PhysicalDevice, &deviceCreateInfo, nullptr, &LogicalDevice);
 	}
 
 	VkCommandPool   VulkanDevice::CreateCommandPool(uint32_t queueFamilyIndex,
@@ -266,7 +253,7 @@ namespace MKEngine {
 		commandPoolInfo.flags = createFlags;
 		VkCommandPool commandPool;
 
-		if (vkCreateCommandPool(Device, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+		if (vkCreateCommandPool(LogicalDevice, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 			MK_LOG_CRITICAL("[VULKAN] Failed to create command pool");
 		}
 #if TRACE_INITIALIZATION_RENDERER
@@ -275,5 +262,9 @@ namespace MKEngine {
 #endif
 
 		return commandPool;
+	}
+
+	void VulkanDevice::WaitDeviceIdle() {
+		vkDeviceWaitIdle(LogicalDevice);
 	}
 }

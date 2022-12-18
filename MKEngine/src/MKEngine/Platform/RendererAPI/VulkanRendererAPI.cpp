@@ -36,6 +36,6 @@ namespace MKEngine {
 
 	void VulkanRendererAPI::OnWindowDestroyed(Window* window)
 	{
-		
+		device->OnWindowDestroy(window);
 	}
 }

@@ -93,7 +93,6 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\swapChain.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h" />
   </ItemGroup>
   <ItemGroup>
@@ -132,7 +131,6 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\swapChain.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp" />
   </ItemGroup>
 </Project>

@@ -19,7 +19,7 @@ namespace MKEngine {
 		//VulkanPresentView* PresentViews;
 		std::map<std::int16_t, VulkanPresentView*> PresentViews;
 		VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
-		VkDevice Device = VK_NULL_HANDLE;
+		VkDevice LogicalDevice = VK_NULL_HANDLE;
 		VkCommandPool CommandPool = VK_NULL_HANDLE;
 
 		VkPhysicalDeviceProperties Properties;
@@ -55,5 +55,6 @@ namespace MKEngine {
 
 		void OnWindowCreate(MKEngine::Window* window);
 		void OnWindowDestroy(MKEngine::Window* window);
+		void WaitDeviceIdle();
 	};
 }

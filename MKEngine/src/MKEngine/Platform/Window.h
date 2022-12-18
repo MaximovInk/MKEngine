@@ -28,6 +28,7 @@ namespace MKEngine {
 		virtual void Render() = 0;
 
 		void* GetNativeWindow();
+		int GetID();
 
 		protected:
 
@@ -39,7 +40,7 @@ namespace MKEngine {
 			WindowData _data;
 
 		private:
-
+			int _id;
 			void* _nativeWindow;
 	};
 }

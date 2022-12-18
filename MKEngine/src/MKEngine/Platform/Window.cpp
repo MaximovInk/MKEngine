@@ -1,12 +1,13 @@
 #include "mkpch.h"
 #include "Window.h"
-
+#include "SDL.h"
 
 namespace MKEngine {
 	Window::Window(const WindowSettings& settings)
 	{
 		MK_LOG_INFO("base");
 		_nativeWindow = PlatformBackend::s_CurrentBackend->MakeWindow(this, settings);
+		_id = SDL_GetWindowID((SDL_Window*)_nativeWindow);
 		RendererAPI::s_API->OnWindowCreated(this);
 	}
 
@@ -18,5 +19,9 @@ namespace MKEngine {
 
 	void* Window::GetNativeWindow() {
 		return _nativeWindow;
+	}
+	int Window::GetID()
+	{
+		return _id;
 	}
 }
