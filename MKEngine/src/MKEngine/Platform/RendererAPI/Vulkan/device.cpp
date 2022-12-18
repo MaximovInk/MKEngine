@@ -142,6 +142,7 @@ namespace MKEngine {
 
 		PresentViews[id] = presentView;
 	}
+
 	void VulkanDevice::OnWindowDestroy(MKEngine::Window* window) {
 		int id = window->GetID();
 		delete PresentViews[id];

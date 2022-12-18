@@ -58,45 +58,48 @@ namespace MKEngine {
 	{
 		SDL_Event event;
 
+		//TODO: RECODE THIS
 		while (SDL_PollEvent(&event)) {
 			
 			switch (event.type) {
-			case SDL_MOUSEMOTION:
-			{
-				auto motionEvent
-					= MouseMovedEvent(event.motion.x, event.motion.y);
+				case SDL_MOUSEMOTION:
+				{
+					auto motionEvent
+						= MouseMovedEvent(event.motion.x, event.motion.y);
+					eventCallback(motionEvent);
+					break;
+				}
+				case SDL_WINDOWEVENT:
+				{
+					auto wndData = windows[event.window.windowID];
+					switch (event.window.event)
+					{
+						case SDL_WINDOWEVENT_SIZE_CHANGED:
+						{
+							auto resizeEvent
+								= WindowResizedEvent(event.window.data1,
+								event.window.data2, wndData.window);
+							eventCallback(resizeEvent);
+							break;
+						}
+						case SDL_WINDOWEVENT_CLOSE:
+						{
+							auto closeEvent = WindowCloseEvent(wndData.window);
+							eventCallback(closeEvent);
+							break;
+						}
 
-				eventCallback(motionEvent);
+					}
+					break;
+				}
 			}
-				break;
-			case SDL_WINDOWEVENT:
-			{
-				auto wndData = windows[event.window.windowID];
-			switch (event.window.event)
-			{
-				//RESIZE EVENT
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
-			{auto resizeEvent
-				= WindowResizedEvent(event.window.data1, event.window.data2, wndData.window);
-			eventCallback(resizeEvent); }
-				break;
-				//CLOSE EVENT
-			case SDL_WINDOWEVENT_CLOSE:
-			{auto closeEvent = WindowCloseEvent(wndData.window);
-			eventCallback(closeEvent); }
-				break;
-			}
-			}
-				break;
-
-			}
-			
 		}
 	}
 
 
 	void SDLBackend::Render()
 	{
+
 	}
 
 	void SDLBackend::Update()
@@ -173,6 +176,7 @@ namespace MKEngine {
 	{
 		//SDL_GL_SwapWindow((SDL_Window*)nativeWindow);
 	}
+
 	void SDLBackend::DestroyWindow(Window* window)
 	{
 		SDL_DestroyWindow((SDL_Window*)window->GetNativeWindow());
