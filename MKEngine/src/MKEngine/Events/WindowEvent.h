@@ -29,4 +29,25 @@ namespace MKEngine {
 		Window* m_Window;
 
 	};
+
+	class WindowCloseEvent : public Event
+	{
+	public:
+		WindowCloseEvent(MKEngine::Window* window)
+			:  m_Window(window) {
+		}
+
+		Window* GetWindow() const { return m_Window; }
+
+		EVENT_CLASS_TYPE(WindowClosed)
+		EVENT_CLASS_CATEGORY(EventCategoryWindow)
+
+		std::string ToString() const override {
+			std::stringstream ss;
+			ss << "WindowCloseEvent";
+			return ss.str();
+		}
+	private:
+		Window* m_Window;
+	};
 }

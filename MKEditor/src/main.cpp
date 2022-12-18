@@ -1,9 +1,7 @@
+#include <iostream>
 #include "mkengine.h"
 #include "MKEngine/Core/entryPoint.h"
-
 #include "MainWindow.h"
-
-#include <iostream>
 
 using namespace MKEngine;
 
@@ -17,6 +15,7 @@ namespace MKEditor {
 			settings.resizable = true;
 
 			MainWindow* wnd = new MainWindow(settings);
+			//MainWindow* wnd2 = new MainWindow(settings);
 		}
 	};
 

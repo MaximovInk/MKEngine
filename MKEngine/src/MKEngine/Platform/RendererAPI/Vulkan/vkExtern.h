@@ -3,6 +3,7 @@
 #include "MKEngine/Core/core.h"
 #include "vulkan/vulkan.h"
 #include "MKEngine/Core/Log.h"
+#include "MKEngine/Platform/Window.h"
 
 #define TRACE_INITIALIZATION_RENDERER 1
 
@@ -17,30 +18,7 @@
 
 namespace MKEngine {
 
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-		VkDebugUtilsMessageTypeFlagsEXT messageType,
-		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-		void* pUserData) {
-
-		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-			switch (messageSeverity)
-			{
-			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-				MK_LOG_WARN("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
-				break;
-			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-				MK_LOG_ERROR("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
-				break;
-			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-				MK_LOG_ERROR("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
-				break;
-			}
-		}
-
-		return VK_FALSE;
-	}
-
+	
 	const std::vector<const char*> ValidationLayers = {
 "VK_LAYER_KHRONOS_validation"
 	};
@@ -59,8 +37,10 @@ namespace MKEngine {
 		static VkDebugUtilsMessengerEXT CreateDebugMessenger(VkInstance instance);
 		static VkPhysicalDevice CreatePhysicalDevice(VkInstance instance);
 
+		static void DestroyDebugMessanger(VkInstance instance, VkDebugUtilsMessengerEXT messenger);
+		static VkSurfaceKHR CreateWindowSurface(VkInstance instance, MKEngine::Window* window);
+
 		/*
-		static VkSurfaceKHR CreateWindowSurface();
 		static void CreateQueueFamily();
 		
 		static void CreateSwapChain();

@@ -15,5 +15,11 @@ namespace MKEngine {
 
 	private:
 
+
+		// Унаследовано через RendererAPI
+		virtual void OnWindowCreated(Window* window) override;
+
+		virtual void OnWindowDestroyed(Window* window) override;
+
 	};
 }

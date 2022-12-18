@@ -54,39 +54,54 @@ namespace MKEngine {
 		SDL_Quit();
 	}
 
-	void SDLBackend::OnUpdate()
+	void SDLBackend::HandleEvents()
 	{
 		SDL_Event event;
 
 		while (SDL_PollEvent(&event)) {
-
-
-			switch (event.type)
-			{
+			
+			switch (event.type) {
 			case SDL_MOUSEMOTION:
-			{auto motionEvent
-				= MouseMovedEvent(event.motion.x, event.motion.y);
+			{
+				auto motionEvent
+					= MouseMovedEvent(event.motion.x, event.motion.y);
 
-			eventCallback(motionEvent);
+				eventCallback(motionEvent);
 			}
-			break;
+				break;
 			case SDL_WINDOWEVENT:
 			{
 				auto wndData = windows[event.window.windowID];
-
-				switch (event.window.event) {
-				case SDL_WINDOWEVENT_SIZE_CHANGED:
-					auto resizeEvent
-						= WindowResizedEvent(event.window.data1, event.window.data2, wndData.window);
-
-					eventCallback(resizeEvent);
-
-					break;
-				}
+			switch (event.window.event)
+			{
+				//RESIZE EVENT
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+			{auto resizeEvent
+				= WindowResizedEvent(event.window.data1, event.window.data2, wndData.window);
+			eventCallback(resizeEvent); }
+				break;
+				//CLOSE EVENT
+			case SDL_WINDOWEVENT_CLOSE:
+			{auto closeEvent = WindowCloseEvent(wndData.window);
+			eventCallback(closeEvent); }
+				break;
 			}
-			break;
 			}
+				break;
+
+			}
+			
 		}
+	}
+
+
+	void SDLBackend::Render()
+	{
+	}
+
+	void SDLBackend::Update()
+	{
+		
 
 		/*
 		for (auto const& wnd : windows)
@@ -114,7 +129,18 @@ namespace MKEngine {
 		if (settings.resizable)
 			flags |= SDL_WINDOW_RESIZABLE;
 
-		flags |= SDL_WINDOW_OPENGL;
+		//flags |= SDL_WINDOW_OPENGL;
+		switch (RendererAPI::s_RenderBackend)
+		{
+		case RenderBackendType::GL_RENDERER:
+			flags |= SDL_WINDOW_OPENGL;
+			break;
+		case RenderBackendType::VK_RENDERER:
+			flags |= SDL_WINDOW_VULKAN;
+			break;
+		default:
+			break;
+		}
 
 		auto nativeWindow = SDL_CreateWindow(
 			settings.Title.c_str(),
@@ -123,12 +149,6 @@ namespace MKEngine {
 			settings.Width,
 			settings.Height,
 			flags);
-
-		
-		if (RendererAPI::s_API->GetContext() == nullptr) {
-			RendererAPI::s_API->SetContext(SDL_GL_CreateContext(nativeWindow));
-			RendererAPI::s_API->InitFunctions(SDL_GL_GetProcAddress);
-		}
 
 		windows[SDL_GetWindowID(nativeWindow)] = SDLWindowData(window, nativeWindow);
 
@@ -141,7 +161,7 @@ namespace MKEngine {
 
 	void SDLBackend::MakeCurrent(void* nativeWindow)
 	{
-		SDL_GL_MakeCurrent((SDL_Window*)nativeWindow, RendererAPI::s_API->GetContext());
+		//SDL_GL_MakeCurrent((SDL_Window*)nativeWindow, RendererAPI::s_API->GetContext());
 	}
 
 	void SDLBackend::SwapWindow(Window* window)
@@ -151,12 +171,10 @@ namespace MKEngine {
 
 	void SDLBackend::SwapWindow(void* nativeWindow)
 	{
-		SDL_GL_SwapWindow((SDL_Window*)nativeWindow);
+		//SDL_GL_SwapWindow((SDL_Window*)nativeWindow);
 	}
-	void SDLBackend::OnEventUpdate()
+	void SDLBackend::DestroyWindow(Window* window)
 	{
-	}
-	void SDLBackend::OnRender()
-	{
+		SDL_DestroyWindow((SDL_Window*)window->GetNativeWindow());
 	}
 }

@@ -12,9 +12,10 @@ namespace MKEngine {
 		
 		Window(const WindowSettings& settings);
 
-		virtual ~Window() = default;
+		virtual ~Window();
 
 		virtual void OnWindowResize(MKEngine::WindowResizedEvent& event) = 0;
+		virtual void OnWindowClose(MKEngine::WindowCloseEvent& event) = 0;
 
 		//OnWindowResize
 		//OnWindowClose

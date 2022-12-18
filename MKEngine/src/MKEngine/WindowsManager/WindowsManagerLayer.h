@@ -10,5 +10,6 @@ namespace MKEngine {
 
 	private:
 		bool WindowResize(WindowResizedEvent& e);
+		bool WindowClose(WindowCloseEvent& e);
 	};
 }

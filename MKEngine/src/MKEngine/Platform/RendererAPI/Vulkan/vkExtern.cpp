@@ -7,6 +7,30 @@ namespace MKEngine {
 
 	std::vector<std::string> VkExtern::SupportedInstanceExtensions;
 
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+		VkDebugUtilsMessageTypeFlagsEXT messageType,
+		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+		void* pUserData) {
+
+		if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+			switch (messageSeverity)
+			{
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+				MK_LOG_WARN("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
+				break;
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+				MK_LOG_ERROR("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
+				break;
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
+				MK_LOG_ERROR("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
+				break;
+			}
+		}
+
+		return VK_FALSE;
+	}
+
 	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
 		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 		if (func != nullptr) {
@@ -22,6 +46,18 @@ namespace MKEngine {
 		if (func != nullptr) {
 			func(instance, debugMessenger, pAllocator);
 		}
+	}
+
+	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+		createInfo = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+		createInfo.messageSeverity =
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+		createInfo.pfnUserCallback = debugCallback;
 	}
 
 	std::vector<const char*> getRequiredInstanceExtensions() {
@@ -49,6 +85,10 @@ namespace MKEngine {
 #elif defined(VK_USE_PLATFORM_HEADLESS_EXT)
 		extensionNames.push_back(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME);
 #endif
+
+		if (VkExtern::EnableValidationLayers) {
+			extensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		}
 
 		return extensionNames;
 	}
@@ -83,14 +123,23 @@ namespace MKEngine {
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
 		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 		if (EnableValidationLayers) {
 			createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
 			createInfo.ppEnabledLayerNames = ValidationLayers.data();
+
+			populateDebugMessengerCreateInfo(debugCreateInfo);
+			createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+		}
+		else {
+			createInfo.enabledLayerCount = 0;
+
+			createInfo.pNext = nullptr;
 		}
 
 		VkInstance instance;
 		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-			MK_LOG_CRITICAL("failed to create instance!");
+			MK_LOG_CRITICAL("[VULKAN] Failed to create instance!");
 			return VK_NULL_HANDLE;
 		}
 #if TRACE_INITIALIZATION_RENDERER
@@ -106,22 +155,17 @@ namespace MKEngine {
 		if (!EnableValidationLayers) return VK_NULL_HANDLE;
 
 		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-		createInfo = {};
-		createInfo.sType =
-			VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-		createInfo.messageSeverity =
-			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-		createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-		createInfo.pfnUserCallback = debugCallback;
+		populateDebugMessengerCreateInfo(createInfo);
 
 		VkDebugUtilsMessengerEXT debugMessenger;
 		if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-			throw std::runtime_error("failed to set up debug messenger!");
+			MK_LOG_CRITICAL("[VULKAN] Failed to set up debug messenger!");
 		}
+#if TRACE_INITIALIZATION_RENDERER
+		else
+			MK_LOG_INFO("[VULKAN] DebugCallback successfully created");
+#endif
+
 		return debugMessenger;
 	}
 
@@ -162,6 +206,27 @@ namespace MKEngine {
 #endif
 
 		return selectedPhyiscalDevice;
+	}
+
+	void VkExtern::DestroyDebugMessanger(VkInstance instance, VkDebugUtilsMessengerEXT messenger)
+	{
+		DestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
+	}
+
+	VkSurfaceKHR VkExtern::CreateWindowSurface(VkInstance instance, MKEngine::Window* window)
+	{
+		VkSurfaceKHR surface;
+
+		auto sdlWindow = (SDL_Window*)window->GetNativeWindow();
+
+		if (SDL_Vulkan_CreateSurface(sdlWindow, instance, &surface) != SDL_TRUE) {
+			MK_LOG_CRITICAL("[VULKAN] Failed to set up surface!");
+		}
+#if TRACE_INITIALIZATION_RENDERER
+		else
+			MK_LOG_INFO("[VULKAN] Surface successfully created");
+#endif
+		return surface;
 	}
 }
 

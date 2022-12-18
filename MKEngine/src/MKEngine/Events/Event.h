@@ -7,7 +7,7 @@ namespace MKEngine {
 
 	enum class EventType {
 		None = 0,
-		WindowCloseed,WindowResized,WindowFocused,WindowLostedFoucs,WindowMoved,
+		WindowClosed,WindowResized,WindowFocused,WindowLostedFoucs,WindowMoved,
 		AppUpdate, AppFixedUpdate, AppRender,
 		KeyPressed,KeyReleased,
 		MouseMoved, MouseButtonPressed, MouseButtonReleased, MouseScrolled

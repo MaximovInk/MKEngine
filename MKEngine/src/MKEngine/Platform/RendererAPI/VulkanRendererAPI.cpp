@@ -1,4 +1,5 @@
 #include "mkpch.h"
+#include "SDL_vulkan.h"
 #include "VulkanRendererAPI.h"
 #include "Vulkan/device.h"
 
@@ -27,5 +28,14 @@ namespace MKEngine {
 
 	void VulkanRendererAPI::InitFunctions(void* procAddress)
 	{
+	}
+	void VulkanRendererAPI::OnWindowCreated(Window* window)
+	{
+		device->OnWindowCreate(window);
+	}
+
+	void VulkanRendererAPI::OnWindowDestroyed(Window* window)
+	{
+		
 	}
 }

@@ -8,6 +8,9 @@
 #include "MKEngine/WindowsManager/WindowsManagerLayer.h"
 
 namespace MKEngine {
+
+	Application* Application::s_Application;
+
 	bool Application::OnMouseMotion(MouseMovedEvent& e)
 	{
 		return true;
@@ -23,6 +26,11 @@ namespace MKEngine {
 	{
 		m_LayerStack.PushOverlay(layer);
 		layer->OnAttach();
+	}
+
+	void Application::CloseWindow(Window* window)
+	{
+		delete window;
 	}
 
 	void Application::Close()
@@ -66,13 +74,17 @@ namespace MKEngine {
 
 	void Application::Run()
 	{
+		s_Application = this;
+
 		MK_LOG_TRACE("Application run");
 
 		m_Running = true;
 
 		while (m_Running)
 		{
-			PlatformBackend::s_CurrentBackend->OnUpdate();
+			PlatformBackend::s_CurrentBackend->HandleEvents();
+			PlatformBackend::s_CurrentBackend->Update();
+			PlatformBackend::s_CurrentBackend->Render();
 		}
 	}
 }

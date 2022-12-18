@@ -18,7 +18,11 @@ namespace MKEngine {
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 
+		void CloseWindow(Window* window);
+
 		void Close();
+
+		static Application* s_Application;
 
 	private:
 		bool m_Running = false;

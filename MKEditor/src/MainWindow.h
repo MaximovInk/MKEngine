@@ -16,6 +16,7 @@ namespace MKEditor {
 		virtual void Update() override;
 		virtual void Render() override;
 		virtual void OnWindowResize(MKEngine::WindowResizedEvent& event) override;
+		virtual void OnWindowClose(MKEngine::WindowCloseEvent& event) override;
 
 	};
 

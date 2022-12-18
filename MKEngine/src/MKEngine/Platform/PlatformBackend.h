@@ -16,15 +16,16 @@ namespace MKEngine {
 
 		virtual ~PlatformBackend() = default;
 		
-		virtual void OnEventUpdate() = 0;
+		virtual void HandleEvents() = 0;
 
-		virtual void OnUpdate() = 0;
+		virtual void Update() = 0;
 
-		virtual void OnRender() = 0;
+		virtual void Render() = 0;
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 
 		virtual void* MakeWindow(Window* window, const WindowSettings& settings) = 0;
+		virtual void DestroyWindow(Window* window) = 0;
 
 		virtual void MakeCurrent(Window* window) = 0;
 
@@ -37,8 +38,5 @@ namespace MKEngine {
 		virtual void MakeCurrent(void* nativeWindow) = 0;
 		virtual void SwapWindow(void* nativeWindow) = 0;
 
-	//protected:
-	//	virtual void InitBackend()=0;
-	//	virtual void FinalizeBackend() = 0;
 	};
 }

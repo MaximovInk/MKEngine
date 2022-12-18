@@ -1,10 +1,16 @@
 #include "mkpch.h"
 #include "device.h"
 #include "MKEngine/Core/Log.h"
-
+#include "SDL.h"
+#include "SDL_vulkan.h"
 #include "vkExtern.h"
+#include "presentView.h"
 
 namespace MKEngine {
+
+	//std::map<std::int16_t, VkSurfaceKHR> surfaces;
+
+
 	uint32_t VulkanDevice::GetQueueFamilyIndex(VkQueueFlags queueFlags) const
 	{
 		if ((queueFlags & VK_QUEUE_COMPUTE_BIT) == queueFlags)
@@ -48,12 +54,20 @@ namespace MKEngine {
 		return (std::find(SupportedExtensions.begin(), SupportedExtensions.end(), extension) != SupportedExtensions.end());
 	}
 
-	VulkanDevice::VulkanDevice(/*VkPhysicalDevice physicalDevice,*/ /*
-	VkPhysicalDeviceFeatures enabledFeatures,
-		std::vector<const char*> enabledExtensions, void* pNextChain
-	*/)
+	/*
+	bool bInitSuccess = CreateInstance()
+		&& CreatePhysicalDevice()
+		&& CreateWindowSurface()
+		&& CreateQueueFamily()
+		&& CreateLogicalDevice()
+		&& CreateSwapChain();
+	*/
+
+	VulkanDevice::VulkanDevice()
 	{
 		Instance = VkExtern::CreateInstance();
+
+		DebugMessenger = VkExtern::CreateDebugMessenger(Instance);
 
 		VkPhysicalDeviceFeatures enabledFeatures;
 		std::vector<const char*> enabledExtensions;
@@ -87,23 +101,65 @@ namespace MKEngine {
 		VkPhysicalDeviceFeatures deviceFeatures{};
 
 		if (CreateLogicalDevice(deviceFeatures, DeviceExtensions, nullptr) != VK_SUCCESS)
-			MK_LOG_ERROR("FAILED TO CREATE LOGICAL DEVICE");
+			MK_LOG_CRITICAL("[VULKAN] Failed to create logical device!");
 #if TRACE_INITIALIZATION_RENDERER
 		else
 			MK_LOG_INFO("[VULKAN] Logical device successfully created");
 #endif
+
+		CommandPool = CreateCommandPool(QueueFamilyIndices.graphics);
+
+		
 	}
 
 	VulkanDevice::~VulkanDevice()
 	{
+
+
 		if (CommandPool)
 			vkDestroyCommandPool(Device, CommandPool, nullptr);
+
 		if (Device)
 			vkDestroyDevice(Device, nullptr);
+
+		if (DebugMessenger)
+			VkExtern::DestroyDebugMessanger(Instance, DebugMessenger);
+
 		if(Instance)
 			vkDestroyInstance(Instance, nullptr);
 	}
 
+	int GetID(MKEngine::Window* window) {
+		return SDL_GetWindowID((SDL_Window*)window->GetNativeWindow());
+	}
+
+	void VulkanDevice::OnWindowCreate(MKEngine::Window* window) {
+		//Surface = VkExtern::CreateWindowSurface(Instance, window);
+		//TODO: OPTIMIZE (CACHE ID)
+		//surfaces[SDL_GetWindowID((SDL_Window*)window->GetNativeWindow())] = Surface;
+		
+		auto sdlWindow = (SDL_Window*)window->GetNativeWindow();
+		int id = GetID(window);
+		
+		auto presentView = new VulkanPresentView(this);
+		presentView->InitSurface(window);
+		int w, h;
+		SDL_Vulkan_GetDrawableSize(sdlWindow, &w, &h);
+		uint32_t width = w;
+		uint32_t height = h;
+		presentView->CreateSwapChain(&width, &height);
+
+		PresentViews[id] = presentView;
+	}
+	void VulkanDevice::OnWindowDestroy(MKEngine::Window* window) {
+		//TODO: OPTIMIZE (CACHE ID)
+		//auto surface = surfaces[SDL_GetWindowID((SDL_Window*)window->GetNativeWindow())];
+		//vkDestroySurfaceKHR(Instance, surface, nullptr);
+		int id = GetID(window);
+		delete PresentViews[id];
+		int c = PresentViews.erase(id);
+		//delete PresentView;
+	}
 
 	VkResult VulkanDevice::CreateLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
 		std::vector<const char*> enabledExtensions, void* pNextChain, VkQueueFlags requestedQueueTypes)
@@ -200,5 +256,24 @@ namespace MKEngine {
 		this->EnabledFeatures = enabledFeatures;
 
 		return vkCreateDevice(PhysicalDevice, &deviceCreateInfo, nullptr, &Device);
+	}
+
+	VkCommandPool   VulkanDevice::CreateCommandPool(uint32_t queueFamilyIndex,
+		VkCommandPoolCreateFlags createFlags)
+	{
+		VkCommandPoolCreateInfo commandPoolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+		commandPoolInfo.queueFamilyIndex = queueFamilyIndex;
+		commandPoolInfo.flags = createFlags;
+		VkCommandPool commandPool;
+
+		if (vkCreateCommandPool(Device, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+			MK_LOG_CRITICAL("[VULKAN] Failed to create command pool");
+		}
+#if TRACE_INITIALIZATION_RENDERER
+		else
+			MK_LOG_INFO("[VULKAN] CommandPool device successfully created");
+#endif
+
+		return commandPool;
 	}
 }

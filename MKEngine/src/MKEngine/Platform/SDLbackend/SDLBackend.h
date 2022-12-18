@@ -9,16 +9,18 @@ namespace MKEngine {
 		SDLBackend();
 		~SDLBackend();
 
-		virtual void OnUpdate() override;
-		virtual void OnEventUpdate() override;
-		virtual void OnRender() override;
+		virtual void Update() override;
+		virtual void HandleEvents() override;
+		virtual void Render() override;
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) override;
 		virtual void* MakeWindow(Window* window, const WindowSettings& settings) override;
+		virtual void DestroyWindow(Window* window) override;
 		virtual void MakeCurrent(Window* window) override;
 		virtual void SwapWindow(Window* window) override;
 
 	private:
+
 		EventCallbackFn eventCallback;
 
 		virtual void MakeCurrent(void* nativeWindow) override;

@@ -37,5 +37,13 @@ namespace MKEngine {
 		MK_LOG_INFO("OpenGL {0}.{1} loaded!", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 	}
 
+	void OpenGLRendererAPI::OnWindowCreated(Window* window)
+	{
+	}
+
+	void OpenGLRendererAPI::OnWindowDestroyed(Window* window)
+	{
+	}
+
 
 }
