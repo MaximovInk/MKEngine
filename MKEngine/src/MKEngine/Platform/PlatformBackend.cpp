@@ -49,16 +49,12 @@ namespace MKEngine {
         if (sdlSuccess != 0)
             return;
 
-        RendererAPI::Make();
-
         MK_LOG_INFO("Initialization successfully");
     }
 
     PlatformBackend::~PlatformBackend()
     {
-        MK_LOG_TRACE("breeeed1MKEngine fiffffffnalizing..");
-
-        RendererAPI::Destroy();
+        MK_LOG_TRACE("MKEngine finalizing..");
 
         SDL_Quit();
     }

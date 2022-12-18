@@ -59,8 +59,8 @@ namespace MKEngine {
 		MK_LOG_TRACE("Application created");
 
 		PlatformBackend::Initialize();
-
 		PlatformBackend::s_CurrentBackend->SetEventCallback(MK_BIND_EVENT_FN(Application::DispatchEvents));
+		RendererAPI::Make();
 
 		PushLayer(new WindowsManagerLayer());
 	}
@@ -69,6 +69,7 @@ namespace MKEngine {
 	{
 		MK_LOG_TRACE("EL");
 
+		RendererAPI::Destroy();
 		PlatformBackend::Finalize();
 	}
 
