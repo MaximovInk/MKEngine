@@ -75,9 +75,6 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\SDLbackend\SDLBackend.h">
-      <Filter>MKEngine\Platform\SDLbackend</Filter>
-    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\Window.h">
       <Filter>MKEngine\Platform</Filter>
     </ClInclude>
@@ -116,9 +113,6 @@
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.cpp">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\SDLbackend\SDLBackend.cpp">
-      <Filter>MKEngine\Platform\SDLbackend</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\Window.cpp">
       <Filter>MKEngine\Platform</Filter>

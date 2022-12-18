@@ -120,7 +120,6 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
-    <ClInclude Include="src\MKEngine\Platform\SDLbackend\SDLBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\Window.h" />
     <ClInclude Include="src\MKEngine\Platform\WindowSettings.h" />
     <ClInclude Include="src\MKEngine\WindowsManager\WindowsManagerLayer.h" />
@@ -140,7 +139,6 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\SDLbackend\SDLBackend.cpp" />
     <ClCompile Include="src\MKEngine\Platform\Window.cpp" />
     <ClCompile Include="src\MKEngine\WindowsManager\WindowsManagerLayer.cpp" />
     <ClCompile Include="src\mkpch.cpp">
