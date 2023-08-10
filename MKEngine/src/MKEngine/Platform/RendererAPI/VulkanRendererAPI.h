@@ -21,5 +21,9 @@ namespace MKEngine {
 
 		virtual void OnWindowDestroyed(Window* window) override;
 
+		virtual void OnWindowResized(Window* window) override;
+
+		virtual void OnWindowRender(Window* window) override;
+
 	};
 }

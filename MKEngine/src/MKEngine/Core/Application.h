@@ -22,6 +22,8 @@ namespace MKEngine {
 
 		void Close();
 
+
+		static double DeltaTime;
 		static Application* s_Application;
 
 	private:

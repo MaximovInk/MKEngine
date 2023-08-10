@@ -67,12 +67,12 @@ namespace MKEngine {
 
 	Application::~Application()
 	{
-		MK_LOG_TRACE("EL");
-
 		RendererAPI::Destroy();
 		PlatformBackend::Finalize();
 	}
 
+	double Application::DeltaTime;
+	static uint32_t current;
 	void Application::Run()
 	{
 		s_Application = this;
@@ -81,11 +81,23 @@ namespace MKEngine {
 
 		m_Running = true;
 
+		uint32_t last = 0;
+		double elapsed = 0;
+
+		current = PlatformBackend::s_CurrentBackend->GetTicks();
+		last = current;
+
 		while (m_Running)
 		{
+			current = PlatformBackend::s_CurrentBackend->GetTicks();
+			elapsed = (current - last) / (double)PlatformBackend::s_CurrentBackend->GetPerfomanceFrequency();
+
 			PlatformBackend::s_CurrentBackend->HandleEvents();
 			PlatformBackend::s_CurrentBackend->Update();
 			PlatformBackend::s_CurrentBackend->Render();
+
+			last = current;
+			DeltaTime = elapsed;
 		}
 	}
 }

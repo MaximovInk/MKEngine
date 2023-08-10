@@ -25,6 +25,9 @@ namespace MKEngine {
 
 		void Render();
 
+		uint64_t GetTicks();
+		uint64_t GetPerfomanceFrequency();
+
 		void SetEventCallback(const EventCallbackFn& callback);
 
 		void* MakeWindow(Window* window, const WindowSettings& settings);

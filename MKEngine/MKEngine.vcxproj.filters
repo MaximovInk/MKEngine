@@ -4,6 +4,9 @@
     <Filter Include="MKEngine">
       <UniqueIdentifier>{53E1C4C1-3FAE-1FCD-68C7-0D7554F3545B}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MKEngine\Content">
+      <UniqueIdentifier>{9DFDF6F9-89F6-154C-B228-FBD09E80F557}</UniqueIdentifier>
+    </Filter>
     <Filter Include="MKEngine\Core">
       <UniqueIdentifier>{8BD10E1A-F791-8A50-C0CC-D3CD2C4CCF2C}</UniqueIdentifier>
     </Filter>
@@ -19,14 +22,17 @@
     <Filter Include="MKEngine\Platform\RendererAPI">
       <UniqueIdentifier>{87969315-F3AE-7A3F-BC5B-0AD928330FD9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MKEngine\Platform\SDLbackend">
-      <UniqueIdentifier>{E10D2749-CDC8-16F5-7680-8F3F621A6185}</UniqueIdentifier>
+    <Filter Include="MKEngine\Platform\RendererAPI\Vulkan">
+      <UniqueIdentifier>{2726B5CE-130D-77C6-BC5D-DDE3A823F02C}</UniqueIdentifier>
     </Filter>
     <Filter Include="MKEngine\WindowsManager">
       <UniqueIdentifier>{C8D40432-340C-4DC9-3D16-B1ECA9CC73C2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\MKEngine\Content\contentPipeline.h">
+      <Filter>MKEngine\Content</Filter>
+    </ClInclude>
     <ClInclude Include="src\MKEngine\Core\Application.h">
       <Filter>MKEngine\Core</Filter>
     </ClInclude>
@@ -72,7 +78,16 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h">
       <Filter>MKEngine\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.h">
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\Window.h">
@@ -86,13 +101,14 @@
     </ClInclude>
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
-    <ClInclude Include="src\MKEngine\Content\contentPipeline.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\pipeline.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\render_structs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
+      <Filter>MKEngine\Content</Filter>
+    </ClCompile>
     <ClCompile Include="src\MKEngine\Core\Application.cpp">
       <Filter>MKEngine\Core</Filter>
     </ClCompile>
@@ -111,7 +127,16 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp">
       <Filter>MKEngine\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.cpp">
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\Window.cpp">
@@ -121,10 +146,6 @@
       <Filter>MKEngine\WindowsManager</Filter>
     </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
-    <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.cpp" />
   </ItemGroup>
 </Project>

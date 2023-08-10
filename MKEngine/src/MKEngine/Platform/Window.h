@@ -7,6 +7,13 @@
 #include "WindowSettings.h"
 
 namespace MKEngine {
+
+
+	struct WindowData {
+		std::string Title;
+		uint32_t Width, Height;
+	};
+
 	class Window {
 	public:
 		
@@ -14,8 +21,9 @@ namespace MKEngine {
 
 		virtual ~Window();
 
-		virtual void OnWindowResize(MKEngine::WindowResizedEvent& event) = 0;
+		virtual void OnWindowResize(MKEngine::WindowResizedEvent& event);
 		virtual void OnWindowClose(MKEngine::WindowCloseEvent& event) = 0;
+		
 
 		//OnWindowResize
 		//OnWindowClose
@@ -27,16 +35,13 @@ namespace MKEngine {
 		virtual void Update() = 0;
 		virtual void Render() = 0;
 
+		void SetTitle(const char* title);
 		void* GetNativeWindow();
 		int GetID();
 
+		WindowData GetData();
+
 		protected:
-
-			struct WindowData {
-				std::string Title; 
-				uint32_t Width, Height;
-			};
-
 			WindowData _data;
 
 		private:

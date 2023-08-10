@@ -15,7 +15,7 @@
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MKEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -115,11 +115,13 @@
     <ClInclude Include="src\MKEngine\Input\MouseCode.h" />
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\pipeline.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\render_structs.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\Window.h" />
     <ClInclude Include="src\MKEngine\Platform\WindowSettings.h" />
     <ClInclude Include="src\MKEngine\WindowsManager\WindowsManagerLayer.h" />
@@ -134,11 +136,11 @@
     <ClCompile Include="src\MKEngine\Core\Log.cpp" />
     <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\OpenGLRendererAPI.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\Window.cpp" />
     <ClCompile Include="src\MKEngine\WindowsManager\WindowsManagerLayer.cpp" />
     <ClCompile Include="src\mkpch.cpp">

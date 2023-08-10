@@ -35,6 +35,8 @@ namespace MKEngine {
 
 		virtual void OnWindowCreated(Window* window) = 0;
 		virtual void OnWindowDestroyed(Window* window) = 0;
+		virtual void OnWindowResized(Window* window) = 0;
+		virtual void OnWindowRender(Window* window) = 0;
 
 		static void Make(RenderBackendType backend = RenderBackendType::VK_RENDERER);
 		static void Destroy();

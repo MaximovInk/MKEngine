@@ -1,6 +1,5 @@
 #include "mkpch.h"
 #include "RendererAPI.h"
-//#include "RendererAPI/OpenGLRendererAPI.h"
 #include "RendererAPI/VulkanRendererAPI.h"
 
 namespace MKEngine {
@@ -10,8 +9,6 @@ namespace MKEngine {
 
     void RendererAPI::Make(RenderBackendType backend)
     {
-        //TODO: Backend init changed
-        //s_API = new OpenGLRendererAPI();
         s_API = new VulkanRendererAPI();
         s_RenderBackend = backend;
     }

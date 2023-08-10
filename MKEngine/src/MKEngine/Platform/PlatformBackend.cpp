@@ -102,10 +102,27 @@ namespace MKEngine {
 
     void PlatformBackend::Update()
     {
+        for (const auto& [key, value] : windows) {
+            value.window->Update();
+        }
+
     }
 
     void PlatformBackend::Render()
     {
+        for (const auto& [key, value] : windows) {
+            value.window->Render();
+            RendererAPI::s_API->OnWindowRender(value.window);
+        }
+    }
+
+    uint64_t PlatformBackend::GetTicks()
+    {
+        return SDL_GetPerformanceCounter();
+    }
+
+    uint64_t PlatformBackend::GetPerfomanceFrequency() {
+        return SDL_GetPerformanceFrequency();
     }
 
     void PlatformBackend::SetEventCallback(const EventCallbackFn& callback)
