@@ -12,6 +12,7 @@ namespace MKEngine {
 	struct WindowData {
 		std::string Title;
 		uint32_t Width, Height;
+		bool VSync;
 	};
 
 	class Window {

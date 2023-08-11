@@ -151,15 +151,19 @@ namespace MKEngine {
 		GraphicsQueue = VkExtern::GetQueue(LogicalDevice, QueueFamilyIndices.graphics, 0);
 		PresentQueue = VkExtern::GetQueue(LogicalDevice, QueueFamilyIndices.present, 0);
 
-
-
 		CommandPool = CreateCommandPool(QueueFamilyIndices.graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
+		CreateCommandBuffer();
 	}
 
 	VulkanDevice::~VulkanDevice()
 	{
 		WaitDeviceIdle();
+
+		for (auto view : PresentViews) {
+			delete view.second;
+		}
+		PresentViews.clear();
 
 		if (CommandPool)
 			vkDestroyCommandPool(LogicalDevice, CommandPool, nullptr);
@@ -195,11 +199,8 @@ namespace MKEngine {
 
 		auto presentView = new VulkanPresentView(this);
 		presentView->InitSurface(window);
-		int w, h;
-		SDL_Vulkan_GetDrawableSize(sdlWindow, &w, &h);
-		uint32_t width = w;
-		uint32_t height = h;
-		presentView->CreateSwapChain(&width, &height);
+
+		presentView->CreateSwapChain();
 
 		PresentViews[id] = presentView;
 
@@ -209,11 +210,7 @@ namespace MKEngine {
 
 		CreateGraphicsPipeline(pipelineDesc);
 
-		presentView->CreateFramebuffer();
-		presentView->CreateCommandBuffers();
-		CreateCommandBuffer();
-
-		presentView->CreateSync();
+		presentView->FinalizeCreation();
 	}
 
 	void VulkanDevice::OnWindowDestroy(MKEngine::Window* window) {
@@ -224,12 +221,13 @@ namespace MKEngine {
 		}
 	}
 
-	void VulkanDevice::OnWindowResize(MKEngine::Window* window)
+	void VulkanDevice::OnWindowResize(MKEngine::Window* window) 
 	{
 		int id = window->GetID();
 
 		auto data = window->GetData();
-		PresentViews[id]->CreateSwapChain(&data.Width, &data.Height);
+
+		PresentViews[id]->RecreateSwapchain();
 	}
 
 	void VulkanDevice::OnWindowRender(MKEngine::Window* window)

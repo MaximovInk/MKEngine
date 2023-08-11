@@ -1,6 +1,7 @@
 #include "mkpch.h"
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include <SDL_vulkan.h>
 
 #include "PlatformBackend.h"
 #include "MKEngine/Core/Log.h"
@@ -165,6 +166,11 @@ namespace MKEngine {
     void PlatformBackend::DestroyWindow(Window* window)
     {
         SDL_DestroyWindow((SDL_Window*)window->GetNativeWindow());
+    }
+
+    void PlatformBackend::GetWindowSize(Window* window, int *w,int *h)
+    {
+        SDL_Vulkan_GetDrawableSize((SDL_Window*)window->GetNativeWindow(),w,h);
     }
 
 

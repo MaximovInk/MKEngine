@@ -15,6 +15,13 @@ namespace MKEngine {
 		VkFence inFlightFence = VK_NULL_HANDLE;
 	};
 
+	struct SwapchainInput {
+		uint32_t width; 
+		uint32_t height;
+		bool vsync;
+		bool fullscreen;
+	};
+
 	typedef struct _SwapChainBuffers {
 		VkImage image;
 		VkImageView view;
@@ -43,22 +50,25 @@ namespace MKEngine {
 		VulkanPresentView(VulkanDevice* device);
 		~VulkanPresentView();
 		void InitSurface(Window* window);
-		void CreateSwapChain(uint32_t* width, uint32_t* height, bool vsync = false, bool fullscreen = false);
-		void CreateFramebuffer();
-		void CreateCommandBuffers();
-		void CreateSync();
+		void CreateSwapChain();
+		void FinalizeCreation();
+
+		void RecreateSwapchain();
 
 		VkResult AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex);
 		VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
 		
-		
-		void CleanupSwapChain();
-
 		void RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 		void Render();
 
 	private:
 		VulkanDevice* device;
+		Window* windowRef;
+
+		void createFramebuffer();
+		void createCommandBuffers();
+		void createSync();
+		void cleanupSwapChain();
 	};
 }

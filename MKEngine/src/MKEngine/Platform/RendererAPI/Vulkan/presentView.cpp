@@ -25,24 +25,12 @@ namespace MKEngine {
 	}
 
 	VulkanPresentView::~VulkanPresentView()
-	{/*
-	 
-		vkDestroyFence(device->LogicalDevice, Sync.inFlightFence, nullptr);
-		vkDestroySemaphore(device->LogicalDevice, Sync.imageAvailableSemaphore, nullptr);
-		vkDestroySemaphore(device->LogicalDevice, Sync.renderFinishedSemaphore, nullptr);
-
-	 */
-
-		for (size_t i = 0; i < ImageCount; i++)
-		{
-			vkDestroyFence(device->LogicalDevice, Buffers[i].sync.inFlightFence, nullptr);
-			vkDestroySemaphore(device->LogicalDevice, Buffers[i].sync.imageAvailableSemaphore, nullptr);
-			vkDestroySemaphore(device->LogicalDevice, Buffers[i].sync.renderFinishedSemaphore, nullptr);
-		}
-
-		CleanupSwapChain();
+	{
+		cleanupSwapChain();
 
 		vkDestroySurfaceKHR(device->Instance, Surface, nullptr);
+
+		SwapChain = VK_NULL_HANDLE;
 	}
 
 	void VulkanPresentView::InitSurface(Window* window)
@@ -85,15 +73,18 @@ namespace MKEngine {
 			}
 		}
 
+		windowRef = window;
+
 		MK_LOG_INFO("CHOOSED FORMAT: {0}, {1}", string_VkFormat(ColorFormat), string_VkColorSpaceKHR(ColorSpace));
 
 	}
 	
-	void VulkanPresentView::CreateSwapChain(uint32_t* width, uint32_t* height,
-		bool vsync, bool fullscreen)
+	void VulkanPresentView::CreateSwapChain()
 	{
 		device->WaitDeviceIdle();
 		VkSwapchainKHR oldSwapchain = SwapChain;
+
+		WindowData data = windowRef->GetData();
 
 		VkSurfaceCapabilitiesKHR surfCaps;
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device->PhysicalDevice,
@@ -168,19 +159,19 @@ namespace MKEngine {
 
 		if (surfCaps.currentExtent.width == (uint32_t)-1)
 		{
-			swapchainExtent.width = *width;
-			swapchainExtent.height = *height;
+			swapchainExtent.width = data.Width;
+			swapchainExtent.height = data.Height;
 		}
 		else
 		{
 			swapchainExtent = surfCaps.currentExtent;
-			*width = surfCaps.currentExtent.width;
-			*height = surfCaps.currentExtent.height;
+			data.Width = surfCaps.currentExtent.width;
+			data.Height = surfCaps.currentExtent.height;
 		}
 
 		VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-		if (!vsync)
+		if (!data.VSync)
 		{
 			for (size_t i = 0; i < presentModeCount; i++)
 			{
@@ -248,7 +239,7 @@ namespace MKEngine {
 		}
 
 		createInfo.presentMode = swapchainPresentMode;
-		createInfo.oldSwapchain = oldSwapchain;
+		//createInfo.oldSwapchain = oldSwapchain;
 		createInfo.compositeAlpha = compositeAlpha;
 		createInfo.clipped = VK_TRUE;
 
@@ -261,6 +252,7 @@ namespace MKEngine {
 			nullptr, &SwapChain) != VK_SUCCESS) {
 			MK_LOG_CRITICAL("failed to create swap chain!");
 		}
+/*
 
 		if (oldSwapchain != VK_NULL_HANDLE) {
 			for (uint32_t i = 0; i < ImageCount; i++)
@@ -269,6 +261,7 @@ namespace MKEngine {
 			}
 			vkDestroySwapchainKHR(device->LogicalDevice, oldSwapchain, nullptr);
 		}
+*/
 
 		std::vector<VkImage> images;
 		vkGetSwapchainImagesKHR(device->LogicalDevice, SwapChain,
@@ -305,14 +298,45 @@ namespace MKEngine {
 			vkCreateImageView(device->LogicalDevice, &viewInfo, nullptr, &Buffers[i].view);
 		}
 
-
-
 		SwapChainExtent = swapchainExtent;
 
-		MK_LOG_INFO("[VULKAN] Creating PresentViews {0} - {1}x{2}", ImageCount, *width, *height);
+		MK_LOG_INFO("[VULKAN] Created PresentViews {0} - {1}x{2}", ImageCount, data.Width, data.Height);
 	}
 
-	void VulkanPresentView::CreateFramebuffer()
+	void VulkanPresentView::FinalizeCreation()
+	{
+		createFramebuffer();
+		createCommandBuffers();
+
+		createSync();
+	}
+
+	void VulkanPresentView::RecreateSwapchain()
+	{
+		MK_LOG_INFO("RECREATE swapchain");
+
+		int width = 0;
+		int height = 0;
+
+		PlatformBackend::s_CurrentBackend->GetWindowSize(windowRef, &width, &height);
+
+		while (width == 0 || height == 0)
+		{
+			PlatformBackend::s_CurrentBackend->HandleEvents();
+			PlatformBackend::s_CurrentBackend->GetWindowSize(windowRef, &width, &height);
+		}
+
+		WindowData* data = &windowRef->GetData();
+		data->Width = width;
+		data->Height = height;
+
+		cleanupSwapChain();
+		CreateSwapChain();
+		//Graphics pipeline ()
+		FinalizeCreation();
+	}
+
+	void VulkanPresentView::createFramebuffer()
 	{
 		for (size_t i = 0; i < ImageCount; i++) {
 			VkImageView attachments[] = {
@@ -336,17 +360,8 @@ namespace MKEngine {
 		MK_LOG_INFO("created framebuffers x{0}", ImageCount);
 	}
 
-	void VulkanPresentView::CreateSync()
+	void VulkanPresentView::createSync()
 	{
-		/*
-		ViewSync sync{};
-		sync.inFlightFence = VkExtern::createFence(device->LogicalDevice);
-		sync.imageAvailableSemaphore = VkExtern::createSemaphore(device->LogicalDevice);
-		sync.renderFinishedSemaphore = VkExtern::createSemaphore(device->LogicalDevice);
-
-		Sync = sync;
-		*/
-
 		for (size_t i = 0; i < ImageCount; i++)
 		{
 			ViewSync sync{};
@@ -380,25 +395,24 @@ namespace MKEngine {
 		return vkQueuePresentKHR(queue, &presentInfo);
 	}
 
-	void VulkanPresentView::CleanupSwapChain()
+	void VulkanPresentView::cleanupSwapChain()
 	{
-		if (SwapChain != VK_NULL_HANDLE)
+		device->WaitDeviceIdle();
+
+		for (uint32_t i = 0; i < ImageCount; i++)
 		{
-			for (uint32_t i = 0; i < ImageCount; i++)
-			{
-				vkDestroyImageView(device->LogicalDevice, Buffers[i].view, nullptr);
-				vkDestroyFramebuffer(device->LogicalDevice, Buffers[i].framebuffer, nullptr);
-			}
-		}
-		if (Surface != VK_NULL_HANDLE)
-		{
-			vkDestroySwapchainKHR(device->LogicalDevice, SwapChain, nullptr);
+			vkDestroyImageView(device->LogicalDevice, Buffers[i].view, nullptr);
+			vkDestroyFramebuffer(device->LogicalDevice, Buffers[i].framebuffer, nullptr);
+			vkDestroyFence(device->LogicalDevice, Buffers[i].sync.inFlightFence, nullptr);
+			vkDestroySemaphore(device->LogicalDevice, Buffers[i].sync.imageAvailableSemaphore, nullptr);
+			vkDestroySemaphore(device->LogicalDevice, Buffers[i].sync.renderFinishedSemaphore, nullptr);
+			vkFreeCommandBuffers(device->LogicalDevice, device->CommandPool, 1, &Buffers[i].commandBuffer);
 		}
 
-		SwapChain = VK_NULL_HANDLE;
+		vkDestroySwapchainKHR(device->LogicalDevice, SwapChain, nullptr);
 	}
 
-	void VulkanPresentView::CreateCommandBuffers() {
+	void VulkanPresentView::createCommandBuffers() {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = device->CommandPool;
@@ -439,6 +453,7 @@ namespace MKEngine {
 		
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, device->GraphicsPipeline.pipeline);
 
+		/*
 		for (glm::vec3 position : trianglePositions) {
 			glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1,0.1,0.1));
 
@@ -447,9 +462,17 @@ namespace MKEngine {
 
 			vkCmdPushConstants(commandBuffer, device->GraphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
 
-			vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+			//vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 		}
 
+		*/
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0)) * glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
+
+		ObjectData data;
+		data.model = model;
+
+		vkCmdPushConstants(commandBuffer, device->GraphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
+		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
 		vkCmdEndRenderPass(commandBuffer);
 
@@ -460,14 +483,19 @@ namespace MKEngine {
 
 	void VulkanPresentView::Render()
 	{
-		//vkWaitForFences(device->LogicalDevice, 1, &(Sync.inFlightFence), TRUE, UINT64_MAX);
 		vkWaitForFences(device->LogicalDevice, 1, &(Buffers[frameNumber].sync.inFlightFence), TRUE, UINT64_MAX);
-
-		
-		vkResetFences(device->LogicalDevice, 1, &(Buffers[frameNumber].sync.inFlightFence));
 		uint32_t imageIndex;
-		vkAcquireNextImageKHR(device->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[frameNumber].sync.imageAvailableSemaphore), nullptr, &imageIndex);
-	
+		VkResult result = vkAcquireNextImageKHR(device->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[frameNumber].sync.imageAvailableSemaphore), nullptr, &imageIndex);
+			
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+
+			RecreateSwapchain();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			MK_LOG_ERROR("failed to acquire swap chain image!");
+		}
+
 		VkCommandBuffer commandBuffer = Buffers[frameNumber].commandBuffer;
 
 		vkResetCommandBuffer(commandBuffer, 0);
@@ -487,6 +515,7 @@ namespace MKEngine {
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
+		vkResetFences(device->LogicalDevice, 1, &(Buffers[frameNumber].sync.inFlightFence));
 		if (vkQueueSubmit(device->GraphicsQueue, 1, &submitInfo, (Buffers[frameNumber].sync.inFlightFence)) != VK_SUCCESS) {
 			MK_LOG_ERROR("failed to submit draw command buffer!");
 		}
@@ -501,7 +530,15 @@ namespace MKEngine {
 		presentInfo.pSwapchains = swapChains;
 		presentInfo.pImageIndices = &imageIndex;
 
-		vkQueuePresentKHR(device->PresentQueue, &presentInfo);
+		result = vkQueuePresentKHR(device->PresentQueue, &presentInfo);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+			RecreateSwapchain();
+		}
+		else if (result != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to present swap chain image!");
+		}
+
 
 		frameNumber = (frameNumber + 1) % maxFramesInFlight;
 	}

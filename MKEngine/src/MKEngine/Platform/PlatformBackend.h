@@ -32,6 +32,7 @@ namespace MKEngine {
 
 		void* MakeWindow(Window* window, const WindowSettings& settings);
 		void DestroyWindow(Window* window);
+		void GetWindowSize(Window* window, int* w, int* h);
 
 		static void Initialize();
 
