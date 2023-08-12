@@ -1,15 +1,13 @@
 #include <mkpch.h>
-
-#include <chrono>
-
 #include "Application.h"
 #include "MKEngine/Core/Log.h"
 #include "MKEngine/Events/EventSystem.h"
+#include "MKEngine/Platform/PlatformBackend.h"
 #include "MKEngine/WindowsManager/WindowsManagerLayer.h"
 
 namespace MKEngine {
 
-	Application* Application::s_Application;
+	Application* Application::Instance;
 
 	bool Application::OnMouseMotion(MouseMovedEvent& e)
 	{
@@ -18,24 +16,24 @@ namespace MKEngine {
 
 	void Application::PushLayer(Layer* layer)
 	{
-		m_LayerStack.PushLayer(layer);
+		m_layerStack.PushLayer(layer);
 		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer* layer)
 	{
-		m_LayerStack.PushOverlay(layer);
+		m_layerStack.PushOverlay(layer);
 		layer->OnAttach();
 	}
 
-	void Application::CloseWindow(Window* window)
+	void Application::CloseWindow(const Window* window)
 	{
 		delete window;
 	}
 
 	void Application::Close()
 	{
-		m_Running = false;
+		m_running = false;
 	}
 
 	void Application::DispatchEvents(Event& e) {
@@ -43,7 +41,7 @@ namespace MKEngine {
 
 		dispatcher.Dispatch<MouseMovedEvent>(MK_BIND_EVENT_FN(Application::OnMouseMotion));
 
-		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+		for (auto it = m_layerStack.rbegin(); it != m_layerStack.rend(); ++it)
 		{
 			if (e.Handled)
 				break;
@@ -59,7 +57,7 @@ namespace MKEngine {
 		MK_LOG_TRACE("Application created");
 
 		PlatformBackend::Initialize();
-		PlatformBackend::s_CurrentBackend->SetEventCallback(MK_BIND_EVENT_FN(Application::DispatchEvents));
+		PlatformBackend::CurrentBackend->SetEventCallback(MK_BIND_EVENT_FN(Application::DispatchEvents));
 		RendererAPI::Make();
 
 		PushLayer(new WindowsManagerLayer());
@@ -75,26 +73,24 @@ namespace MKEngine {
 	static uint32_t current;
 	void Application::Run()
 	{
-		s_Application = this;
+		Instance = this;
 
 		MK_LOG_TRACE("Application run");
 
-		m_Running = true;
+		m_running = true;
 
-		uint32_t last = 0;
-		double elapsed = 0;
+		current = MKEngine::PlatformBackend::GetTicks();
+		uint32_t last = current;
 
-		current = PlatformBackend::s_CurrentBackend->GetTicks();
-		last = current;
-
-		while (m_Running)
+		while (m_running)
 		{
-			current = PlatformBackend::s_CurrentBackend->GetTicks();
-			elapsed = (current - last) / (double)PlatformBackend::s_CurrentBackend->GetPerfomanceFrequency();
+			current = MKEngine::PlatformBackend::GetTicks();
+			const double elapsed = (current - last) / static_cast<double>(
+				MKEngine::PlatformBackend::GetPerformanceFrequency());
 
-			PlatformBackend::s_CurrentBackend->HandleEvents();
-			PlatformBackend::s_CurrentBackend->Update();
-			PlatformBackend::s_CurrentBackend->Render();
+			PlatformBackend::CurrentBackend->HandleEvents();
+			MKEngine::PlatformBackend::Update();
+			MKEngine::PlatformBackend::Render();
 
 			last = current;
 			DeltaTime = elapsed;

@@ -1,5 +1,7 @@
 #include "mkpch.h"
 #include "Window.h"
+
+#include "PlatformBackend.h"
 #include "SDL.h"
 
 namespace MKEngine {
@@ -7,45 +9,48 @@ namespace MKEngine {
 	Window::Window(const WindowSettings& settings)
 	{
 		MK_LOG_INFO("base");
-		_nativeWindow = PlatformBackend::s_CurrentBackend->MakeWindow(this, settings);
-		_id = SDL_GetWindowID((SDL_Window*)_nativeWindow);
+		m_nativeWindow = PlatformBackend::CurrentBackend->MakeWindow(this, settings);
+		m_id = SDL_GetWindowID(static_cast<SDL_Window*>(m_nativeWindow));
 
-		_data.Width = settings.Width;
-		_data.Height = settings.Height;
+		m_data.Width = settings.Width;
+		m_data.Height = settings.Height;
 
-		RendererAPI::s_API->OnWindowCreated(this);
+		RendererAPI::CurrentAPI->OnWindowCreated(this);
 	}
 
 	Window::~Window()
 	{
-		RendererAPI::s_API->OnWindowDestroyed(this);
-		PlatformBackend::s_CurrentBackend->DestroyWindow(this);
+		RendererAPI::CurrentAPI->OnWindowDestroyed(this);
+		PlatformBackend::CurrentBackend->DestroyWindow(this);
 	}
 
 	void Window::OnWindowResize(MKEngine::WindowResizedEvent& event)
 	{
 		MK_LOG_INFO("resize base");
 
-		_data.Width = event.GetWidth();
-		_data.Height = event.GetHeight();
+		m_data.Width = event.GetWidth();
+		m_data.Height = event.GetHeight();
 
-		RendererAPI::s_API->OnWindowResized(this);
+		RendererAPI::CurrentAPI->OnWindowResized(this);
 	}
 
-	void Window::SetTitle(const char* title)
+	void Window::SetTitle(const char* title) const
 	{
-		SDL_SetWindowTitle((SDL_Window*)_nativeWindow, title);
+		SDL_SetWindowTitle(static_cast<SDL_Window*>(m_nativeWindow), title);
 	}
 
-	void* Window::GetNativeWindow() {
-		return _nativeWindow;
-	}
-	int Window::GetID()
+	void* Window::GetNativeWindow() const
 	{
-		return _id;
+		return m_nativeWindow;
 	}
+
+	int Window::GetID() const
+	{
+		return m_id;
+	}
+
 	WindowData Window::GetData()
 	{
-		return _data;
+		return m_data;
 	}
 }

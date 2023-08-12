@@ -21,10 +21,7 @@ project "MKEngine"
         "./vendor/spdlog/include",
         "./vendor/sdl/include",
         "./vendor/glm/include",
-
-        "./vendor/vulkan/include",
-
-        "%{wks.location}/glad/"
+        "./vendor/vulkan/include"
     }
 
     libdirs{
@@ -36,8 +33,7 @@ project "MKEngine"
     links{
         "SDL2main.lib",
         "SDL2.lib",
-        "vulkan-1.lib",
-        "glad"
+        "vulkan-1.lib"
     }
 
     filter "system:windows"
@@ -46,7 +42,6 @@ project "MKEngine"
 
         defines{
             "MK_PLATFORM_WINDOWS",
-            "MK_BUILD_DLL",
             "MK_ENGINE",
         }
 

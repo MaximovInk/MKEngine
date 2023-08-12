@@ -1,52 +1,42 @@
 #pragma once
 #include <mkengine.h>
-#include "MKEngine/Core/core.h"
 #include "mkpch.h"
 #include "MKEngine/Events/WindowEvent.h"
-#include "PlatformBackend.h"
 #include "WindowSettings.h"
 
 namespace MKEngine {
 
-
 	struct WindowData {
 		std::string Title;
-		uint32_t Width, Height;
-		bool VSync;
+		uint32_t Width{ 0 };
+		uint32_t Height{ 0 };
+		bool VSync{ false };
 	};
 
 	class Window {
 	public:
-		
-		Window(const WindowSettings& settings);
+		explicit Window(const WindowSettings& settings);
 
 		virtual ~Window();
 
 		virtual void OnWindowResize(MKEngine::WindowResizedEvent& event);
 		virtual void OnWindowClose(MKEngine::WindowCloseEvent& event) = 0;
 		
-
-		//OnWindowResize
-		//OnWindowClose
-		//Update
-		//FixedUpdate
-		//Render
-		
 		virtual void FixedUpdate() = 0;
 		virtual void Update() = 0;
 		virtual void Render() = 0;
 
-		void SetTitle(const char* title);
-		void* GetNativeWindow();
-		int GetID();
+		void SetTitle(const char* title) const;
+		void* GetNativeWindow() const;
+		int GetID() const;
 
 		WindowData GetData();
 
 		protected:
-			WindowData _data;
+			WindowData m_data;
 
 		private:
-			int _id;
-			void* _nativeWindow;
+			int m_id;
+			void* m_nativeWindow;
 	};
 }

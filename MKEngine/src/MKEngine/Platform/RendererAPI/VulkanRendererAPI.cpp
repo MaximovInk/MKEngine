@@ -7,23 +7,6 @@ namespace MKEngine {
 
 	VulkanDevice* device;
 
-	/*
-	vulkanexamplebase.h
-
-
-	int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)							
-{																								
-	for (int32_t i = 0; i < __argc; i++) { VulkanExample::args.push_back(__argv[i]); };  		
-	vulkanExample = new VulkanExample(); <- settings											
-	vulkanExample->initVulkan(); <- instance, debug, physDevice, vks::VulkanDevice, deviceQueue, semaphoers														
-	vulkanExample->setupWindow(hInstance, WndProc);												
-	vulkanExample->prepare();																	
-	vulkanExample->renderLoop();																
-	delete(vulkanExample);																		
-	return 0;																					
-}
-	*/
-
 	VulkanRendererAPI::VulkanRendererAPI()
 	{
 		device = new VulkanDevice();
@@ -64,4 +47,9 @@ namespace MKEngine {
 	{
 		device->OnWindowRender(window);
 	}
+}
+
+bool MKEngine::VulkanRendererAPI::operator==(const VulkanRendererAPI& other) const
+{
+	return false;
 }

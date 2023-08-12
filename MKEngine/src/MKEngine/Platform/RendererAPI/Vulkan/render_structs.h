@@ -4,6 +4,6 @@
 
 namespace MKEngine {
 	struct ObjectData {
-		glm::mat4 model;
+		glm::mat4 Model;
 	};
 }

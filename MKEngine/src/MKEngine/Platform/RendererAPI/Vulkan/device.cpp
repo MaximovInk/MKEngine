@@ -1,16 +1,19 @@
 #include "mkpch.h"
 #include "device.h"
+
+#include <utility>
 #include "MKEngine/Core/Log.h"
 #include "SDL.h"
-#include "SDL_vulkan.h"
 #include "vkExtern.h"
 #include "presentView.h"
 #include "shaders.h"
 #include "render_structs.h"
 
-namespace MKEngine {
+#if defined(_WIN32)
+#include "vulkan/vulkan_win32.h"
+#endif
 
-	//std::map<std::int16_t, VkSurfaceKHR> surfaces;
+namespace MKEngine {
 
 	uint32_t VulkanDevice::GetPresentViewQueueFamilyIndex() const {
 
@@ -24,17 +27,15 @@ namespace MKEngine {
 			if (QueueFamilyProperties[i].queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
 				return i;
 #endif
-			/*
-			vkGetPhysicalDeviceSurfaceSupportKHR(PhysicalDevice, i,
-				Surface, &supportsPresent[i]);
-			*/
 		}
 
+		MK_LOG_ERROR("[VULKAN] Cannot find present view queue family index!");
 
+		return 0;
 
 	}
 
-	uint32_t VulkanDevice::GetQueueFamilyIndex(VkQueueFlags queueFlags) const
+	uint32_t VulkanDevice::GetQueueFamilyIndex(const VkQueueFlags queueFlags) const
 	{
 		if ((queueFlags & VK_QUEUE_COMPUTE_BIT) == queueFlags)
 		{
@@ -70,45 +71,24 @@ namespace MKEngine {
 			}
 		}
 
-		/*
-
-
-		for (uint32_t i = static_cast<uint32_t>(QueueFamilyProperties.size())-1; i >= 0; i--)
-		{
-			if ((QueueFamilyProperties[i].queueFlags & queueFlags) == queueFlags)
-			{
-				return i;
-			}
-		}
-		*/
-
-
 		MK_LOG_ERROR("Could not find a matching queue family index");
+
+		return 0;
 	}
 
-	bool VulkanDevice::ExtensionSupported(std::string extension)
+	bool VulkanDevice::ExtensionSupported(const std::string& extension)
 	{
 		return (std::find(SupportedExtensions.begin(), SupportedExtensions.end(), extension) != SupportedExtensions.end());
 	}
-
-	/*
-	bool bInitSuccess = CreateInstance()
-		&& CreatePhysicalDevice()
-		&& CreateWindowSurface()
-		&& CreateQueueFamily()
-		&& CreateLogicalDevice()
-		&& CreateSwapChain();
-	*/
 
 	VulkanDevice::VulkanDevice()
 	{
 		Instance = VkExtern::CreateInstance();
 
+#if VULKAN_VALIDATION
 		DebugMessenger = VkExtern::CreateDebugMessenger(Instance);
-
-		VkPhysicalDeviceFeatures enabledFeatures;
+#endif
 		std::vector<const char*> enabledExtensions;
-		void* pNextChain = nullptr;
 
 		PhysicalDevice = VkExtern::CreatePhysicalDevice(Instance);
 
@@ -122,36 +102,34 @@ namespace MKEngine {
 		QueueFamilyProperties.resize(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &queueFamilyCount, QueueFamilyProperties.data());
 
-		uint32_t extenshionCount = 0;
-		vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &extenshionCount, nullptr);
-		if (extenshionCount > 0)
+		uint32_t extensionCount = 0;
+		vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &extensionCount, nullptr);
+		if (extensionCount > 0)
 		{
-			std::vector<VkExtensionProperties> extensions(extenshionCount);
-			if (vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &extenshionCount, &extensions.front()) == VK_SUCCESS)
+			if (std::vector<VkExtensionProperties> extensions(extensionCount);
+				vkEnumerateDeviceExtensionProperties(PhysicalDevice, nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS)
 			{
-				for (VkExtensionProperties extenshion : extensions)
+				for (const auto& [extensionName, specVersion] : extensions)
 				{
-					SupportedExtensions.push_back(extenshion.extensionName);
+					SupportedExtensions.emplace_back(extensionName);
 				}
 			}
 		}
 
-		VkPhysicalDeviceFeatures deviceFeatures{};
+		const VkPhysicalDeviceFeatures deviceFeatures{};
 		/*
 		deviceFeatures.samplerAnisotropy = true;
 		FEATURES OF DEVICE
 		*/
 		if (CreateLogicalDevice(deviceFeatures, DeviceExtensions, nullptr) != VK_SUCCESS)
-			MK_LOG_CRITICAL("[VULKAN] Failed to create logical device!");
-#if TRACE_INITIALIZATION_RENDERER
+			MK_LOG_CRITICAL("Failed to create logical device!");
 		else
-			MK_LOG_INFO("[VULKAN] Logical device successfully created");
-#endif
+			MK_LOG_INFO("Logical device successfully created");
 
-		GraphicsQueue = VkExtern::GetQueue(LogicalDevice, QueueFamilyIndices.graphics, 0);
-		PresentQueue = VkExtern::GetQueue(LogicalDevice, QueueFamilyIndices.present, 0);
+		GraphicsQueue = VkExtern::GetQueue(LogicalDevice, QueueFamilyIndices.Graphics, 0);
+		PresentQueue = VkExtern::GetQueue(LogicalDevice, QueueFamilyIndices.Present, 0);
 
-		CommandPool = CreateCommandPool(QueueFamilyIndices.graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+		CommandPool = CreateCommandPool(QueueFamilyIndices.Graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
 		CreateCommandBuffer();
 	}
@@ -160,44 +138,44 @@ namespace MKEngine {
 	{
 		WaitDeviceIdle();
 
-		for (auto view : PresentViews) {
-			delete view.second;
+		for (const auto [id, view] : PresentViews) {
+			delete view;
 		}
 		PresentViews.clear();
 
 		if (CommandPool)
 			vkDestroyCommandPool(LogicalDevice, CommandPool, nullptr);
 		
-		if (GraphicsPipeline.pipeline)
-			vkDestroyPipeline(LogicalDevice, GraphicsPipeline.pipeline, nullptr);
-		if (GraphicsPipeline.pipelineLayout)
-			vkDestroyPipelineLayout(LogicalDevice, GraphicsPipeline.pipelineLayout, nullptr);
-		if (GraphicsPipeline.renderPass)
-			vkDestroyRenderPass(LogicalDevice, GraphicsPipeline.renderPass, nullptr);
+		if (GraphicsPipeline.Reference)
+			vkDestroyPipeline(LogicalDevice, GraphicsPipeline.Reference, nullptr);
+		if (GraphicsPipeline.PipelineLayout)
+			vkDestroyPipelineLayout(LogicalDevice, GraphicsPipeline.PipelineLayout, nullptr);
+		if (GraphicsPipeline.RenderPass)
+			vkDestroyRenderPass(LogicalDevice, GraphicsPipeline.RenderPass, nullptr);
 
-		for (size_t i = 0; i < PresentViews.size(); i++)
+		for (const auto& [id, view] : PresentViews)
 		{
-			delete PresentViews[i];
+			delete view;
 		}
 
 		PresentViews.clear();
 
 		if (LogicalDevice)
 			vkDestroyDevice(LogicalDevice, nullptr);
-
+#if VULKAN_VALIDATION
 		if (DebugMessenger)
-			VkExtern::DestroyDebugMessanger(Instance, DebugMessenger);
-
+			VkExtern::DestroyDebugMessenger(Instance, DebugMessenger);
+#endif
 		if (Instance)
 			vkDestroyInstance(Instance, nullptr);
 	}
 
 	void VulkanDevice::OnWindowCreate(MKEngine::Window* window) {
 
-		auto sdlWindow = (SDL_Window*)window->GetNativeWindow();
-		int id = window->GetID();
+		auto sdlWindow = static_cast<SDL_Window*>(window->GetNativeWindow());
+		const int id = window->GetID();
 
-		auto presentView = new VulkanPresentView(this);
+		const auto presentView = new VulkanPresentView(this);
 		presentView->InitSurface(window);
 
 		presentView->CreateSwapChain();
@@ -205,17 +183,17 @@ namespace MKEngine {
 		PresentViews[id] = presentView;
 
 		GraphicsPipelineDesc pipelineDesc{ };
-		pipelineDesc.swapChainExtent = presentView->SwapChainExtent;
-		pipelineDesc.swapChainFormat = presentView->ColorFormat;
+		pipelineDesc.SwapChainExtent = presentView->SwapChainExtent;
+		pipelineDesc.SwapChainFormat = presentView->ColorFormat;
 
 		CreateGraphicsPipeline(pipelineDesc);
 
 		presentView->FinalizeCreation();
 	}
 
-	void VulkanDevice::OnWindowDestroy(MKEngine::Window* window) {
-		int id = window->GetID();
-		if (PresentViews.size() > 0) {
+	void VulkanDevice::OnWindowDestroy(const MKEngine::Window* window) {
+		const int id = window->GetID();
+		if (!PresentViews.empty()) {
 			delete PresentViews[id];
 			int c = PresentViews.erase(id);
 		}
@@ -223,16 +201,16 @@ namespace MKEngine {
 
 	void VulkanDevice::OnWindowResize(MKEngine::Window* window) 
 	{
-		int id = window->GetID();
+		const int id = window->GetID();
 
 		auto data = window->GetData();
 
-		PresentViews[id]->RecreateSwapchain();
+		PresentViews[id]->RecreateSwapChain();
 	}
 
-	void VulkanDevice::OnWindowRender(MKEngine::Window* window)
+	void VulkanDevice::OnWindowRender(const MKEngine::Window* window)
 	{
-		int id = window->GetID();
+		const int id = window->GetID();
 		PresentViews[id]->Render();
 	}
 
@@ -240,33 +218,33 @@ namespace MKEngine {
 		std::vector<const char*> enabledExtensions, void* pNextChain, VkQueueFlags requestedQueueTypes)
 	{
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
-		const float defaultQueuePriority(0.0f);
+		constexpr float defaultQueuePriority(0.0f);
 
 		// Graphics queue
 		if (requestedQueueTypes & VK_QUEUE_GRAPHICS_BIT)
 		{
-			QueueFamilyIndices.graphics = GetQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
+			QueueFamilyIndices.Graphics = GetQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
 			VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-			queueInfo.queueFamilyIndex = QueueFamilyIndices.graphics;
+			queueInfo.queueFamilyIndex = QueueFamilyIndices.Graphics;
 			queueInfo.queueCount = 1;
 			queueInfo.pQueuePriorities = &defaultQueuePriority;
 			queueCreateInfos.push_back(queueInfo);
 		}
 		else
-			QueueFamilyIndices.graphics = 0;
+			QueueFamilyIndices.Graphics = 0;
 
-		MK_LOG_INFO("[VULKAN] graphics family: {0}", QueueFamilyIndices.graphics);
+		MK_LOG_INFO("[VULKAN] graphics family: {0}", QueueFamilyIndices.Graphics);
 
 		// Dedicated compute queue
 		if (requestedQueueTypes & VK_QUEUE_COMPUTE_BIT)
 		{
-			QueueFamilyIndices.compute = GetQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT);
-			if (QueueFamilyIndices.compute != QueueFamilyIndices.graphics)
+			QueueFamilyIndices.Compute = GetQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT);
+			if (QueueFamilyIndices.Compute != QueueFamilyIndices.Graphics)
 			{
 				// If compute family index differs, 
 				//we need an additional queue create info for the compute queue
 				VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-				queueInfo.queueFamilyIndex = QueueFamilyIndices.compute;
+				queueInfo.queueFamilyIndex = QueueFamilyIndices.Compute;
 				queueInfo.queueCount = 1;
 				queueInfo.pQueuePriorities = &defaultQueuePriority;
 				queueCreateInfos.push_back(queueInfo);
@@ -274,21 +252,21 @@ namespace MKEngine {
 		}
 		else
 			// Else we use the same queue
-			QueueFamilyIndices.compute = QueueFamilyIndices.graphics;
+			QueueFamilyIndices.Compute = QueueFamilyIndices.Graphics;
 
-		MK_LOG_INFO("[VULKAN] compute family: {0}", QueueFamilyIndices.compute);
+		MK_LOG_INFO("[VULKAN] compute family: {0}", QueueFamilyIndices.Compute);
 
 		// Dedicated transfer queue
 		if (requestedQueueTypes & VK_QUEUE_TRANSFER_BIT)
 		{
-			QueueFamilyIndices.transfer = GetQueueFamilyIndex(VK_QUEUE_TRANSFER_BIT);
-			if ((QueueFamilyIndices.transfer != QueueFamilyIndices.graphics)
-				&& (QueueFamilyIndices.transfer != QueueFamilyIndices.compute))
+			QueueFamilyIndices.Transfer = GetQueueFamilyIndex(VK_QUEUE_TRANSFER_BIT);
+			if ((QueueFamilyIndices.Transfer != QueueFamilyIndices.Graphics)
+				&& (QueueFamilyIndices.Transfer != QueueFamilyIndices.Compute))
 			{
 				// If transfer family index differs, 
 				//we need an additional queue create info for the transfer queue
 				VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-				queueInfo.queueFamilyIndex = QueueFamilyIndices.transfer;
+				queueInfo.queueFamilyIndex = QueueFamilyIndices.Transfer;
 				queueInfo.queueCount = 1;
 				queueInfo.pQueuePriorities = &defaultQueuePriority;
 				queueCreateInfos.push_back(queueInfo);
@@ -296,17 +274,17 @@ namespace MKEngine {
 		}
 		else
 			// Else we use the same queue
-			QueueFamilyIndices.transfer = QueueFamilyIndices.graphics;
+			QueueFamilyIndices.Transfer = QueueFamilyIndices.Graphics;
 
-		MK_LOG_INFO("[VULKAN] transfer family: {0}", QueueFamilyIndices.transfer);
+		MK_LOG_INFO("[VULKAN] transfer family: {0}", QueueFamilyIndices.Transfer);
 
 		//Present view queue
 		{
-			QueueFamilyIndices.present = GetPresentViewQueueFamilyIndex();
-			if (QueueFamilyIndices.present != QueueFamilyIndices.graphics)
+			QueueFamilyIndices.Present = GetPresentViewQueueFamilyIndex();
+			if (QueueFamilyIndices.Present != QueueFamilyIndices.Graphics)
 			{
 				VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-				queueInfo.queueFamilyIndex = QueueFamilyIndices.present;
+				queueInfo.queueFamilyIndex = QueueFamilyIndices.Present;
 				queueInfo.queueCount = 1;
 				queueInfo.pQueuePriorities = &defaultQueuePriority;
 				queueCreateInfos.push_back(queueInfo);
@@ -314,12 +292,12 @@ namespace MKEngine {
 
 		}
 
-		MK_LOG_INFO("[VULKAN] present family: {0}", QueueFamilyIndices.present);
+		MK_LOG_INFO("[VULKAN] present family: {0}", QueueFamilyIndices.Present);
 
-		std::vector<const char*> deviceExtensions(enabledExtensions);
+		std::vector<const char*> deviceExtensions(std::move(enabledExtensions));
 
 		/*
-		EXTENSHIONS FOR DEVICE
+		EXTENSIONS FOR DEVICE
 		*/
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
@@ -327,13 +305,12 @@ namespace MKEngine {
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
 		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 		deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
-		if (VkExtern::EnableValidationLayers) {
-			deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
-			deviceCreateInfo.ppEnabledLayerNames = ValidationLayers.data();
-		}
-		else {
-			deviceCreateInfo.enabledLayerCount = 0;
-		}
+#if VULKAN_VALIDATION
+		deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
+		deviceCreateInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+#else
+		deviceCreateInfo.enabledLayerCount = 0;
+#endif
 
 		VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
 		if (pNextChain) {
@@ -343,7 +320,7 @@ namespace MKEngine {
 			deviceCreateInfo.pNext = &physicalDeviceFeatures2;
 		}
 
-		if (deviceExtensions.size() > 0)
+		if (!deviceExtensions.empty())
 		{
 			for (const char* enabledExtension : deviceExtensions)
 			{
@@ -352,7 +329,7 @@ namespace MKEngine {
 				}
 			}
 
-			deviceCreateInfo.enabledExtensionCount = (uint32_t)deviceExtensions.size();
+			deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 			deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 		}
 
@@ -361,7 +338,7 @@ namespace MKEngine {
 		return vkCreateDevice(PhysicalDevice, &deviceCreateInfo, nullptr, &LogicalDevice);
 	}
 
-	VkPipelineLayout createPipelineLayout(VkDevice device) {
+	VkPipelineLayout CreatePipelineLayout(const VkDevice device) {
 		VkPipelineLayout pipelineLayout;
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -376,13 +353,13 @@ namespace MKEngine {
 
 
 		if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-			MK_LOG_ERROR("[VULKAN] Failed to create pipeline layout");
+			MK_LOG_ERROR("Failed to create pipeline layout");
 		}
 
 		return pipelineLayout;
 	}
 
-	VkRenderPass createRenderPass(VkDevice device, VkFormat format) {
+	VkRenderPass CreateRenderPass(const VkDevice device, const VkFormat format) {
 		VkRenderPass renderPass;
 		VkAttachmentDescription colorAttachment{};
 		colorAttachment.format = format;
@@ -410,13 +387,13 @@ namespace MKEngine {
 		renderPassInfo.pSubpasses = &subpass;
 
 		if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-			MK_LOG_ERROR("[VULKAN] Failed to create render pass");
+			MK_LOG_ERROR("Failed to create render pass");
 		}
 
 		return renderPass;
 	}
 
-	VkResult VulkanDevice::CreateGraphicsPipeline(GraphicsPipelineDesc description)
+	VkResult VulkanDevice::CreateGraphicsPipeline(const GraphicsPipelineDesc& description)
 	{
 		VkGraphicsPipelineCreateInfo createInfo{ VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
 
@@ -435,16 +412,13 @@ namespace MKEngine {
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 		createInfo.pInputAssemblyState = &inputAssembly;
 
-		//auto vertShaderCode = readFile("shaders/vert.spv");
-		//auto fragShaderCode = readFile("shaders/frag.spv");
-
 		//Vertex Shader
 		ShaderCreateDesc vertexShaderDesc;
-		vertexShaderDesc.pPath = "shaders/vert.spv";
-		Shader vertexShader = createShader(*this, vertexShaderDesc);
+		vertexShaderDesc.Path = "shaders/vert.spv";
+		Shader vertexShader = CreateShader(*this, vertexShaderDesc);
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo{ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
 		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		vertShaderStageInfo.module = vertexShader.resource;
+		vertShaderStageInfo.module = vertexShader.Resource;
 		vertShaderStageInfo.pName = "main";
 		shaderStages.push_back(vertShaderStageInfo);
 
@@ -454,13 +428,13 @@ namespace MKEngine {
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
 		//TODO multiply windows
-		viewport.width = (float)description.swapChainExtent.width;
-		viewport.height = (float)description.swapChainExtent.height;
+		viewport.width = static_cast<float>(description.SwapChainExtent.width);
+		viewport.height = static_cast<float>(description.SwapChainExtent.height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		VkRect2D scissor{};
 		scissor.offset = { 0, 0 };
-		scissor.extent = description.swapChainExtent;
+		scissor.extent = description.SwapChainExtent;
 		VkPipelineViewportStateCreateInfo viewportState{ VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
 		viewportState.viewportCount = 1;
 		viewportState.pViewports = &viewport;
@@ -483,11 +457,11 @@ namespace MKEngine {
 		//Fragment shader Shader
 
 		ShaderCreateDesc fragmentShaderDesc;
-		fragmentShaderDesc.pPath = "shaders/frag.spv";
-		Shader fragmentShader = createShader(*this, fragmentShaderDesc);
+		fragmentShaderDesc.Path = "shaders/frag.spv";
+		Shader fragmentShader = CreateShader(*this, fragmentShaderDesc);
 		VkPipelineShaderStageCreateInfo fragShaderStageInfo{ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
 		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		fragShaderStageInfo.module = fragmentShader.resource;
+		fragShaderStageInfo.module = fragmentShader.Resource;
 		fragShaderStageInfo.pName = "main";
 		shaderStages.push_back(fragShaderStageInfo);
 		createInfo.stageCount = shaderStages.size();
@@ -517,37 +491,37 @@ namespace MKEngine {
 		colorBlending.blendConstants[3] = 0.0f;
 
 		//PipelineLayout
-		VkPipelineLayout layout = createPipelineLayout(LogicalDevice);
+		VkPipelineLayout layout = CreatePipelineLayout(LogicalDevice);
 		createInfo.layout = layout;
 
 		//Renderpass
-		VkRenderPass renderPass = createRenderPass(LogicalDevice, description.swapChainFormat);
+		VkRenderPass renderPass = CreateRenderPass(LogicalDevice, description.SwapChainFormat);
 		createInfo.renderPass = renderPass;
 
 		//Extra
 		createInfo.basePipelineHandle = nullptr;
 
-		//Create grpahics pipeline
+		//Create graphics pipeline
 		VkPipeline vkPipeline;
 
 		if (vkCreateGraphicsPipelines(LogicalDevice, nullptr, 1, &createInfo, nullptr, &vkPipeline) != VK_SUCCESS)
 			MK_LOG_ERROR("Failed to create graphics pipeline");
 
 		Pipeline output;
-		output.pipeline = vkPipeline;
-		output.pipelineLayout = layout;
-		output.renderPass = renderPass;
+		output.Reference = vkPipeline;
+		output.PipelineLayout = layout;
+		output.RenderPass = renderPass;
 
 		GraphicsPipeline = output;
 
-		destroyShader(*this, fragmentShader);
-		destroyShader(*this, vertexShader);
+		DestroyShader(*this, fragmentShader);
+		DestroyShader(*this, vertexShader);
 
 		return VK_SUCCESS;
 	}
 
-	VkCommandPool   VulkanDevice::CreateCommandPool(uint32_t queueFamilyIndex,
-		VkCommandPoolCreateFlags createFlags)
+	VkCommandPool   VulkanDevice::CreateCommandPool(const uint32_t queueFamilyIndex,
+	                                                const VkCommandPoolCreateFlags createFlags) const
 	{
 		VkCommandPoolCreateInfo commandPoolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
 		commandPoolInfo.queueFamilyIndex = queueFamilyIndex;
@@ -557,15 +531,13 @@ namespace MKEngine {
 		if (vkCreateCommandPool(LogicalDevice, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 			MK_LOG_CRITICAL("[VULKAN] Failed to create command pool");
 		}
-#if TRACE_INITIALIZATION_RENDERER
 		else
 			MK_LOG_INFO("[VULKAN] CommandPool device successfully created");
-#endif
 
 		return commandPool;
 	}
 
-	VkCommandBuffer VulkanDevice::CreateCommandBuffer() {
+	void VulkanDevice::CreateCommandBuffer() {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = CommandPool;
@@ -573,13 +545,12 @@ namespace MKEngine {
 		allocInfo.commandBufferCount = 1;
 
 		if (vkAllocateCommandBuffers(LogicalDevice, &allocInfo, &MainCommandBuffer) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate command buffer!");
+			MK_LOG_ERROR("failed to allocate command buffer!");
 		}
 	}
 
-	void VulkanDevice::WaitDeviceIdle() {
+	void VulkanDevice::WaitDeviceIdle() const
+	{
 		vkDeviceWaitIdle(LogicalDevice);
 	}
-
-	
 }

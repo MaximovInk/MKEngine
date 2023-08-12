@@ -1,13 +1,12 @@
 #pragma once
 
-#include "MKEngine/Core/core.h"
 #include "MKEngine/Events/Event.h"
 
 namespace MKEngine {
 	class Layer
 	{
 	public:
-		Layer(const std::string& name = "Layer");
+		explicit Layer(const std::string& debugName = "Layer");
 		virtual ~Layer() = default;
 
 		virtual void OnAttach() {}

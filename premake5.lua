@@ -10,6 +10,5 @@ workspace "MKEngine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-include "glad"
 include "MKEngine"
 include "MKEditor"

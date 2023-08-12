@@ -3,13 +3,13 @@
 #include "mkengine.h"
 
 namespace MKEngine {
-	class WindowsManagerLayer : public Layer
+	class WindowsManagerLayer final : public Layer
 	{
 	public:
 		virtual void OnEvent(Event& e) override;
 
 	private:
-		bool WindowResize(WindowResizedEvent& e);
-		bool WindowClose(WindowCloseEvent& e);
+		static bool WindowResize(WindowResizedEvent& e);
+		static bool WindowClose(WindowCloseEvent& e);
 	};
 }

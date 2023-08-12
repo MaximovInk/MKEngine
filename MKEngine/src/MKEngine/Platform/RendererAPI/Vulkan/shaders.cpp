@@ -4,19 +4,18 @@
 
 namespace MKEngine {
 
-
-    std::vector<char> readFile(std::string filename) {
+    std::vector<char> ReadFile(std::string filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
         if (!file.is_open()) {
             MK_LOG_ERROR("Cannot read file: {0}", filename);
         }
 
-        size_t filesize(static_cast<size_t>(file.tellg()));
+        const size_t size(static_cast<size_t>(file.tellg()));
 
-        std::vector<char> buffer(filesize);
+        std::vector<char> buffer(size);
         file.seekg(0);
-        file.read(buffer.data(), filesize);
+        file.read(buffer.data(), size);
 
         file.close();
 
@@ -24,28 +23,16 @@ namespace MKEngine {
     }
 
 
-    Shader createShader(VulkanDevice& device, ShaderCreateDesc desc)
+    Shader CreateShader(const VulkanDevice& device, const ShaderCreateDesc desc)
     {
         Shader shader;
-
-        /*
-        
-        auto vertShaderCode = readFile("shaders/vert.spv");
-        auto fragShaderCode = readFile("shaders/frag.spv");
-
-        VkShaderModule vertShaderModule = VkExtern::createShaderModule(device.LogicalDevice, vertShaderCode);
-        VkShaderModule fragShaderModule = VkExtern::createShaderModule(device.LogicalDevice, fragShaderCode);
-
-        */
-        auto code = readFile(desc.pPath);
-
-        shader.resource = VkExtern::createShaderModule(device.LogicalDevice, code);
-
+        const auto code = ReadFile(desc.Path);
+        shader.Resource = VkExtern::CreateShaderModule(device.LogicalDevice, code);
         return shader;
     }
 
-    void destroyShader(VulkanDevice& device, Shader& shader)
+    void DestroyShader(const VulkanDevice& device, const Shader& shader)
     {
-        vkDestroyShaderModule(device.LogicalDevice, shader.resource, nullptr);
+        vkDestroyShaderModule(device.LogicalDevice, shader.Resource, nullptr);
     }
 }

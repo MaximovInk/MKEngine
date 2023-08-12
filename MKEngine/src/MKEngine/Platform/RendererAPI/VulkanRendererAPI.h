@@ -3,27 +3,25 @@
 #include "MKEngine/Platform/RendererAPI.h"
 
 namespace MKEngine {
-	class VulkanRendererAPI : public RendererAPI {
+	class VulkanRendererAPI final : public RendererAPI {
 	public:
 		VulkanRendererAPI();
-		~VulkanRendererAPI();
+		~VulkanRendererAPI() override;
 
-		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
-		//virtual void SetClearColor(const glm::vec4& color) override;
-		virtual void Clear() override;
-		virtual void InitFunctions(void* procAddress) override;
+		void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
+		void Clear() override;
+		void InitFunctions(void* procAddress) override;
 
 	private:
+		void OnWindowCreated(Window* window) override;
 
+		void OnWindowDestroyed(Window* window) override;
 
-		// Унаследовано через RendererAPI
-		virtual void OnWindowCreated(Window* window) override;
+		void OnWindowResized(Window* window) override;
 
-		virtual void OnWindowDestroyed(Window* window) override;
+		void OnWindowRender(Window* window) override;
 
-		virtual void OnWindowResized(Window* window) override;
-
-		virtual void OnWindowRender(Window* window) override;
-
+	public:
+		bool operator==(const VulkanRendererAPI& other) const;
 	};
 }

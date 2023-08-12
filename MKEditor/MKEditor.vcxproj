@@ -15,7 +15,7 @@
     <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MKEditor</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.20348.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -101,13 +101,6 @@
     <ProjectReference Include="..\MKEngine\MKEngine.vcxproj">
       <Project>{53E1C4C1-3FAE-1FCD-68C7-0D7554F3545B}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\compile.bat" />
-    <None Include="shaders\frag.spv" />
-    <None Include="shaders\shader.frag" />
-    <None Include="shaders\shader.vert" />
-    <None Include="shaders\vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

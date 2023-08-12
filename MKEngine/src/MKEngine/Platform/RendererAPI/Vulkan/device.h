@@ -5,15 +5,16 @@
 #include "pipeline.h"
 
 namespace MKEngine {
-
-	const uint32_t FrameInFlight = 2;
+	constexpr uint32_t FRAME_IN_FLIGHT = 2;
 
 	class VulkanPresentView;
 
 	struct VulkanDevice {
 	public:
 		VkInstance Instance = VK_NULL_HANDLE;
+#if VULKAN_VALIDATION
 		VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
+#endif
 		std::map<std::int16_t, VulkanPresentView*> PresentViews;
 		VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
 		VkDevice LogicalDevice = VK_NULL_HANDLE;
@@ -39,10 +40,10 @@ namespace MKEngine {
 
 		struct
 		{
-			uint32_t graphics;
-			uint32_t compute;
-			uint32_t transfer;
-			uint32_t present; //combine with graphics?
+			uint32_t Graphics;
+			uint32_t Compute;
+			uint32_t Transfer;
+			uint32_t Present; //combine with graphics?
 		} QueueFamilyIndices;
 
 
@@ -51,22 +52,22 @@ namespace MKEngine {
 
 		uint32_t		GetPresentViewQueueFamilyIndex() const;
 		uint32_t		GetQueueFamilyIndex(VkQueueFlags queueFlags) const;
-		bool			ExtensionSupported(std::string extension);
+		bool			ExtensionSupported(const std::string& extension);
 		VkResult        CreateLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
 			std::vector<const char*> enabledExtensions, void* pNextChain, 
 			VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
-		VkResult		CreateGraphicsPipeline(GraphicsPipelineDesc description);
+		VkResult		CreateGraphicsPipeline(const GraphicsPipelineDesc& description);
 
 
 		VkCommandPool   CreateCommandPool(uint32_t queueFamilyIndex,
-			VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-		VkCommandBuffer CreateCommandBuffer();
+			VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) const;
+		void CreateCommandBuffer();
 
-		void OnWindowCreate(MKEngine::Window* window);
-		void OnWindowDestroy(MKEngine::Window* window);
-		void OnWindowResize(MKEngine::Window* window);
-		void OnWindowRender(MKEngine::Window* window);
-		void WaitDeviceIdle();
+		void OnWindowCreate(Window* window);
+		void OnWindowDestroy(const Window* window);
+		void OnWindowResize(Window* window);
+		void OnWindowRender(const Window* window);
+		void WaitDeviceIdle() const;
 
 	};
 }

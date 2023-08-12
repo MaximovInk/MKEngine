@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 {
 	MK_LOG_INIT();
 
-	auto app = MKEngine::CreateApplication();
+	const auto app = MKEngine::CreateApplication();
 
 	app->Run();
 

@@ -1,6 +1,5 @@
 #pragma once
 #include "mkpch.h"
-#include "MKEngine/Core/Log.h"
 #include "vulkan/vulkan.h"
 #include "device.h"
 
@@ -9,22 +8,19 @@ namespace MKEngine {
 	class VulkanDevice; 
 
 	struct Shader {
-		VkShaderModule resource = VK_NULL_HANDLE;
-		//VkShaderStageFlags stage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
-		//std::vector<VkDescriptorSetLayoutBinding> layoutBindings{};
-		//VkPushConstantRange pushConstants{};
+		VkShaderModule Resource = VK_NULL_HANDLE;
 	};
 
 	struct ShaderCreateDesc
 	{
-		const char* pPath = "";
+		const char* Path = "";
 	};
 
-	Shader createShader(
-		VulkanDevice& device,
+	Shader CreateShader(
+		const VulkanDevice& device,
 		ShaderCreateDesc desc);
 
-	void destroyShader(
-		VulkanDevice& device,
-		Shader& shader);
+	void DestroyShader(
+		const VulkanDevice& device,
+		const Shader& shader);
 }

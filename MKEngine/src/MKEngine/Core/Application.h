@@ -1,6 +1,4 @@
 #pragma once
-#include "MKEngine/Core/core.h"
-#include "MKEngine/Platform/PlatformBackend.h"
 #include "MKEngine/Events/MouseEvent.h"
 #include <MKEngine/Core/LayerStack.h>
 
@@ -13,23 +11,23 @@ namespace MKEngine {
 
 		void Run();
 
-		bool OnMouseMotion(MKEngine::MouseMovedEvent& e);
+		static bool OnMouseMotion(MouseMovedEvent& e);
 
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 
-		void CloseWindow(Window* window);
+		static void CloseWindow(const Window* window);
 
 		void Close();
 
 
 		static double DeltaTime;
-		static Application* s_Application;
+		static Application* Instance;
 
 	private:
-		bool m_Running = false;
+		bool m_running = false;
 
-		LayerStack m_LayerStack;
+		LayerStack m_layerStack;
 
 		void DispatchEvents(Event& e);
 	};

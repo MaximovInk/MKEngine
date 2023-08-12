@@ -3,17 +3,15 @@
 #include "RendererAPI/VulkanRendererAPI.h"
 
 namespace MKEngine {
-    RendererAPI* RendererAPI::s_API;
-    void* RendererAPI::s_Context;
-    RenderBackendType RendererAPI::s_RenderBackend;
+    RendererAPI* RendererAPI::CurrentAPI;
+    void* RendererAPI::m_context;
 
-    void RendererAPI::Make(RenderBackendType backend)
+    void RendererAPI::Make()
     {
-        s_API = new VulkanRendererAPI();
-        s_RenderBackend = backend;
+        CurrentAPI = new VulkanRendererAPI();
     }
     void RendererAPI::Destroy()
     {
-        delete s_API;
+        delete CurrentAPI;
     }
 }

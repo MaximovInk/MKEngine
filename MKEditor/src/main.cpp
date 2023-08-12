@@ -12,9 +12,9 @@ namespace MKEditor {
 		MKEditor()
 		{
 			auto settings = MKEngine::WindowSettings("1");
-			settings.resizable = true;
+			settings.Resizable = true;
 
-			MainWindow* wnd = new MainWindow(settings);
+			auto wnd = new MainWindow(settings);
 			//MainWindow* wnd2 = new MainWindow(settings);
 		}
 	};

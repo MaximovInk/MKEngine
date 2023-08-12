@@ -1,5 +1,4 @@
 #pragma once
-#include "core.h"
 
 #ifdef MK_ENGINE
 	#define MK_ENABLE_LOG
@@ -18,12 +17,12 @@ namespace MKEngine {
 		static void Space();
 
 #ifdef MK_ENABLE_LOG
-		inline static std::shared_ptr<spdlog::logger>& getCoreLogger() { return s_coreLogger; }
-		inline static std::shared_ptr<spdlog::logger>& getClientLogger() { return s_clientLogger; }
+		inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return m_coreLogger; }
+		inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return m_clientLogger; }
 
 	private:
-		static std::shared_ptr<spdlog::logger> s_coreLogger;
-		static std::shared_ptr<spdlog::logger> s_clientLogger;
+		static std::shared_ptr<spdlog::logger> m_coreLogger;
+		static std::shared_ptr<spdlog::logger> m_clientLogger;
 #endif
 	};
 
@@ -34,21 +33,21 @@ namespace MKEngine {
 
 #ifdef MK_ENABLE_LOG
 	#ifdef MK_ENGINE
-		#define MK_LOG_TRACE(...) MKEngine::Log::getCoreLogger()->trace(__VA_ARGS__)
-		#define MK_LOG_INFO(...)  MKEngine::Log::getCoreLogger()->info(__VA_ARGS__)
-		#define MK_LOG_DEBUG(...)  MKEngine::Log::getCoreLogger()->debug(__VA_ARGS__)
-		#define MK_LOG_WARN(...)  MKEngine::Log::getCoreLogger()->warn(__VA_ARGS__)
-		#define MK_LOG_ERROR(...) MKEngine::Log::getCoreLogger()->error(__VA_ARGS__)
-		#define MK_LOG_CRITICAL(...) MKEngine::Log::getCoreLogger()->critical(__VA_ARGS__)
+		#define MK_LOG_TRACE(...) MKEngine::Log::GetCoreLogger()->trace(__VA_ARGS__)
+		#define MK_LOG_INFO(...)  MKEngine::Log::GetCoreLogger()->info(__VA_ARGS__)
+		#define MK_LOG_DEBUG(...)  MKEngine::Log::GetCoreLogger()->debug(__VA_ARGS__)
+		#define MK_LOG_WARN(...)  MKEngine::Log::GetCoreLogger()->warn(__VA_ARGS__)
+		#define MK_LOG_ERROR(...) MKEngine::Log::GetCoreLogger()->error(__VA_ARGS__)
+		#define MK_LOG_CRITICAL(...) MKEngine::Log::GetCoreLogger()->critical(__VA_ARGS__)
 	#else
-		#define MK_LOG_TRACE(...) MKEngine::Log::getClientLogger()->trace(__VA_ARGS__)
-		#define MK_LOG_INFO(...)  ::MKEngine::Log::getClientLogger()->info(__VA_ARGS__)
-		#define MK_LOG_DEBUG(...)  MKEngine::Log::getClientLogger()->debug(__VA_ARGS__)
-		#define MK_LOG_WARN(...)  MKEngine::Log::getClientLogger()->warn(__VA_ARGS__)
-		#define MK_LOG_ERROR(...) MKEngine::Log::getClientLogger()->error(__VA_ARGS__)
-		#define MK_LOG_CRITICAL(...) MKEngine::Log::getClientLogger()->critical(__VA_ARGS__)
+		#define MK_LOG_TRACE(...) MKEngine::Log::GetClientLogger()->trace(__VA_ARGS__)
+		#define MK_LOG_INFO(...)  ::MKEngine::Log::GetClientLogger()->info(__VA_ARGS__)
+		#define MK_LOG_DEBUG(...)  MKEngine::Log::GetClientLogger()->debug(__VA_ARGS__)
+		#define MK_LOG_WARN(...)  MKEngine::Log::GetClientLogger()->warn(__VA_ARGS__)
+		#define MK_LOG_ERROR(...) MKEngine::Log::GetClientLogger()->error(__VA_ARGS__)
+		#define MK_LOG_CRITICAL(...) MKEngine::Log::GetClientLogger()->critical(__VA_ARGS__)
 	#endif 
-#else // ifndef MK_ENABLE_LOG
+#else
 
 #define MK_LOG_TRACE(...) 
 #define MK_LOG_INFO(...)  
@@ -67,4 +66,10 @@ namespace MKEngine {
 #else
 #define MK_ASSERT(x,...) 
 #define MK_CORE_ASSERT(x,...)
+#endif
+
+#if _DEBUG
+#define VULKAN_VALIDATION 1
+#elif
+#define VULKAN_VALIDATION 0
 #endif

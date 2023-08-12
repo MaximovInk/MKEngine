@@ -10,40 +10,40 @@ namespace MKEngine {
 
     struct SDLWindowData {
     public:
-        Window* window;
-        SDL_Window* nativeWindow;
+        Window* MKWindow;
+        SDL_Window* NativeWindow;
 
         SDLWindowData()
         {
-            window = nullptr;
-            nativeWindow = nullptr;
+            MKWindow = nullptr;
+            NativeWindow = nullptr;
         }
 
         SDLWindowData(Window* window, SDL_Window* nativeWindow)
         {
-            this->window = window;
-            this->nativeWindow = nativeWindow;
+            this->MKWindow = window;
+            this->NativeWindow = nativeWindow;
         }
     };
 
     std::map<std::int16_t, SDLWindowData> windows;
 
-    PlatformBackend* PlatformBackend::s_CurrentBackend;
+    PlatformBackend* PlatformBackend::CurrentBackend;
 
     void PlatformBackend::Initialize()
     {
-       PlatformBackend::s_CurrentBackend = new PlatformBackend();
+	    CurrentBackend = new PlatformBackend();
     }
 
     void PlatformBackend::Finalize()
     {
-        delete PlatformBackend::s_CurrentBackend;
+        delete CurrentBackend;
     }
 
     PlatformBackend::PlatformBackend()
     {
         MK_LOG_TRACE("Initializing SDL..");
-        int sdlSuccess = SDL_Init(SDL_INIT_EVERYTHING);
+        const int sdlSuccess = SDL_Init(SDL_INIT_EVERYTHING);
 
         MK_ASSERT(sdlSuccess == 0, "Could not initialize SDL!");
 
@@ -60,7 +60,7 @@ namespace MKEngine {
         SDL_Quit();
     }
 
-    void PlatformBackend::HandleEvents()
+    void PlatformBackend::HandleEvents() const
     {
         SDL_Event event;
 
@@ -71,32 +71,33 @@ namespace MKEngine {
                 {
                     auto motionEvent
                         = MouseMovedEvent(event.motion.x, event.motion.y);
-                    eventCallback(motionEvent);
+                    EventCallback(motionEvent);
                     break;
                 }
                 case SDL_WINDOWEVENT:
                 {
-                    auto wndData = windows[event.window.windowID];
+	                const auto wndData = windows[event.window.windowID];
                     switch (event.window.event)
                     {
                         case SDL_WINDOWEVENT_SIZE_CHANGED:
                         {
                             auto resizeEvent
                                 = WindowResizedEvent(event.window.data1,
-                                event.window.data2, wndData.window);
-                            eventCallback(resizeEvent);
+                                event.window.data2, wndData.MKWindow);
+                            EventCallback(resizeEvent);
                             break;
                         }
                         case SDL_WINDOWEVENT_CLOSE:
                         {
-                            auto closeEvent = WindowCloseEvent(wndData.window);
-                            eventCallback(closeEvent);
+                            auto closeEvent = WindowCloseEvent(wndData.MKWindow);
+                            EventCallback(closeEvent);
                             break;
                         }
-
+                    default: ;
                     }
                     break;
                 }
+            default: ;
             }
         }
     }
@@ -104,7 +105,7 @@ namespace MKEngine {
     void PlatformBackend::Update()
     {
         for (const auto& [key, value] : windows) {
-            value.window->Update();
+            value.MKWindow->Update();
         }
 
     }
@@ -112,8 +113,8 @@ namespace MKEngine {
     void PlatformBackend::Render()
     {
         for (const auto& [key, value] : windows) {
-            value.window->Render();
-            RendererAPI::s_API->OnWindowRender(value.window);
+            value.MKWindow->Render();
+            RendererAPI::CurrentAPI->OnWindowRender(value.MKWindow);
         }
     }
 
@@ -122,35 +123,24 @@ namespace MKEngine {
         return SDL_GetPerformanceCounter();
     }
 
-    uint64_t PlatformBackend::GetPerfomanceFrequency() {
+    uint64_t PlatformBackend::GetPerformanceFrequency() {
         return SDL_GetPerformanceFrequency();
     }
 
     void PlatformBackend::SetEventCallback(const EventCallbackFn& callback)
     {
-        this->eventCallback = callback;
+        this->EventCallback = callback;
     }
 
     void* PlatformBackend::MakeWindow(Window* window, const WindowSettings& settings)
     {
         Uint32 flags = SDL_WINDOW_SHOWN;
-        if (settings.resizable)
+        if (settings.Resizable)
             flags |= SDL_WINDOW_RESIZABLE;
 
-        //flags |= SDL_WINDOW_OPENGL;
-        switch (RendererAPI::s_RenderBackend)
-        {
-            case RenderBackendType::GL_RENDERER:
-                flags |= SDL_WINDOW_OPENGL;
-                break;
-            case RenderBackendType::VK_RENDERER:
-                flags |= SDL_WINDOW_VULKAN;
-                break;
-            default:
-                break;
-        }
+        flags |= SDL_WINDOW_VULKAN;
 
-        auto nativeWindow = SDL_CreateWindow(
+        const auto nativeWindow = SDL_CreateWindow(
             settings.Title.c_str(),
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
@@ -163,14 +153,14 @@ namespace MKEngine {
         return nativeWindow;
     }
 
-    void PlatformBackend::DestroyWindow(Window* window)
+    void PlatformBackend::DestroyWindow(const Window* window)
     {
-        SDL_DestroyWindow((SDL_Window*)window->GetNativeWindow());
+        SDL_DestroyWindow(static_cast<SDL_Window*>(window->GetNativeWindow()));
     }
 
-    void PlatformBackend::GetWindowSize(Window* window, int *w,int *h)
+    void PlatformBackend::GetWindowSize(const Window* window, int *w,int *h)
     {
-        SDL_Vulkan_GetDrawableSize((SDL_Window*)window->GetNativeWindow(),w,h);
+        SDL_Vulkan_GetDrawableSize(static_cast<SDL_Window*>(window->GetNativeWindow()),w,h);
     }
 
 

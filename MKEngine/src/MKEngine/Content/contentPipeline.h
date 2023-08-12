@@ -5,6 +5,6 @@ namespace MKEngine {
 	class ContentPipeline {
 	public:
 	private:
-		std::vector<char> readFile(const std::string& filePath);
+		static std::vector<char> readFile(const std::string& filePath);
 	};
 }

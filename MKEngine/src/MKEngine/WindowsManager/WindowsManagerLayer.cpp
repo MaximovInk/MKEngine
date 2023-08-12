@@ -5,8 +5,6 @@
 
 void MKEngine::WindowsManagerLayer::OnEvent(Event& e)
 {
-	//MK_LOG_INFO("WINDOWS MANAGER LAYER");
-
 	EventDispatcher dispatcher(e);
 
 	dispatcher.Dispatch<WindowResizedEvent>(MK_BIND_EVENT_FN(WindowsManagerLayer::WindowResize));

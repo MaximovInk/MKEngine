@@ -10,24 +10,24 @@ namespace MKEngine {
 
 	struct ViewSync
 	{
-		VkSemaphore imageAvailableSemaphore = VK_NULL_HANDLE;
-		VkSemaphore renderFinishedSemaphore = VK_NULL_HANDLE;
-		VkFence inFlightFence = VK_NULL_HANDLE;
+		VkSemaphore ImageAvailableSemaphore = VK_NULL_HANDLE;
+		VkSemaphore RenderFinishedSemaphore = VK_NULL_HANDLE;
+		VkFence InFlightFence = VK_NULL_HANDLE;
 	};
 
-	struct SwapchainInput {
-		uint32_t width; 
-		uint32_t height;
-		bool vsync;
-		bool fullscreen;
+	struct SwapChainInput {
+		uint32_t Width; 
+		uint32_t Height;
+		bool Vsync;
+		bool Fullscreen;
 	};
 
-	typedef struct _SwapChainBuffers {
-		VkImage image;
-		VkImageView view;
-		VkFramebuffer framebuffer;
-		VkCommandBuffer commandBuffer;
-		ViewSync sync;
+	typedef struct SwapChainBuffers {
+		VkImage Image;
+		VkImageView View;
+		VkFramebuffer FrameBuffer;
+		VkCommandBuffer CommandBuffer;
+		ViewSync Sync;
 	} SwapChainBuffer;
 
 	class VulkanPresentView {
@@ -40,35 +40,30 @@ namespace MKEngine {
 		uint32_t ImageCount;
 		std::vector<SwapChainBuffer> Buffers;
 		VkExtent2D SwapChainExtent;
-		//ViewSync Sync;
-		int maxFramesInFlight, frameNumber;
+		int MaxFramesInFlight, FrameNumber;
 
-
-		//std::vector<VkImage> Images;
-
-
-		VulkanPresentView(VulkanDevice* device);
+		explicit VulkanPresentView(VulkanDevice* device);
 		~VulkanPresentView();
 		void InitSurface(Window* window);
 		void CreateSwapChain();
 		void FinalizeCreation();
 
-		void RecreateSwapchain();
+		void RecreateSwapChain();
 
-		VkResult AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex);
-		VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
+		VkResult AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex) const;
+		VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE) const;
 		
 		void RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 		void Render();
 
 	private:
-		VulkanDevice* device;
-		Window* windowRef;
+		VulkanDevice* m_device;
+		Window* m_windowRef;
 
-		void createFramebuffer();
-		void createCommandBuffers();
-		void createSync();
-		void cleanupSwapChain();
+		void CreateFrameBuffer();
+		void CreateCommandBuffers();
+		void CreateSync();
+		void CleanupSwapChain() const;
 	};
 }

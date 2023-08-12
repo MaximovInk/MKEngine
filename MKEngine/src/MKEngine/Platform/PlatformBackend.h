@@ -1,7 +1,6 @@
 #pragma once
 #include "mkpch.h"
 #include "MKEngine/Events/Event.h"
-#include "MKEngine/Core/core.h"
 #include "WindowSettings.h"
 #include "RendererAPI.h"
 
@@ -12,27 +11,27 @@ namespace MKEngine {
 
 	class PlatformBackend {
 	public:
-		static PlatformBackend* s_CurrentBackend;
+		static PlatformBackend* CurrentBackend;
 
-		EventCallbackFn eventCallback;
+		EventCallbackFn EventCallback;
 
 		PlatformBackend();
 		~PlatformBackend();
 
-		void HandleEvents();
+		void HandleEvents() const;
 
-		void Update();
+		static void Update();
 
-		void Render();
+		static void Render();
 
-		uint64_t GetTicks();
-		uint64_t GetPerfomanceFrequency();
+		static uint64_t GetTicks();
+		static uint64_t GetPerformanceFrequency();
 
 		void SetEventCallback(const EventCallbackFn& callback);
 
-		void* MakeWindow(Window* window, const WindowSettings& settings);
-		void DestroyWindow(Window* window);
-		void GetWindowSize(Window* window, int* w, int* h);
+		static void* MakeWindow(Window* window, const WindowSettings& settings);
+		static void DestroyWindow(const Window* window);
+		static void GetWindowSize(const Window* window, int* w, int* h);
 
 		static void Initialize();
 

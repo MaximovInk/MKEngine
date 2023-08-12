@@ -1,14 +1,17 @@
 #include "mkpch.h"
+
+#include <SDL_vulkan.h>
+#include <SDL.h>
+
+
 #include "vkExtern.h"
-#include "SDL_vulkan.h"
-#include "SDL.h"
 
 namespace MKEngine {
-
 	std::vector<std::string> VkExtern::SupportedInstanceExtensions;
 
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+#if VULKAN_VALIDATION
+	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+		const VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData) {
@@ -25,15 +28,19 @@ namespace MKEngine {
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
 				MK_LOG_ERROR("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
 				break;
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+				break;
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+				break;
+			default: ;
 			}
 		}
 
 		return VK_FALSE;
 	}
 
-	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
-		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-		if (func != nullptr) {
+	VkResult CreateDebugUtilsMessengerEXT(const VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+		if (const auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT")); func != nullptr) {
 			return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
 		}
 		else {
@@ -41,14 +48,14 @@ namespace MKEngine {
 		}
 	}
 
-	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-		if (func != nullptr) {
+	void DestroyDebugUtilsMessengerEXT(const VkInstance instance, const VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+		if (const auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
+			vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT")); func != nullptr) {
 			func(instance, debugMessenger, pAllocator);
 		}
 	}
 
-	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
 		createInfo = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
 		createInfo.messageSeverity =
 			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
@@ -57,11 +64,33 @@ namespace MKEngine {
 		createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
 			| VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
 			| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-		createInfo.pfnUserCallback = debugCallback;
+		createInfo.pfnUserCallback = DebugCallback;
 	}
 
-	std::vector<const char*> getRequiredInstanceExtensions() {
-		std::vector<const char*> extensionNames =
+	VkDebugUtilsMessengerEXT VkExtern::CreateDebugMessenger(const VkInstance instance)
+	{
+		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+		PopulateDebugMessengerCreateInfo(createInfo);
+
+		VkDebugUtilsMessengerEXT debugMessenger;
+		if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+			MK_LOG_CRITICAL("Failed to set up debug messenger!");
+		}
+		else
+			MK_LOG_INFO("DebugCallback successfully created");
+
+
+		return debugMessenger;
+	}
+
+	void VkExtern::DestroyDebugMessenger(const VkInstance instance, const VkDebugUtilsMessengerEXT messenger)
+	{
+		DestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
+	}
+#endif
+
+	std::vector<const char*> GetRequiredInstanceExtensions() {
+		std::vector extensionNames =
 		{
 			VK_KHR_SURFACE_EXTENSION_NAME
 		};
@@ -86,18 +115,16 @@ namespace MKEngine {
 		extensionNames.push_back(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME);
 #endif
 
-		if (VkExtern::EnableValidationLayers) {
-			extensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-		}
-
+#if VULKAN_VALIDATION
+		extensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
 		return extensionNames;
 	}
 
-	VkInstance VkExtern::CreateInstance()
+	void VkExtern::PrintVulkanVersion()
 	{
-		uint32_t version{0};
+		uint32_t version{ 0 };
 		vkEnumerateInstanceVersion(&version);
-
 		MK_LOG_INFO("VULKAN VERSION Variant: {0}\nMAJOR {1}\nMINOR {2}\nPATCH {3}",
 			VK_API_VERSION_VARIANT(version),
 			VK_API_VERSION_MAJOR(version),
@@ -105,7 +132,10 @@ namespace MKEngine {
 			VK_API_VERSION_PATCH(version));
 
 		version &= ~(0xFFFU);
+	}
 
+	VkInstance VkExtern::CreateInstance()
+	{
 		VkApplicationInfo appInfo{ VK_STRUCTURE_TYPE_APPLICATION_INFO };
 		appInfo.pApplicationName = "MKEngine";
 		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -116,71 +146,49 @@ namespace MKEngine {
 		VkInstanceCreateInfo createInfo{ VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO };
 		createInfo.pApplicationInfo = &appInfo;
 
-		uint32_t extenshionCount = 0;
-		vkEnumerateInstanceExtensionProperties(nullptr, &extenshionCount, nullptr);
-		if (extenshionCount > 0)
+		uint32_t extensionCount = 0;
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+		if (extensionCount > 0)
 		{
-			std::vector<VkExtensionProperties> extensions(extenshionCount);
-			if (vkEnumerateInstanceExtensionProperties(nullptr, &extenshionCount, &extensions.front()) == VK_SUCCESS)
+			if (std::vector<VkExtensionProperties> extensions(extensionCount); 
+				vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS)
 			{
-				for (VkExtensionProperties extension : extensions)
+				for (const auto& [extensionName, specVersion] : extensions)
 				{
-					SupportedInstanceExtensions.push_back(extension.extensionName);
+					SupportedInstanceExtensions.emplace_back(extensionName);
 				}
 			}
 		}
 
-		auto requiredExtensions = getRequiredInstanceExtensions();
+		const auto requiredExtensions = GetRequiredInstanceExtensions();
 		createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
 		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
+#if VULKAN_VALIDATION
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-		if (EnableValidationLayers) {
-			createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
-			createInfo.ppEnabledLayerNames = ValidationLayers.data();
 
-			populateDebugMessengerCreateInfo(debugCreateInfo);
-			createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-		}
-		else {
-			createInfo.enabledLayerCount = 0;
+		createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
+		createInfo.ppEnabledLayerNames = ValidationLayers.data();
 
-			createInfo.pNext = nullptr;
-		}
+		PopulateDebugMessengerCreateInfo(debugCreateInfo);
+		createInfo.pNext = &debugCreateInfo;
+#else
+		createInfo.enabledLayerCount = 0;
+		createInfo.pNext = nullptr;
+#endif
 
 		VkInstance instance;
 		if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-			MK_LOG_CRITICAL("[VULKAN] Failed to create instance!");
+			MK_LOG_CRITICAL("Failed to create instance!");
 			return VK_NULL_HANDLE;
 		}
-#if TRACE_INITIALIZATION_RENDERER
-		else
-			MK_LOG_INFO("[VULKAN] Instance successfully created");
-#endif
+
+		MK_LOG_INFO("Instance successfully created");
 
 		return instance;
 	}
 
-	VkDebugUtilsMessengerEXT VkExtern::CreateDebugMessenger(VkInstance instance)
-	{
-		if (!EnableValidationLayers) return VK_NULL_HANDLE;
-
-		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-		populateDebugMessengerCreateInfo(createInfo);
-
-		VkDebugUtilsMessengerEXT debugMessenger;
-		if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-			MK_LOG_CRITICAL("[VULKAN] Failed to set up debug messenger!");
-		}
-#if TRACE_INITIALIZATION_RENDERER
-		else
-			MK_LOG_INFO("[VULKAN] DebugCallback successfully created");
-#endif
-
-		return debugMessenger;
-	}
-
-	VkPhysicalDevice VkExtern::CreatePhysicalDevice(VkInstance instance)
+	VkPhysicalDevice VkExtern::CreatePhysicalDevice(const VkInstance instance)
 	{
 		uint32_t physicalDeviceCount = 0;
 		vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
@@ -194,7 +202,7 @@ namespace MKEngine {
 		std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
 		vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
 
-		VkPhysicalDevice selectedPhyiscalDevice = VK_NULL_HANDLE;
+		VkPhysicalDevice selectedPhysicalDevice = VK_NULL_HANDLE;
 
 		for (const auto& physicalDevice : physicalDevices) {
 
@@ -202,24 +210,102 @@ namespace MKEngine {
 			vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
 			if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-				selectedPhyiscalDevice = physicalDevice;
+				selectedPhysicalDevice = physicalDevice;
 		}
 
-		if (selectedPhyiscalDevice == VK_NULL_HANDLE)
-			selectedPhyiscalDevice = physicalDevices[0];
+		if (selectedPhysicalDevice == VK_NULL_HANDLE)
+			selectedPhysicalDevice = physicalDevices[0];
 
-#if TRACE_INITIALIZATION_RENDERER
 		{
 			VkPhysicalDeviceProperties sProperties;
-			vkGetPhysicalDeviceProperties(selectedPhyiscalDevice, &sProperties);
+			vkGetPhysicalDeviceProperties(selectedPhysicalDevice, &sProperties);
 			MK_LOG_INFO("[VULKAN] Selected GPU: {}", sProperties.deviceName);
 		}
-#endif
-
-		return selectedPhyiscalDevice;
+		
+		return selectedPhysicalDevice;
 	}
 
-	VkShaderModule VkExtern::CreateShaderModule(VkDevice device, const std::vector<char>& code)
+	std::vector<std::string> VkExtern::LogAlphaCompositeBits(const VkCompositeAlphaFlagsKHR bits)
+	{
+		std::vector<std::string> result;
+
+		if (bits & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR) {
+			result.emplace_back("opaque (alpha ignored)");
+		}
+		if (bits & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR) {
+			result.emplace_back("pre multiplied (alpha expected to already be multiplied in image)");
+		}
+		if (bits & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR) {
+			result.emplace_back("post multiplied (alpha will be applied during composition)");
+		}
+		if (bits & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR) {
+			result.emplace_back("inherited");
+		}
+
+		return result;
+	}
+
+	std::vector<std::string> VkExtern::LogImageUsageBits(const VkImageUsageFlags bits)
+	{
+		std::vector<std::string> result;
+		if (bits & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) {
+			result.emplace_back("transfer src");
+		}
+		if (bits & VK_IMAGE_USAGE_TRANSFER_DST_BIT) {
+			result.emplace_back("transfer dst");
+		}
+		if (bits & VK_IMAGE_USAGE_SAMPLED_BIT) {
+			result.emplace_back("sampled");
+		}
+		if (bits & VK_IMAGE_USAGE_STORAGE_BIT) {
+			result.emplace_back("storage");
+		}
+		if (bits & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) {
+			result.emplace_back("color attachment");
+		}
+		if (bits & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+			result.emplace_back("depth/stencil attachment");
+		}
+		if (bits & VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT) {
+			result.emplace_back("transient attachment");
+		}
+		if (bits & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT) {
+			result.emplace_back("input attachment");
+		}
+		if (bits & VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT) {
+			result.emplace_back("fragment density map");
+		}
+		if (bits & VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR) {
+			result.emplace_back("fragment shading rate attachment");
+		}
+		return result;
+	}
+
+	std::string VkExtern::LogPresentMode(const VkPresentModeKHR presentMode)
+	{
+		
+		if (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+			return "immediate";
+		}
+		if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+			return "mailbox";
+		}
+		if (presentMode == VK_PRESENT_MODE_FIFO_KHR) {
+			return "fifo";
+		}
+		if (presentMode == VK_PRESENT_MODE_FIFO_RELAXED_KHR) {
+			return "relaxed fifo";
+		}
+		if (presentMode == VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR) {
+			return "shared demand refresh";
+		}
+		if (presentMode == VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR) {
+			return "shared continuous refresh";
+		}
+		return "none/undefined";
+	}
+
+	VkShaderModule VkExtern::CreateShaderModule(const VkDevice logicalDevice, const std::vector<char>& code)
 	{
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -227,7 +313,7 @@ namespace MKEngine {
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+		if (vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
 			MK_LOG_ERROR("Failed to create shader module!");
 			return nullptr;
 		}
@@ -235,40 +321,33 @@ namespace MKEngine {
 		return shaderModule;
 	}
 
-	void VkExtern::DestroyDebugMessanger(VkInstance instance, VkDebugUtilsMessengerEXT messenger)
-	{
-		DestroyDebugUtilsMessengerEXT(instance, messenger, nullptr);
-	}
-
-	VkSurfaceKHR VkExtern::CreateWindowSurface(VkInstance instance, MKEngine::Window* window)
+	VkSurfaceKHR VkExtern::CreateWindowSurface(const VkInstance instance, const MKEngine::Window* window)
 	{
 		VkSurfaceKHR surface;
 
-		auto sdlWindow = (SDL_Window*)window->GetNativeWindow();
-
-		if (SDL_Vulkan_CreateSurface(sdlWindow, instance, &surface) != SDL_TRUE) {
+		if (const auto sdlWindow = static_cast<SDL_Window*>(window->GetNativeWindow());
+			SDL_Vulkan_CreateSurface(sdlWindow, instance, &surface) != SDL_TRUE) {
 			MK_LOG_CRITICAL("[VULKAN] Failed to set up surface!");
 		}
-#if TRACE_INITIALIZATION_RENDERER
 		else
 			MK_LOG_INFO("[VULKAN] Surface successfully created");
-#endif
+
 		return surface;
 	}
 
-	void VkExtern::WaitFence(VkDevice logicalDevice, VkFence fence)
+	void VkExtern::WaitFence(const VkDevice logicalDevice, const VkFence fence)
 	{
 		vkWaitForFences(logicalDevice, 1, &fence, VK_TRUE, UINT64_MAX);
 	}
 
-	void VkExtern::ResetFence(VkDevice logicalDevice, VkFence fence)
+	void VkExtern::ResetFence(const VkDevice logicalDevice, const VkFence fence)
 	{
 		vkResetFences(logicalDevice, 1, &fence);
 	}
 
-	VkBool32 VkExtern::getSupportedDepthStencilFormat(VkPhysicalDevice physicalDevice, VkFormat* depthStencilFormat)
+	VkBool32 VkExtern::GetSupportedDepthStencilFormat(const VkPhysicalDevice physicalDevice, VkFormat* depthStencilFormat)
 	{
-		std::vector<VkFormat> formatList = {
+		const std::vector<VkFormat> formatList = {
 			VK_FORMAT_D32_SFLOAT_S8_UINT,
 			VK_FORMAT_D24_UNORM_S8_UINT,
 			VK_FORMAT_D16_UNORM_S8_UINT,
@@ -288,11 +367,11 @@ namespace MKEngine {
 		return false;
 	}
 
-	VkBool32 VkExtern::getSupportedDepthFormat(VkPhysicalDevice physicalDevice, VkFormat* depthFormat)
+	VkBool32 VkExtern::GetSupportedDepthFormat(const VkPhysicalDevice physicalDevice, VkFormat* depthFormat)
 	{
 		// Since all depth formats may be optional, we need to find a suitable depth format to use
 		// Start with the highest precision packed format
-		std::vector<VkFormat> formatList = {
+		const std::vector<VkFormat> formatList = {
 			VK_FORMAT_D32_SFLOAT_S8_UINT,
 			VK_FORMAT_D32_SFLOAT,
 			VK_FORMAT_D24_UNORM_S8_UINT,
@@ -313,32 +392,52 @@ namespace MKEngine {
 
 		return false;
 	}
-	VkQueue VkExtern::GetQueue(VkDevice logicalDeivce, int familyIndex, int queueIndex)
+	VkQueue VkExtern::GetQueue(const VkDevice logicalDevice, const int familyIndex, const int queueIndex)
 	{
 		VkQueue queue;
-		vkGetDeviceQueue(logicalDeivce, familyIndex, queueIndex, &queue);
+		vkGetDeviceQueue(logicalDevice, familyIndex, queueIndex, &queue);
 
 		return queue;
 	}
 
-	VkShaderModule VkExtern::createShaderModule(VkDevice logicalDevice, const std::vector<char>& code)
+	std::vector<std::string> VkExtern::LogTransformBits(const VkSurfaceTransformFlagsKHR bits)
 	{
-		VkShaderModuleCreateInfo createInfo{ VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
-		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.codeSize = code.size();
-		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-		
+		std::vector<std::string> result;
 
-		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to create shader module!");
+		if (bits & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
+			result.emplace_back("identity");
 		}
-		return shaderModule;
+		if (bits & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) {
+			result.emplace_back("90 degree rotation");
+		}
+		if (bits & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR) {
+			result.emplace_back("180 degree rotation");
+		}
+		if (bits & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+			result.emplace_back("270 degree rotation");
+		}
+		if (bits & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR) {
+			result.emplace_back("horizontal mirror");
+		}
+		if (bits & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR) {
+			result.emplace_back("horizontal mirror, then 90 degree rotation");
+		}
+		if (bits & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR) {
+			result.emplace_back("horizontal mirror, then 180 degree rotation");
+		}
+		if (bits & VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR) {
+			result.emplace_back("horizontal mirror, then 270 degree rotation");
+		}
+		if (bits & VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR) {
+			result.emplace_back("inherited");
+		}
+
+		return result;
 	}
 
-	VkSemaphore VkExtern::createSemaphore(VkDevice device)
+	VkSemaphore VkExtern::CreateSemaphore(const VkDevice device)
 	{
-		VkSemaphoreCreateInfo semaphoreCreateInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
+		constexpr VkSemaphoreCreateInfo semaphoreCreateInfo = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
 
 		VkSemaphore semaphore;
 		vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphore);
@@ -346,7 +445,7 @@ namespace MKEngine {
 		return semaphore;
 	}
 
-	VkFence VkExtern::createFence(VkDevice device, VkFenceCreateFlags flags)
+	VkFence VkExtern::CreateFence(const VkDevice device, const VkFenceCreateFlags flags)
 	{
 		VkFenceCreateInfo fenceCreateInfo { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
 		fenceCreateInfo.flags = flags;

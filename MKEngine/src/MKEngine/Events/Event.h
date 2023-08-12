@@ -1,13 +1,12 @@
 #pragma once
 #include "mkpch.h"
 #include "MKEngine/Core/core.h"
-//#include "MKEngine/Platform/Window.h"
 
 namespace MKEngine {
 
 	enum class EventType {
 		None = 0,
-		WindowClosed,WindowResized,WindowFocused,WindowLostedFoucs,WindowMoved,
+		WindowClosed,WindowResized,WindowFocused,WindowLostFocus,WindowMoved,
 		AppUpdate, AppFixedUpdate, AppRender,
 		KeyPressed,KeyReleased,
 		MouseMoved, MouseButtonPressed, MouseButtonReleased, MouseScrolled
@@ -45,7 +44,7 @@ namespace MKEngine {
 		virtual std::string ToString() const { return GetName(); };
 
 
-		bool IsInCategory(EventCategory category)
+		bool IsInCategory(EventCategory category) const
 		{
 			return GetCategoryFlags() & category;
 		}
