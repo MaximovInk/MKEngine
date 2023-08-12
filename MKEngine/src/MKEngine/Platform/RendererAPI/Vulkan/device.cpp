@@ -30,7 +30,7 @@ namespace MKEngine {
 #endif
 		}
 
-		MK_LOG_ERROR("[VULKAN] Cannot find present view queue family index!");
+		MK_LOG_ERROR("Cannot find present view queue family index!");
 
 		return 0;
 
@@ -99,7 +99,7 @@ namespace MKEngine {
 		uint32_t queueFamilyCount;
 		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &queueFamilyCount, nullptr);
 		MK_ASSERT(queueFamilyCount > 0, "QUEUE FAMILY COUNT MUST BE > 0");
-		MK_LOG_INFO("[VULKAN] QUEUE FAMILY COUNT: {0}", queueFamilyCount);
+		MK_LOG_INFO("QUEUE FAMILY COUNT: {0}", queueFamilyCount);
 		QueueFamilyProperties.resize(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(PhysicalDevice, &queueFamilyCount, QueueFamilyProperties.data());
 
@@ -234,7 +234,7 @@ namespace MKEngine {
 		else
 			QueueFamilyIndices.Graphics = 0;
 
-		MK_LOG_INFO("[VULKAN] graphics family: {0}", QueueFamilyIndices.Graphics);
+		MK_LOG_INFO("graphics family: {0}", QueueFamilyIndices.Graphics);
 
 		// Dedicated compute queue
 		if (requestedQueueTypes & VK_QUEUE_COMPUTE_BIT)
@@ -255,7 +255,7 @@ namespace MKEngine {
 			// Else we use the same queue
 			QueueFamilyIndices.Compute = QueueFamilyIndices.Graphics;
 
-		MK_LOG_INFO("[VULKAN] compute family: {0}", QueueFamilyIndices.Compute);
+		MK_LOG_INFO("compute family: {0}", QueueFamilyIndices.Compute);
 
 		// Dedicated transfer queue
 		if (requestedQueueTypes & VK_QUEUE_TRANSFER_BIT)
@@ -277,7 +277,7 @@ namespace MKEngine {
 			// Else we use the same queue
 			QueueFamilyIndices.Transfer = QueueFamilyIndices.Graphics;
 
-		MK_LOG_INFO("[VULKAN] transfer family: {0}", QueueFamilyIndices.Transfer);
+		MK_LOG_INFO("transfer family: {0}", QueueFamilyIndices.Transfer);
 
 		//Present view queue
 		{
@@ -293,7 +293,7 @@ namespace MKEngine {
 
 		}
 
-		MK_LOG_INFO("[VULKAN] present family: {0}", QueueFamilyIndices.Present);
+		MK_LOG_INFO("present family: {0}", QueueFamilyIndices.Present);
 
 		std::vector<const char*> deviceExtensions(std::move(enabledExtensions));
 
@@ -530,10 +530,10 @@ namespace MKEngine {
 		VkCommandPool commandPool;
 
 		if (vkCreateCommandPool(LogicalDevice, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-			MK_LOG_CRITICAL("[VULKAN] Failed to create command pool");
+			MK_LOG_CRITICAL("Failed to create command pool");
 		}
 		else
-			MK_LOG_INFO("[VULKAN] CommandPool device successfully created");
+			MK_LOG_INFO("CommandPool device successfully created");
 
 		return commandPool;
 	}

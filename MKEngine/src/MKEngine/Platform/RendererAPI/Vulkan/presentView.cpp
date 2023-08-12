@@ -248,7 +248,7 @@ namespace MKEngine {
 
 		SwapChainExtent = swapchainExtent;
 
-		MK_LOG_INFO("[VULKAN] Created PresentViews {0} - {1}x{2}", ImageCount, width, height);
+		MK_LOG_INFO("Created PresentViews {0} - {1}x{2}", ImageCount, width, height);
 	}
 
 	void VulkanPresentView::FinalizeCreation()
@@ -261,7 +261,7 @@ namespace MKEngine {
 
 	void VulkanPresentView::RecreateSwapChain()
 	{
-		MK_LOG_INFO("RECREATE swapchain");
+		MK_LOG_INFO("Recreate swapchain");
 
 		int width = 0;
 		int height = 0;
@@ -302,7 +302,7 @@ namespace MKEngine {
 			}
 		
 		}
-		MK_LOG_INFO("created framebuffers x{0}", ImageCount);
+		MK_LOG_INFO("Created framebuffers x{0}", ImageCount);
 	}
 
 	void VulkanPresentView::CreateSync()

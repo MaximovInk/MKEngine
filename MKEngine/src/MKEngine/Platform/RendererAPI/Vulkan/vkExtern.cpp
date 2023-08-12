@@ -19,13 +19,13 @@ namespace MKEngine {
 			switch (messageSeverity)
 			{
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-				MK_LOG_WARN("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
+				MK_LOG_WARN("[VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
 				break;
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-				MK_LOG_ERROR("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
+				MK_LOG_ERROR("[VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
 				break;
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT:
-				MK_LOG_ERROR("[VULKAN][VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
+				MK_LOG_ERROR("[VALIDIDATION LAYERS] {}", pCallbackData->pMessage);
 				break;
 			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
 				break;
@@ -218,7 +218,7 @@ namespace MKEngine {
 		{
 			VkPhysicalDeviceProperties sProperties;
 			vkGetPhysicalDeviceProperties(selectedPhysicalDevice, &sProperties);
-			MK_LOG_INFO("[VULKAN] Selected GPU: {}", sProperties.deviceName);
+			MK_LOG_INFO("Selected GPU: {}", sProperties.deviceName);
 		}
 		
 		return selectedPhysicalDevice;
@@ -326,10 +326,10 @@ namespace MKEngine {
 
 		if (const auto sdlWindow = static_cast<SDL_Window*>(window->GetNativeWindow());
 			SDL_Vulkan_CreateSurface(sdlWindow, instance, &surface) != SDL_TRUE) {
-			MK_LOG_CRITICAL("[VULKAN] Failed to set up surface!");
+			MK_LOG_CRITICAL("Failed to set up surface!");
 		}
 		else
-			MK_LOG_INFO("[VULKAN] Surface successfully created");
+			MK_LOG_INFO("Surface successfully created");
 
 		return surface;
 	}
