@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MKEngine/Core/Core.h"
 #include "MKEngine/Core/Layer.h"
 
 #include <vector>

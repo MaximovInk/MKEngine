@@ -4,10 +4,11 @@
 #include <utility>
 #include "MKEngine/Core/Log.h"
 #include "SDL.h"
-#include "vkExtern.h"
 #include "presentView.h"
 #include "shaders.h"
 #include "render_structs.h"
+
+#include "vkExtern.h"
 
 #if defined(_WIN32)
 #include "vulkan/vulkan_win32.h"
@@ -306,8 +307,8 @@ namespace MKEngine {
 		deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 		deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
 #if VULKAN_VALIDATION
-		deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
-		deviceCreateInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+		deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		deviceCreateInfo.ppEnabledLayerNames = validationLayers.data();
 #else
 		deviceCreateInfo.enabledLayerCount = 0;
 #endif

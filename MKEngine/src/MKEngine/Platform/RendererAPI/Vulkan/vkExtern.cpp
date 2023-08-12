@@ -3,7 +3,6 @@
 #include <SDL_vulkan.h>
 #include <SDL.h>
 
-
 #include "vkExtern.h"
 
 namespace MKEngine {
@@ -167,8 +166,8 @@ namespace MKEngine {
 #if VULKAN_VALIDATION
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
-		createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());
-		createInfo.ppEnabledLayerNames = ValidationLayers.data();
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
 
 		PopulateDebugMessengerCreateInfo(debugCreateInfo);
 		createInfo.pNext = &debugCreateInfo;

@@ -11,14 +11,17 @@
 
 namespace MKEngine {
 
+#if VULKAN_VALIDATION
+	inline std::vector<const char*> validationLayers = {
+	"VK_LAYER_KHRONOS_validation"
+	};
+#endif
+
 	class VkExtern {
 	public:
 		static std::vector<std::string> SupportedInstanceExtensions;
 
 #if VULKAN_VALIDATION
-		static std::vector<const char*> ValidationLayers = {
-		"VK_LAYER_KHRONOS_validation"
-		};
 
 		static VkDebugUtilsMessengerEXT CreateDebugMessenger(VkInstance instance);
 		static void DestroyDebugMessenger(VkInstance instance, VkDebugUtilsMessengerEXT messenger);
