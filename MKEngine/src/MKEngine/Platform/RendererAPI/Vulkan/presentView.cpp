@@ -436,10 +436,11 @@ namespace MKEngine {
 		const VkBuffer vertexBuffers[] = { this->m_device->VertexBuffer.Resource };
 		constexpr VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, this->m_device->IndicesBuffer.Resource, 0, VK_INDEX_TYPE_UINT16);
 
 		vkCmdPushConstants(commandBuffer, m_device->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
-		vkCmdDraw(commandBuffer, static_cast<uint32_t>(Vertices.size()), 1, 0, 0);
-
+		//vkCmdDraw(commandBuffer, static_cast<uint32_t>(Vertices.size()), 1, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
 	
 
 		vkCmdEndRenderPass(commandBuffer);

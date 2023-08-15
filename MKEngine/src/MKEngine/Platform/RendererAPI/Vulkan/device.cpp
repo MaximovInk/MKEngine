@@ -141,6 +141,7 @@ namespace MKEngine {
 		WaitDeviceIdle();
 
 		DestroyBuffer(VertexBuffer);
+		DestroyBuffer(IndicesBuffer);
 
 		for (const auto [id, view] : PresentViews) {
 			delete view;
@@ -194,15 +195,21 @@ namespace MKEngine {
 
 		presentView->FinalizeCreation();
 
-		const auto bufferSize = sizeof(Vertices[0]) * Vertices.size();
-
+		const auto vertexBufferSize = sizeof(Vertices[0]) * Vertices.size();
 		BufferDesciption description;
-		description.Size = bufferSize;
+		description.Size = vertexBufferSize;
 		description.Data = (void*)Vertices.data();
 		description.Usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		description.Access = DataAccess::Device;
-		const auto buffer = CreateBuffer(description);
-		VertexBuffer = buffer;
+		VertexBuffer = CreateBuffer(description);
+
+		const auto indicesBufferSize = sizeof(Indices[0]) * Indices.size();
+		BufferDesciption indicesDescription;
+		indicesDescription.Size = indicesBufferSize;
+		indicesDescription.Data = (void*)Indices.data();
+		indicesDescription.Usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		indicesDescription.Access = DataAccess::Device;
+		IndicesBuffer = CreateBuffer(indicesDescription);
 	}
 
 	void VulkanDevice::OnWindowDestroy(const MKEngine::Window* window) {

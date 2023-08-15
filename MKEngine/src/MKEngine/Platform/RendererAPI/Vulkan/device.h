@@ -38,6 +38,7 @@ namespace MKEngine {
 		Pipeline GraphicsPipeline;
 
 		Buffer VertexBuffer;
+		Buffer IndicesBuffer;
 
 		const std::vector<const char*> DeviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
