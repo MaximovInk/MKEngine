@@ -64,8 +64,10 @@ namespace MKEngine {
 		VkResult		CreateGraphicsPipeline(const GraphicsPipelineDesc& description);
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
+		
 		Buffer CreateBuffer(BufferDesciption description);
 		void DestroyBuffer(const Buffer& buffer);
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 		VkCommandPool   CreateCommandPool(uint32_t queueFamilyIndex,
 			VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) const;

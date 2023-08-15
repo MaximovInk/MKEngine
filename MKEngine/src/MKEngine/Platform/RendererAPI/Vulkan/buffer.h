@@ -11,10 +11,17 @@ namespace MKEngine {
 		void* MappedData = nullptr;
 	};
 
+	enum DataAccess
+	{
+		Host,
+		Device
+	};
+
 	struct BufferDesciption
 	{
 		uint32_t Size = 0;
 		VkBufferUsageFlags Usage = 0;
 		void* Data = nullptr;
+		DataAccess Access;
 	};
 }
