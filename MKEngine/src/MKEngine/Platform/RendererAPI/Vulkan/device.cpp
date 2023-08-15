@@ -407,7 +407,6 @@ namespace MKEngine {
 		createInfo.pVertexInputState = &vertexInputInfo;
 
 		//Input Assembly
-
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{ VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
 		inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
@@ -423,28 +422,24 @@ namespace MKEngine {
 		vertShaderStageInfo.pName = "main";
 		shaderStages.push_back(vertShaderStageInfo);
 
-		//Viewport and scissor
+		//Viewport and scissor - Dynamic state
+		VkViewport viewport = { 0.0, 0.0, 32.0, 32.0, 0.0, 1.0 };
+		VkDynamicState dynamicState[] = { VK_DYNAMIC_STATE_VIEWPORT , VK_DYNAMIC_STATE_SCISSOR };
 
-		VkViewport viewport{};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		//TODO multiply windows
-		viewport.width = static_cast<float>(description.SwapChainExtent.width);
-		viewport.height = static_cast<float>(description.SwapChainExtent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = description.SwapChainExtent;
-		VkPipelineViewportStateCreateInfo viewportState{ VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
+		VkPipelineViewportStateCreateInfo  viewportState{ VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
+		viewportState.pViewports = nullptr;
 		viewportState.viewportCount = 1;
-		viewportState.pViewports = &viewport;
+		viewportState.pScissors = nullptr;
 		viewportState.scissorCount = 1;
-		viewportState.pScissors = &scissor;
+
+		VkPipelineDynamicStateCreateInfo  dynamicStateCreateInfo{ VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
+		dynamicStateCreateInfo.dynamicStateCount = 2;
+		dynamicStateCreateInfo.pDynamicStates = dynamicState;
+
 		createInfo.pViewportState = &viewportState;
+		createInfo.pDynamicState = &dynamicStateCreateInfo;
 
 		//Rasterizer
-
 		VkPipelineRasterizationStateCreateInfo rasterizer{ VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
 		rasterizer.depthClampEnable = VK_FALSE;
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
@@ -456,7 +451,6 @@ namespace MKEngine {
 		createInfo.pRasterizationState = &rasterizer;
 
 		//Fragment shader Shader
-
 		ShaderCreateDesc fragmentShaderDesc;
 		fragmentShaderDesc.Path = "shaders/frag.spv";
 		Shader fragmentShader = CreateShader(*this, fragmentShaderDesc);
@@ -469,14 +463,12 @@ namespace MKEngine {
 		createInfo.pStages = shaderStages.data();
 
 		//Multisampling
-
 		VkPipelineMultisampleStateCreateInfo multisampling{ VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
 		multisampling.sampleShadingEnable = VK_FALSE;
 		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		createInfo.pMultisampleState = &multisampling;
 
 		//Color blend
-
 		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		colorBlendAttachment.blendEnable = VK_FALSE;

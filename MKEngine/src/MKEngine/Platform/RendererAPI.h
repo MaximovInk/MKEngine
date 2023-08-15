@@ -5,7 +5,7 @@
 
 /*
 Useful links:
-https://github.com/KhronosGroup/Vulkan-Guide/blob/main/chapters/dynamic_state.adoc - dynamic viewports etc.
+Dynamic-state: https://github.com/KhronosGroup/Vulkan-Guide/blob/main/chapters/dynamic_state.adoc - dynamic viewports etc.
 
 */
 

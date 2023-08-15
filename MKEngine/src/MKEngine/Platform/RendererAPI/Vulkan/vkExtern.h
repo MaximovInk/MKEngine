@@ -12,7 +12,7 @@
 namespace MKEngine {
 
 #if VULKAN_VALIDATION
-	inline std::vector<const char*> validationLayers = {
+	inline std::vector validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 	};
 #endif

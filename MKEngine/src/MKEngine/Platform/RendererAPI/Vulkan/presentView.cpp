@@ -398,6 +398,22 @@ namespace MKEngine {
 		
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_device->GraphicsPipeline.Reference);
 
+		WindowData winData = m_windowRef->GetData();
+
+		VkViewport viewport = {
+			0,
+			0,
+			static_cast<float>(winData.Width),
+			static_cast<float>(winData.Height)};
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = VkExtent2D{
+			winData.Width,
+			winData.Height
+		};
+
+		vkCmdSetScissor(commandBuffer,0,1,&scissor);
 		/*
 		for (glm::vec3 position : trianglePositions) {
 			glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1,0.1,0.1));
@@ -416,6 +432,7 @@ namespace MKEngine {
 		ObjectData data;
 		data.Model = model;
 
+		
 		vkCmdPushConstants(commandBuffer, m_device->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
