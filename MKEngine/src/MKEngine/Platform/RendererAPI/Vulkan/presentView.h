@@ -2,6 +2,7 @@
 #include <vector>
 #include "vulkan/vulkan.h"
 #include "MKEngine/Platform/Window.h"
+#include "../vertex.h"
 
 namespace MKEngine {
 

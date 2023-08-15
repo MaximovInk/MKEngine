@@ -21,3 +21,7 @@
 #ifdef MK_PLATFORM_WINDOWS
 #include <Windows.h>
 #endif
+
+#ifndef LAMBDA
+#define LAMBDA(...) std::function<void(__VA_ARGS__)> const&
+#endif // LAMBDA

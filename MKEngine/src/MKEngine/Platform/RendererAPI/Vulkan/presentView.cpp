@@ -432,9 +432,15 @@ namespace MKEngine {
 		ObjectData data;
 		data.Model = model;
 
-		
+
+		const VkBuffer vertexBuffers[] = { this->m_device->VertexBuffer.Resource };
+		constexpr VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
 		vkCmdPushConstants(commandBuffer, m_device->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
-		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+		vkCmdDraw(commandBuffer, static_cast<uint32_t>(Vertices.size()), 1, 0, 0);
+
+	
 
 		vkCmdEndRenderPass(commandBuffer);
 

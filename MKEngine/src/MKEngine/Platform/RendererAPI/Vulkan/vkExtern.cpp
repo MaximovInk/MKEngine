@@ -455,4 +455,20 @@ namespace MKEngine {
 		return fence;
 	}
 
+	uint32_t VkExtern::FindMemoryType(const VkPhysicalDevice device, const uint32_t typeFilter,
+	                                  const VkMemoryPropertyFlags properties)
+		{
+			VkPhysicalDeviceMemoryProperties memProperties;
+			vkGetPhysicalDeviceMemoryProperties(device, &memProperties);
+
+			for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+				if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+					return i;
+				}
+			}
+
+			MK_LOG_ERROR("failed to find suitable memory type!");
+
+			return 0;
+		}
 }

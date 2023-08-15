@@ -115,6 +115,8 @@
     <ClInclude Include="src\MKEngine\Input\MouseCode.h" />
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\pipeline.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h" />

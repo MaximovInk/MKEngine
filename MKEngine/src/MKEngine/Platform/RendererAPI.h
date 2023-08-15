@@ -5,7 +5,9 @@
 
 /*
 Useful links:
+VkGuide: https://github.com/KhronosGroup/Vulkan-Guide - useful features
 Dynamic-state: https://github.com/KhronosGroup/Vulkan-Guide/blob/main/chapters/dynamic_state.adoc - dynamic viewports etc.
+
 
 */
 

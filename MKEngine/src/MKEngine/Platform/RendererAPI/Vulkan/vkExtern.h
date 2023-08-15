@@ -3,6 +3,7 @@
 #include "MKEngine/Core/Log.h"
 #include "MKEngine/Platform/Window.h"
 #include "vulkan/vulkan.h"
+#include "../vertex.h"
 
 #include "vulkan/vulkan_win32.h"
 
@@ -50,6 +51,8 @@ namespace MKEngine {
 
 		static VkSemaphore CreateSemaphore(VkDevice device);
 		static VkFence CreateFence(VkDevice device, VkFenceCreateFlags flags = VK_FENCE_CREATE_SIGNALED_BIT);
+
+		static uint32_t FindMemoryType(VkPhysicalDevice device, const uint32_t typeFilter, const VkMemoryPropertyFlags properties);
 	};
 
 }

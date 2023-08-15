@@ -7,6 +7,7 @@
 #include "presentView.h"
 #include "shaders.h"
 #include "render_structs.h"
+#include "buffer.h"
 
 #include "vkExtern.h"
 
@@ -139,6 +140,8 @@ namespace MKEngine {
 	{
 		WaitDeviceIdle();
 
+		DestroyBuffer(VertexBuffer);
+
 		for (const auto [id, view] : PresentViews) {
 			delete view;
 		}
@@ -190,6 +193,46 @@ namespace MKEngine {
 		CreateGraphicsPipeline(pipelineDesc);
 
 		presentView->FinalizeCreation();
+
+		const auto bufferSize = sizeof(Vertices[0]) * Vertices.size();
+
+		BufferDesciption description;
+		description.Size = bufferSize;
+		description.Data = (void*)Vertices.data();
+		description.Usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+		//VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		const auto buffer = CreateBuffer(description);
+		VertexBuffer = buffer;
+		
+
+		/*
+		 *VertexBuffer = CreateBuffer(this, );
+
+		VertexBuffer = VkExtern::CreateVertexBuffer(LogicalDevice, Vertices);
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(LogicalDevice, VertexBuffer, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = FindMemoryType(
+			memRequirements.memoryTypeBits,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+		if (vkAllocateMemory(LogicalDevice, &allocInfo, nullptr, &VertexBufferMemory) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to allocate vertex buffer memory!");
+		}
+
+		vkBindBufferMemory(LogicalDevice, VertexBuffer, VertexBufferMemory, 0);
+
+
+		void* data;
+		vkMapMemory(LogicalDevice, VertexBufferMemory, 0, bufferSize, 0, &data);
+			memcpy(data, Vertices.data(), bufferSize);
+		vkUnmapMemory(LogicalDevice, VertexBufferMemory);
+		 *
+		 */
+
+
 	}
 
 	void VulkanDevice::OnWindowDestroy(const MKEngine::Window* window) {
@@ -402,8 +445,12 @@ namespace MKEngine {
 
 		//Vertex Input
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{ VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
+		auto bindingDescription = Vertex::GetBindingDescription();
+		auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 		createInfo.pVertexInputState = &vertexInputInfo;
 
 		//Input Assembly
@@ -530,6 +577,51 @@ namespace MKEngine {
 		return commandPool;
 	}
 
+	Buffer VulkanDevice::CreateBuffer(const BufferDesciption description)
+	{
+
+		Buffer buffer;
+
+		VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		bufferInfo.size = description.Size;
+		bufferInfo.usage = description.Usage;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		if (vkCreateBuffer(LogicalDevice, &bufferInfo, nullptr, &buffer.Resource) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to create vertex buffer!");
+		}
+
+		VkMemoryRequirements memRequirements;
+		vkGetBufferMemoryRequirements(LogicalDevice, buffer.Resource, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = VkExtern::FindMemoryType(PhysicalDevice,
+			memRequirements.memoryTypeBits,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+		if (vkAllocateMemory(LogicalDevice, &allocInfo, nullptr, &buffer.Memory) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to allocate vertex buffer memory!");
+		}
+		buffer.MappedData = description.Data;
+
+		vkBindBufferMemory(LogicalDevice, buffer.Resource, buffer.Memory, 0);
+
+		void* data;
+		vkMapMemory(LogicalDevice, buffer.Memory, 0, description.Size, 0, &data);
+		memcpy(data, description.Data, description.Size);
+		//memcpy(data, Vertices.data(), description.Size);
+		vkUnmapMemory(LogicalDevice, buffer.Memory);
+
+		return buffer;
+	}
+
+	void VulkanDevice::DestroyBuffer(const Buffer& buffer)
+	{
+		vkDestroyBuffer(LogicalDevice, buffer.Resource, nullptr);
+		vkFreeMemory(LogicalDevice, buffer.Memory, nullptr);
+	}
+
 	void VulkanDevice::CreateCommandBuffer() {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -540,6 +632,38 @@ namespace MKEngine {
 		if (vkAllocateCommandBuffers(LogicalDevice, &allocInfo, &MainCommandBuffer) != VK_SUCCESS) {
 			MK_LOG_ERROR("failed to allocate command buffer!");
 		}
+	}
+
+	void VulkanDevice::ImmediateSubmit(std::function<void(VkCommandBuffer)> const& callback) const
+	{
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = CommandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = 1;
+
+		VkCommandBuffer commandBuffer;
+		if (vkAllocateCommandBuffers(LogicalDevice, &allocInfo, &commandBuffer) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to allocate command buffer for immediate submit!");
+		}
+
+		VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+		callback(commandBuffer);
+
+		vkEndCommandBuffer(commandBuffer);
+
+		VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+
+		vkQueueSubmit(GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(GraphicsQueue);
+
+		vkFreeCommandBuffers(LogicalDevice, CommandPool, 1, &commandBuffer);
 	}
 
 	void VulkanDevice::WaitDeviceIdle() const

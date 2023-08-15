@@ -110,6 +110,8 @@
     </ClInclude>
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">

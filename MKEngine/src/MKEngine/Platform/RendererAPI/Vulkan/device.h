@@ -2,6 +2,8 @@
 
 #include "vulkan/vulkan.h"
 #include "mkpch.h"
+
+#include "buffer.h"
 #include "MKEngine/Platform/Window.h"
 #include "pipeline.h"
 
@@ -10,7 +12,7 @@ namespace MKEngine {
 
 	class VulkanPresentView;
 
-	struct VulkanDevice {
+	class VulkanDevice {
 	public:
 		VkInstance Instance = VK_NULL_HANDLE;
 #if VULKAN_VALIDATION
@@ -35,6 +37,8 @@ namespace MKEngine {
 
 		Pipeline GraphicsPipeline;
 
+		Buffer VertexBuffer;
+
 		const std::vector<const char*> DeviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
@@ -58,11 +62,16 @@ namespace MKEngine {
 			std::vector<const char*> enabledExtensions, void* pNextChain, 
 			VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
 		VkResult		CreateGraphicsPipeline(const GraphicsPipelineDesc& description);
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
+		Buffer CreateBuffer(BufferDesciption description);
+		void DestroyBuffer(const Buffer& buffer);
 
 		VkCommandPool   CreateCommandPool(uint32_t queueFamilyIndex,
 			VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) const;
 		void CreateCommandBuffer();
+
+		void ImmediateSubmit(std::function<void(VkCommandBuffer)> const& callback) const;
 
 		void OnWindowCreate(Window* window);
 		void OnWindowDestroy(const Window* window);
