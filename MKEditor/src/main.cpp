@@ -2,6 +2,7 @@
 #include "mkengine.h"
 #include "MKEngine/Core/entryPoint.h"
 #include "MainWindow.h"
+#include "SecondaryWindow.h"
 
 using namespace MKEngine;
 
@@ -15,7 +16,7 @@ namespace MKEditor {
 			settings.Resizable = true;
 
 			auto wnd = new MainWindow(settings);
-			//MainWindow* wnd2 = new MainWindow(settings);
+			auto* wnd2 = new SecondaryWindow(settings);
 		}
 	};
 

@@ -53,10 +53,18 @@ namespace MKEngine {
 
 		VkResult AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex) const;
 		VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE) const;
-		
-		void RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
+		void BeginRender();
+		void EndRender();
+
+		/*TEST*/
+
+		void Record(int testIndex);
+		/*
+		 *
 		void Render();
+		 *
+		 */
 
 	private:
 		VulkanDevice* m_device;
@@ -66,5 +74,10 @@ namespace MKEngine {
 		void CreateCommandBuffers();
 		void CreateSync();
 		void CleanupSwapChain() const;
+
+		void RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex, int testIndex);
+
+		VkCommandBuffer m_currentBufferDraw;
+		uint32_t m_currentImageIndexDraw;
 	};
 }

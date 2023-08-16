@@ -175,6 +175,15 @@ namespace MKEngine {
 			vkDestroyInstance(Instance, nullptr);
 	}
 
+	void VulkanDevice::OnWindowDrawTest(Window* window, const int index)
+	{
+		const int id = window->GetID();
+
+		auto data = window->GetData();
+
+		PresentViews[id]->Record(index);
+	}
+
 	void VulkanDevice::OnWindowCreate(MKEngine::Window* window) {
 
 		auto sdlWindow = static_cast<SDL_Window*>(window->GetNativeWindow());
@@ -191,25 +200,32 @@ namespace MKEngine {
 		pipelineDesc.SwapChainExtent = presentView->SwapChainExtent;
 		pipelineDesc.SwapChainFormat = presentView->ColorFormat;
 
-		CreateGraphicsPipeline(pipelineDesc);
+		if(GraphicsPipeline.Reference == VK_NULL_HANDLE)
+			CreateGraphicsPipeline(pipelineDesc);
 
 		presentView->FinalizeCreation();
 
-		const auto vertexBufferSize = sizeof(Vertices[0]) * Vertices.size();
-		BufferDesciption description;
-		description.Size = vertexBufferSize;
-		description.Data = (void*)Vertices.data();
-		description.Usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		description.Access = DataAccess::Device;
-		VertexBuffer = CreateBuffer(description);
+		if (VertexBuffer.Resource == VK_NULL_HANDLE)
+		{
+			const auto vertexBufferSize = sizeof(Vertices[0]) * Vertices.size();
+			BufferDesciption description;
+			description.Size = vertexBufferSize;
+			description.Data = (void*)Vertices.data();
+			description.Usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			description.Access = DataAccess::Device;
+			VertexBuffer = CreateBuffer(description);
+		}
 
-		const auto indicesBufferSize = sizeof(Indices[0]) * Indices.size();
-		BufferDesciption indicesDescription;
-		indicesDescription.Size = indicesBufferSize;
-		indicesDescription.Data = (void*)Indices.data();
-		indicesDescription.Usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-		indicesDescription.Access = DataAccess::Device;
-		IndicesBuffer = CreateBuffer(indicesDescription);
+		if (IndicesBuffer.Resource == VK_NULL_HANDLE)
+		{
+			const auto indicesBufferSize = sizeof(Indices[0]) * Indices.size();
+			BufferDesciption indicesDescription;
+			indicesDescription.Size = indicesBufferSize;
+			indicesDescription.Data = (void*)Indices.data();
+			indicesDescription.Usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+			indicesDescription.Access = DataAccess::Device;
+			IndicesBuffer = CreateBuffer(indicesDescription);
+		}
 	}
 
 	void VulkanDevice::OnWindowDestroy(const MKEngine::Window* window) {
@@ -232,7 +248,13 @@ namespace MKEngine {
 	void VulkanDevice::OnWindowRender(const MKEngine::Window* window)
 	{
 		const int id = window->GetID();
-		PresentViews[id]->Render();
+		PresentViews[id]->BeginRender();
+	}
+
+	void VulkanDevice::OnWindowRenderEnd(const MKEngine::Window* window)
+	{
+		const int id = window->GetID();
+		PresentViews[id]->EndRender();
 	}
 
 	VkResult VulkanDevice::CreateLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
@@ -721,6 +743,8 @@ namespace MKEngine {
 
 		vkFreeCommandBuffers(LogicalDevice, CommandPool, 1, &commandBuffer);
 	}
+
+
 
 	void VulkanDevice::WaitDeviceIdle() const
 	{

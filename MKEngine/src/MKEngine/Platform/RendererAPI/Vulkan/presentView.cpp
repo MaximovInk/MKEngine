@@ -340,6 +340,75 @@ namespace MKEngine {
 		return vkQueuePresentKHR(queue, &presentInfo);
 	}
 
+	void VulkanPresentView::BeginRender()
+	{
+		vkWaitForFences(m_device->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence), TRUE, UINT64_MAX);
+		uint32_t imageIndex;
+		VkResult result = vkAcquireNextImageKHR(m_device->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[FrameNumber].Sync.ImageAvailableSemaphore), nullptr, &imageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+
+			RecreateSwapChain();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			MK_LOG_ERROR("failed to acquire swap chain image!");
+		}
+
+		const VkCommandBuffer commandBuffer = Buffers[FrameNumber].CommandBuffer;
+
+		vkResetCommandBuffer(commandBuffer, 0);
+
+		m_currentImageIndexDraw = imageIndex;
+		m_currentBufferDraw = commandBuffer;
+	}
+
+	void VulkanPresentView::EndRender()
+	{
+		auto commandBuffer = m_currentBufferDraw;
+		auto imageIndex = m_currentImageIndexDraw;
+
+		VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
+
+		const VkSemaphore waitSemaphores[] = { Buffers[FrameNumber].Sync.ImageAvailableSemaphore };
+		constexpr VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+		const VkSemaphore signalSemaphores[] = { Buffers[FrameNumber].Sync.RenderFinishedSemaphore };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		vkResetFences(m_device->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence));
+		if (vkQueueSubmit(m_device->GraphicsQueue, 1, &submitInfo, (Buffers[FrameNumber].Sync.InFlightFence)) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to submit draw command buffer!");
+		}
+
+		VkPresentInfoKHR presentInfo{ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
+
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+
+		const VkSwapchainKHR swapChains[] = { SwapChain };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &imageIndex;
+
+		VkResult result = vkQueuePresentKHR(m_device->PresentQueue, &presentInfo);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+			RecreateSwapChain();
+		}
+		else if (result != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to present swap chain image!");
+		}
+
+
+		FrameNumber = (FrameNumber + 1) % MaxFramesInFlight;
+	}
+
 	void VulkanPresentView::CleanupSwapChain() const
 	{
 		m_device->WaitDeviceIdle();
@@ -374,7 +443,7 @@ namespace MKEngine {
 		
 	}
 
-	void VulkanPresentView::RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+	void VulkanPresentView::RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex, int testIndex)
 	{
 		VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		beginInfo.flags = 0; // Optional
@@ -414,33 +483,39 @@ namespace MKEngine {
 		};
 
 		vkCmdSetScissor(commandBuffer,0,1,&scissor);
-		/*
-		for (glm::vec3 position : trianglePositions) {
-			glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1,0.1,0.1));
+
+		if(testIndex == 0)
+		{
+			for (glm::vec3 position : trianglePositions) {
+				const glm::mat4 model = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+
+				ObjectData data;
+				data.Model = model;
+
+				const VkBuffer vertexBuffers[] = { this->m_device->VertexBuffer.Resource };
+				constexpr VkDeviceSize offsets[] = { 0 };
+				vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+				vkCmdBindIndexBuffer(commandBuffer, this->m_device->IndicesBuffer.Resource, 0, VK_INDEX_TYPE_UINT16);
+
+				vkCmdPushConstants(commandBuffer, m_device->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
+				vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
+			}
+		}
+		else
+		{
+			const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
 
 			ObjectData data;
-			data.model = model;
+			data.Model = model;
 
-			vkCmdPushConstants(commandBuffer, device->GraphicsPipeline.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
+			const VkBuffer vertexBuffers[] = { this->m_device->VertexBuffer.Resource };
+			constexpr VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+			vkCmdBindIndexBuffer(commandBuffer, this->m_device->IndicesBuffer.Resource, 0, VK_INDEX_TYPE_UINT16);
 
-			//vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+			vkCmdPushConstants(commandBuffer, m_device->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
+			vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
 		}
-
-		*/
-		const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0)) * glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
-
-		ObjectData data;
-		data.Model = model;
-
-
-		const VkBuffer vertexBuffers[] = { this->m_device->VertexBuffer.Resource };
-		constexpr VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-		vkCmdBindIndexBuffer(commandBuffer, this->m_device->IndicesBuffer.Resource, 0, VK_INDEX_TYPE_UINT16);
-
-		vkCmdPushConstants(commandBuffer, m_device->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
-		//vkCmdDraw(commandBuffer, static_cast<uint32_t>(Vertices.size()), 1, 0, 0);
-		vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
 	
 
 		vkCmdEndRenderPass(commandBuffer);
@@ -450,65 +525,20 @@ namespace MKEngine {
 		}
 	}
 
+	void VulkanPresentView::Record(int testIndex)
+	{
+		RecordDrawCommands(m_currentBufferDraw, m_currentImageIndexDraw, testIndex);
+	}
+	/*
+	 *
 	void VulkanPresentView::Render()
 	{
-		vkWaitForFences(m_device->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence), TRUE, UINT64_MAX);
-		uint32_t imageIndex;
-		VkResult result = vkAcquireNextImageKHR(m_device->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[FrameNumber].Sync.ImageAvailableSemaphore), nullptr, &imageIndex);
-			
-		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		
 
-			RecreateSwapChain();
-			return;
-		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-			MK_LOG_ERROR("failed to acquire swap chain image!");
-		}
+		//RecordDrawCommands(commandBuffer,imageIndex);
 
-		const VkCommandBuffer commandBuffer = Buffers[FrameNumber].CommandBuffer;
-
-		vkResetCommandBuffer(commandBuffer, 0);
-
-		RecordDrawCommands(commandBuffer,imageIndex);
-
-		VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
-
-		const VkSemaphore waitSemaphores[] = { Buffers[FrameNumber].Sync.ImageAvailableSemaphore };
-		constexpr VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-		const VkSemaphore signalSemaphores[] = { Buffers[FrameNumber].Sync.RenderFinishedSemaphore };
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-		vkResetFences(m_device->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence));
-		if (vkQueueSubmit(m_device->GraphicsQueue, 1, &submitInfo, (Buffers[FrameNumber].Sync.InFlightFence)) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to submit draw command buffer!");
-		}
-
-		VkPresentInfoKHR presentInfo{ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
-
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-
-		const VkSwapchainKHR swapChains[] = { SwapChain };
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
-		presentInfo.pImageIndices = &imageIndex;
-
-		result = vkQueuePresentKHR(m_device->PresentQueue, &presentInfo);
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-			RecreateSwapChain();
-		}
-		else if (result != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to present swap chain image!");
-		}
-
-
-		FrameNumber = (FrameNumber + 1) % MaxFramesInFlight;
+		
 	}
+	 *
+	 */
 }

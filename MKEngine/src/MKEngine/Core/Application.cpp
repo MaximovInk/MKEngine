@@ -28,6 +28,7 @@ namespace MKEngine {
 
 	void Application::CloseWindow(const Window* window)
 	{
+		PlatformBackend::CurrentBackend->DestroyWindow(window);
 		delete window;
 	}
 

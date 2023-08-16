@@ -111,6 +111,7 @@
     <ClInclude Include="src\MKEngine\Events\EventSystem.h" />
     <ClInclude Include="src\MKEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\MKEngine\Events\WindowEvent.h" />
+    <ClInclude Include="src\MKEngine\Graphics.h" />
     <ClInclude Include="src\MKEngine\Input\KeyCode.h" />
     <ClInclude Include="src\MKEngine\Input\MouseCode.h" />
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
@@ -136,6 +137,7 @@
     <ClCompile Include="src\MKEngine\Core\Layer.cpp" />
     <ClCompile Include="src\MKEngine\Core\LayerStack.cpp" />
     <ClCompile Include="src\MKEngine\Core\Log.cpp" />
+    <ClCompile Include="src\MKEngine\Graphics.cpp" />
     <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />

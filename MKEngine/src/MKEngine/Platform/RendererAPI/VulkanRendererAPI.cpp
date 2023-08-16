@@ -6,6 +6,7 @@
 namespace MKEngine {
 
 	VulkanDevice* device;
+	static Window* currentWindow;
 
 	VulkanRendererAPI::VulkanRendererAPI()
 	{
@@ -15,19 +16,6 @@ namespace MKEngine {
 	VulkanRendererAPI::~VulkanRendererAPI()
 	{
 		delete device;
-	}
-
-	void VulkanRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-	{
-	}
-
-	void VulkanRendererAPI::Clear()
-	{
-	}
-
-	void VulkanRendererAPI::InitFunctions(void* procAddress)
-	{
-
 	}
 
 	void VulkanRendererAPI::OnWindowCreated(Window* window)
@@ -46,10 +34,22 @@ namespace MKEngine {
 	void VulkanRendererAPI::OnWindowRender(Window* window)
 	{
 		device->OnWindowRender(window);
+		currentWindow = window;
+	}
+	void VulkanRendererAPI::OnWindowEndRender(Window* window)
+	{
+		device->OnWindowRenderEnd(window);
 	}
 }
 
 bool MKEngine::VulkanRendererAPI::operator==(const VulkanRendererAPI& other) const
 {
 	return false;
+}
+
+void MKEngine::VulkanRendererAPI::DrawTest(int index)
+{
+	if (currentWindow == nullptr)return;
+
+	device->OnWindowDrawTest(currentWindow, index);
 }

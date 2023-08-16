@@ -26,7 +26,7 @@ namespace MKEngine {
         }
     };
 
-    std::map<std::int16_t, SDLWindowData> windows;
+    static std::map<std::int16_t, SDLWindowData> windows;
 
     PlatformBackend* PlatformBackend::CurrentBackend;
 
@@ -104,7 +104,15 @@ namespace MKEngine {
 
     void PlatformBackend::Update()
     {
+        MK_LOG_INFO("upd");
         for (const auto& [key, value] : windows) {
+            if(value.MKWindow == nullptr)
+            {
+                auto iter = windows.find(key);
+                if (iter != windows.end())
+                    windows.erase(iter);
+                return;
+            }
             value.MKWindow->Update();
         }
 
@@ -113,8 +121,12 @@ namespace MKEngine {
     void PlatformBackend::Render()
     {
         for (const auto& [key, value] : windows) {
-            value.MKWindow->Render();
+
             RendererAPI::CurrentAPI->OnWindowRender(value.MKWindow);
+
+            value.MKWindow->Render();
+
+            RendererAPI::CurrentAPI->OnWindowEndRender(value.MKWindow);
         }
     }
 
@@ -155,7 +167,13 @@ namespace MKEngine {
 
     void PlatformBackend::DestroyWindow(const Window* window)
     {
+        //TODO: not work
+        auto iter = windows.find(SDL_GetWindowID(static_cast<SDL_Window*>(window->GetNativeWindow())));
+        if (iter != windows.end())
+            windows.erase(iter);
         SDL_DestroyWindow(static_cast<SDL_Window*>(window->GetNativeWindow()));
+
+        MK_LOG_INFO("REMOVE {0}", windows.size());
     }
 
     void PlatformBackend::GetWindowSize(const Window* window, int *w,int *h)

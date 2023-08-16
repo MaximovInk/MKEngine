@@ -76,10 +76,13 @@ namespace MKEngine {
 
 		void ImmediateSubmit(std::function<void(VkCommandBuffer)> const& callback) const;
 
+		void OnWindowDrawTest(Window* window, int index);
+
 		void OnWindowCreate(Window* window);
 		void OnWindowDestroy(const Window* window);
 		void OnWindowResize(Window* window);
 		void OnWindowRender(const Window* window);
+		void OnWindowRenderEnd(const MKEngine::Window* window);
 		void WaitDeviceIdle() const;
 
 	};

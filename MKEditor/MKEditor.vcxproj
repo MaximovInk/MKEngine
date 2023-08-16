@@ -92,10 +92,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\MainWindow.h" />
+    <ClInclude Include="src\SecondaryWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MainWindow.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\SecondaryWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MKEngine\MKEngine.vcxproj">

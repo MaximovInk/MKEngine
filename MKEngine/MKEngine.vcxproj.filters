@@ -112,6 +112,7 @@
     <ClInclude Include="src\mkpch.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h" />
+    <ClInclude Include="src\MKEngine\Graphics.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -157,5 +158,6 @@
       <Filter>MKEngine\WindowsManager</Filter>
     </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
+    <ClCompile Include="src\MKEngine\Graphics.cpp" />
   </ItemGroup>
 </Project>
