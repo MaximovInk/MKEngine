@@ -37,8 +37,10 @@ namespace MKEngine {
 
 		Pipeline GraphicsPipeline;
 
+		//TEST
 		Buffer VertexBuffer;
 		Buffer IndicesBuffer;
+		VkDescriptorSetLayout DescriptorSetLayout;
 
 		const std::vector<const char*> DeviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -66,7 +68,7 @@ namespace MKEngine {
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
 		
-		Buffer CreateBuffer(BufferDesciption description);
+		Buffer CreateBuffer(BufferDescription description);
 		void DestroyBuffer(const Buffer& buffer);
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 

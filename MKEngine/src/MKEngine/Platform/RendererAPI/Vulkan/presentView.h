@@ -3,6 +3,7 @@
 #include "vulkan/vulkan.h"
 #include "MKEngine/Platform/Window.h"
 #include "../vertex.h"
+#include "buffer.h"
 
 namespace MKEngine {
 
@@ -29,6 +30,9 @@ namespace MKEngine {
 		VkFramebuffer FrameBuffer;
 		VkCommandBuffer CommandBuffer;
 		ViewSync Sync;
+		Buffer UniformBuffer;
+		VkDescriptorSet DescriptorSet;
+
 	} SwapChainBuffer;
 
 	class VulkanPresentView {
@@ -42,6 +46,10 @@ namespace MKEngine {
 		std::vector<SwapChainBuffer> Buffers;
 		VkExtent2D SwapChainExtent;
 		int MaxFramesInFlight, FrameNumber;
+
+		//Test
+		std::vector<Buffer> UniformBuffers;
+		VkDescriptorPool DescriptorPool;
 
 		explicit VulkanPresentView(VulkanDevice* device);
 		~VulkanPresentView();
@@ -60,11 +68,6 @@ namespace MKEngine {
 		/*TEST*/
 
 		void Record(int testIndex);
-		/*
-		 *
-		void Render();
-		 *
-		 */
 
 	private:
 		VulkanDevice* m_device;
@@ -76,6 +79,11 @@ namespace MKEngine {
 		void CleanupSwapChain() const;
 
 		void RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex, int testIndex);
+
+		void CreateUniformBuffers();
+		void UpdateUniformBuffer(uint32_t currentImage);
+		void CreateDescriptorPool();
+		void CreateDescriptorSets();
 
 		VkCommandBuffer m_currentBufferDraw;
 		uint32_t m_currentImageIndexDraw;

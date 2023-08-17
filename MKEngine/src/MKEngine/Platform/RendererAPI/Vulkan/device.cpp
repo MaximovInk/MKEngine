@@ -6,7 +6,7 @@
 #include "SDL.h"
 #include "presentView.h"
 #include "shaders.h"
-#include "render_structs.h"
+#include "../vertex.h"
 #include "buffer.h"
 
 #include "vkExtern.h"
@@ -142,6 +142,7 @@ namespace MKEngine {
 
 		DestroyBuffer(VertexBuffer);
 		DestroyBuffer(IndicesBuffer);
+		vkDestroyDescriptorSetLayout(LogicalDevice, DescriptorSetLayout, nullptr);
 
 		for (const auto [id, view] : PresentViews) {
 			delete view;
@@ -208,7 +209,7 @@ namespace MKEngine {
 		if (VertexBuffer.Resource == VK_NULL_HANDLE)
 		{
 			const auto vertexBufferSize = sizeof(Vertices[0]) * Vertices.size();
-			BufferDesciption description;
+			BufferDescription description;
 			description.Size = vertexBufferSize;
 			description.Data = (void*)Vertices.data();
 			description.Usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
@@ -219,7 +220,7 @@ namespace MKEngine {
 		if (IndicesBuffer.Resource == VK_NULL_HANDLE)
 		{
 			const auto indicesBufferSize = sizeof(Indices[0]) * Indices.size();
-			BufferDesciption indicesDescription;
+			BufferDescription indicesDescription;
 			indicesDescription.Size = indicesBufferSize;
 			indicesDescription.Data = (void*)Indices.data();
 			indicesDescription.Usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
@@ -381,7 +382,7 @@ namespace MKEngine {
 		return vkCreateDevice(PhysicalDevice, &deviceCreateInfo, nullptr, &LogicalDevice);
 	}
 
-	VkPipelineLayout CreatePipelineLayout(const VkDevice device) {
+	VkPipelineLayout CreatePipelineLayout(const VkDevice device, const VkDescriptorSetLayout descriptorSetLayout) {
 		VkPipelineLayout pipelineLayout;
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -394,6 +395,8 @@ namespace MKEngine {
 		pushConstantInfo.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantInfo;
 
+		pipelineLayoutInfo.setLayoutCount = 1;
+		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
 		if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 			MK_LOG_ERROR("Failed to create pipeline layout");
@@ -401,6 +404,31 @@ namespace MKEngine {
 
 		return pipelineLayout;
 	}
+
+	VkDescriptorSetLayout CreateDescriptorSetLayout(const VkDevice device)
+	{
+		VkDescriptorSetLayout descriptorSetLayout;
+		//Descriptor set layout
+		VkDescriptorSetLayoutBinding uboLayoutBinding{};
+		uboLayoutBinding.binding = 0;
+		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBinding.descriptorCount = 1;
+
+		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+		uboLayoutBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutCreateInfo layoutInfo{};
+		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		layoutInfo.bindingCount = 1;
+		layoutInfo.pBindings = &uboLayoutBinding;
+
+		if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to create descriptor set layout!");
+		}
+		return descriptorSetLayout;
+	}
+
 
 	VkRenderPass CreateRenderPass(const VkDevice device, const VkFormat format) {
 		VkRenderPass renderPass;
@@ -530,7 +558,8 @@ namespace MKEngine {
 		colorBlending.blendConstants[3] = 0.0f;
 
 		//PipelineLayout
-		VkPipelineLayout layout = CreatePipelineLayout(LogicalDevice);
+		DescriptorSetLayout = CreateDescriptorSetLayout(LogicalDevice);
+		VkPipelineLayout layout = CreatePipelineLayout(LogicalDevice, DescriptorSetLayout);
 		createInfo.layout = layout;
 
 		//Renderpass
@@ -576,7 +605,7 @@ namespace MKEngine {
 		return commandPool;
 	}
 
-	Buffer VulkanDevice::CreateBuffer(const BufferDesciption description)
+	Buffer VulkanDevice::CreateBuffer(const BufferDescription description)
 	{
 		Buffer buffer;
 
@@ -607,17 +636,19 @@ namespace MKEngine {
 
 			vkBindBufferMemory(LogicalDevice, buffer.Resource, buffer.Memory, 0);
 
-			void* data;
-			vkMapMemory(LogicalDevice, buffer.Memory, 0, description.Size, 0, &data);
-			memcpy(data, description.Data, description.Size);
-			//memcpy(data, Vertices.data(), description.Size);
-			vkUnmapMemory(LogicalDevice, buffer.Memory);
+			if (description.Data != nullptr) {
+				void* data;
+				vkMapMemory(LogicalDevice, buffer.Memory, 0, description.Size, 0, &data);
+				memcpy(data, description.Data, description.Size);
+				vkUnmapMemory(LogicalDevice, buffer.Memory);
+			}
 		}
+
 		if(description.Access == DataAccess::Device)
 		{
 			const VkDeviceSize bufferSize = description.Size;
 
-			BufferDesciption stagingDescription;
+			BufferDescription stagingDescription;
 			stagingDescription.Size = bufferSize;
 			stagingDescription.Data = (void*)description.Data;
 			stagingDescription.Usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;

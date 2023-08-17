@@ -3,7 +3,7 @@
 #include "MKEngine/Platform/PlatformBackend.h"
 #include "device.h"
 #include "vkExtern.h"
-#include "render_structs.h"
+#include "../vertex.h"
 
 namespace MKEngine {
 	
@@ -244,6 +244,8 @@ namespace MKEngine {
 			viewInfo.image = Buffers[i].Image;
 
 			vkCreateImageView(m_device->LogicalDevice, &viewInfo, nullptr, &Buffers[i].View);
+
+			
 		}
 
 		SwapChainExtent = swapchainExtent;
@@ -253,10 +255,13 @@ namespace MKEngine {
 
 	void VulkanPresentView::FinalizeCreation()
 	{
+		CreateUniformBuffers();
 		CreateFrameBuffer();
 		CreateCommandBuffers();
 
 		CreateSync();
+		CreateDescriptorPool();
+		CreateDescriptorSets();
 	}
 
 	void VulkanPresentView::RecreateSwapChain()
@@ -323,7 +328,7 @@ namespace MKEngine {
 			presentCompleteSemaphore, VK_NULL_HANDLE, imageIndex);
 	}
 
-	VkResult VulkanPresentView::QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore) const
+	VkResult VulkanPresentView::QueuePresent(const VkQueue queue, const uint32_t imageIndex, const VkSemaphore waitSemaphore) const
 	{
 		VkPresentInfoKHR presentInfo = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
 		presentInfo.pNext = VK_NULL_HANDLE;
@@ -421,9 +426,12 @@ namespace MKEngine {
 			vkDestroySemaphore(m_device->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
 			vkDestroySemaphore(m_device->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
 			vkFreeCommandBuffers(m_device->LogicalDevice, m_device->CommandPool, 1, &Buffers[i].CommandBuffer);
+			m_device->DestroyBuffer(Buffers[i].UniformBuffer);
 		}
 
+		vkDestroyDescriptorPool(m_device->LogicalDevice, DescriptorPool, nullptr);
 		vkDestroySwapchainKHR(m_device->LogicalDevice, SwapChain, VK_NULL_HANDLE);
+
 	}
 
 	void VulkanPresentView::CreateCommandBuffers() {
@@ -439,11 +447,91 @@ namespace MKEngine {
 				MK_LOG_ERROR("Failed to allocate command buffers!");
 			}
 		}
-
-		
 	}
 
-	void VulkanPresentView::RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex, int testIndex)
+	void VulkanPresentView::CreateUniformBuffers()
+	{
+		UniformBuffers.resize(ImageCount);
+		BufferDescription bufferDescription{};
+		bufferDescription.Access = DataAccess::Host;
+		bufferDescription.Usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+		bufferDescription.Size = sizeof(UniformBufferObject);
+
+		for (size_t i = 0; i < ImageCount; i++)
+		{
+			Buffers[i].UniformBuffer = m_device->CreateBuffer(bufferDescription);
+
+			vkMapMemory(m_device->LogicalDevice, Buffers[i].UniformBuffer.Memory, 0, bufferDescription.Size, 0, &Buffers[i].UniformBuffer.MappedData);
+
+		}
+	}
+
+	void VulkanPresentView::UpdateUniformBuffer(const uint32_t currentImage) {
+		static auto startTime = std::chrono::high_resolution_clock::now();
+
+		const auto currentTime = std::chrono::high_resolution_clock::now();
+		const float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+		UniformBufferObject ubo{};
+		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.view = glm::lookAtRH(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+
+		ubo.proj = glm::perspectiveRH_ZO(glm::radians(45.0f), SwapChainExtent.width / (float)SwapChainExtent.height, 0.1f, 10.0f);
+		//ubo.proj[1][1] *= -1;
+		memcpy(Buffers[currentImage].UniformBuffer.MappedData, &ubo, sizeof(ubo));
+	}
+
+	void VulkanPresentView::CreateDescriptorPool()
+	{
+		VkDescriptorPoolSize poolSize{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER };
+		poolSize.descriptorCount = ImageCount;
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount = 1;
+		poolInfo.pPoolSizes = &poolSize;
+		poolInfo.maxSets = ImageCount;
+		if (vkCreateDescriptorPool(m_device->LogicalDevice, &poolInfo, nullptr, &DescriptorPool) != VK_SUCCESS) {
+			MK_LOG_ERROR("Failed to create descriptor pool!");
+		}
+	}
+
+	void VulkanPresentView::CreateDescriptorSets()
+	{
+		VkDescriptorSetAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+		allocInfo.descriptorPool = DescriptorPool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &m_device->DescriptorSetLayout;
+
+		for (size_t i = 0; i < ImageCount; i++)
+		{
+			if (vkAllocateDescriptorSets(m_device->LogicalDevice, &allocInfo, &Buffers[i].DescriptorSet) != VK_SUCCESS) {
+				MK_LOG_ERROR("failed to allocate descriptor sets!");
+			}
+		}
+
+		for (size_t i = 0; i < ImageCount; i++) {
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = Buffers[i].UniformBuffer.Resource;
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(UniformBufferObject);
+
+			VkWriteDescriptorSet descriptorWrite{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
+			descriptorWrite.dstSet = Buffers[i].DescriptorSet;
+			descriptorWrite.dstBinding = 0;
+			descriptorWrite.dstArrayElement = 0;
+
+			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrite.descriptorCount = 1;
+
+			descriptorWrite.pBufferInfo = &bufferInfo;
+			descriptorWrite.pImageInfo = nullptr; // Optional
+			descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+			vkUpdateDescriptorSets(m_device->LogicalDevice, 1, &descriptorWrite, 0, nullptr);
+		}
+	}
+
+	void VulkanPresentView::RecordDrawCommands(const VkCommandBuffer commandBuffer, const uint32_t imageIndex, const int testIndex)
 	{
 		VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		beginInfo.flags = 0; // Optional
@@ -483,6 +571,18 @@ namespace MKEngine {
 		};
 
 		vkCmdSetScissor(commandBuffer,0,1,&scissor);
+
+		UpdateUniformBuffer(imageIndex);
+
+		vkCmdBindDescriptorSets(
+			commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS, 
+			m_device->GraphicsPipeline.PipelineLayout,
+			0, 
+			1,
+			&Buffers[imageIndex].DescriptorSet, 
+			0,
+			nullptr);
 
 		if(testIndex == 0)
 		{
@@ -525,20 +625,8 @@ namespace MKEngine {
 		}
 	}
 
-	void VulkanPresentView::Record(int testIndex)
+	void VulkanPresentView::Record(const int testIndex)
 	{
 		RecordDrawCommands(m_currentBufferDraw, m_currentImageIndexDraw, testIndex);
 	}
-	/*
-	 *
-	void VulkanPresentView::Render()
-	{
-		
-
-		//RecordDrawCommands(commandBuffer,imageIndex);
-
-		
-	}
-	 *
-	 */
 }

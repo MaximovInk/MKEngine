@@ -87,9 +87,6 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\render_structs.h">
-      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>

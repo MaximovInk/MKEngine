@@ -104,7 +104,6 @@ namespace MKEngine {
 
     void PlatformBackend::Update()
     {
-        MK_LOG_INFO("upd");
         for (const auto& [key, value] : windows) {
             if(value.MKWindow == nullptr)
             {

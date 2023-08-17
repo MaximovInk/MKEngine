@@ -121,7 +121,6 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\pipeline.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\render_structs.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
