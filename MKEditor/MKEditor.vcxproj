@@ -96,8 +96,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MainWindow.cpp" />
-    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\SecondaryWindow.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MKEngine\MKEngine.vcxproj">

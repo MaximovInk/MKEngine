@@ -21,7 +21,8 @@ project "MKEngine"
         "./vendor/spdlog/include",
         "./vendor/sdl/include",
         "./vendor/glm/include",
-        "./vendor/vulkan/include"
+        "./vendor/vulkan/include",
+        "./vendor/stb/include"
     }
 
     libdirs{

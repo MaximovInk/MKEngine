@@ -58,7 +58,7 @@
       <PrecompiledHeaderFile>mkpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>MK_PLATFORM_WINDOWS;MK_ENGINE;MK_DEBUG;_DEBUG;MK_ENABLE_ASSERTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glm\include;vendor\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glm\include;vendor\vulkan\include;vendor\stb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -79,7 +79,7 @@
       <PrecompiledHeaderFile>mkpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>MK_PLATFORM_WINDOWS;MK_ENGINE;MK_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glm\include;vendor\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\sdl\include;vendor\glm\include;vendor\vulkan\include;vendor\stb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -116,7 +116,6 @@
     <ClInclude Include="src\MKEngine\Input\MouseCode.h" />
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\pipeline.h" />
@@ -124,6 +123,7 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h" />
     <ClInclude Include="src\MKEngine\Platform\Window.h" />
     <ClInclude Include="src\MKEngine\Platform\WindowSettings.h" />
     <ClInclude Include="src\MKEngine\WindowsManager\WindowsManagerLayer.h" />

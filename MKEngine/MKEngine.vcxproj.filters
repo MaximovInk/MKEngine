@@ -66,6 +66,9 @@
     <ClInclude Include="src\MKEngine\Events\WindowEvent.h">
       <Filter>MKEngine\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\MKEngine\Graphics.h">
+      <Filter>MKEngine</Filter>
+    </ClInclude>
     <ClInclude Include="src\MKEngine\Input\KeyCode.h">
       <Filter>MKEngine\Input</Filter>
     </ClInclude>
@@ -77,6 +80,9 @@
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h">
       <Filter>MKEngine\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
@@ -96,6 +102,9 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\Window.h">
       <Filter>MKEngine\Platform</Filter>
     </ClInclude>
@@ -107,9 +116,6 @@
     </ClInclude>
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h" />
-    <ClInclude Include="src\MKEngine\Graphics.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -126,6 +132,9 @@
     </ClCompile>
     <ClCompile Include="src\MKEngine\Core\Log.cpp">
       <Filter>MKEngine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Graphics.cpp">
+      <Filter>MKEngine</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp">
       <Filter>MKEngine\Platform</Filter>
@@ -155,6 +164,5 @@
       <Filter>MKEngine\WindowsManager</Filter>
     </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
-    <ClCompile Include="src\MKEngine\Graphics.cpp" />
   </ItemGroup>
 </Project>
