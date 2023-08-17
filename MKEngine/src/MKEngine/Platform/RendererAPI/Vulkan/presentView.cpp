@@ -187,7 +187,7 @@ namespace MKEngine {
 		}
 
 		createInfo.presentMode = presentMode;
-		//createInfo.oldSwapchain = oldSwapchain;
+		createInfo.oldSwapchain = oldSwapchain;
 		createInfo.compositeAlpha = compositeAlpha;
 		createInfo.clipped = VK_TRUE;
 
@@ -200,16 +200,13 @@ namespace MKEngine {
 			nullptr, &SwapChain) != VK_SUCCESS) {
 			MK_LOG_CRITICAL("failed to create swap chain!");
 		}
-/*
+
 
 		if (oldSwapchain != VK_NULL_HANDLE) {
-			for (uint32_t i = 0; i < ImageCount; i++)
-			{
-				vkDestroyImageView(device->LogicalDevice, Buffers[i].view, nullptr);
-			}
-			vkDestroySwapchainKHR(device->LogicalDevice, oldSwapchain, nullptr);
+			
+			vkDestroySwapchainKHR(m_device->LogicalDevice, oldSwapchain, VK_NULL_HANDLE);
 		}
-*/
+
 
 		std::vector<VkImage> images;
 		vkGetSwapchainImagesKHR(m_device->LogicalDevice, SwapChain,
@@ -280,7 +277,8 @@ namespace MKEngine {
 			MKEngine::PlatformBackend::GetWindowSize(m_windowRef, &width, &height);
 		}
 
-		CleanupSwapChain();
+		CleanupSwapChain(false);
+
 		CreateSwapChain();
 		//Graphics pipeline ()
 		FinalizeCreation();
@@ -414,7 +412,7 @@ namespace MKEngine {
 		FrameNumber = (FrameNumber + 1) % MaxFramesInFlight;
 	}
 
-	void VulkanPresentView::CleanupSwapChain() const
+	void VulkanPresentView::CleanupSwapChain(bool destroySwapChain) const
 	{
 		m_device->WaitDeviceIdle();
 
@@ -430,7 +428,9 @@ namespace MKEngine {
 		}
 
 		vkDestroyDescriptorPool(m_device->LogicalDevice, DescriptorPool, nullptr);
-		vkDestroySwapchainKHR(m_device->LogicalDevice, SwapChain, VK_NULL_HANDLE);
+		if(destroySwapChain)
+			vkDestroySwapchainKHR(m_device->LogicalDevice, SwapChain, VK_NULL_HANDLE);
+
 
 	}
 

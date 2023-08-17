@@ -76,7 +76,7 @@ namespace MKEngine {
 		void CreateFrameBuffer();
 		void CreateCommandBuffers();
 		void CreateSync();
-		void CleanupSwapChain() const;
+		void CleanupSwapChain(bool destroySwapChain = true) const;
 
 		void RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex, int testIndex);
 
