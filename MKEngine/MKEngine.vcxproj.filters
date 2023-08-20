@@ -116,6 +116,7 @@
     </ClInclude>
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -146,9 +147,6 @@
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp">
-      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp">

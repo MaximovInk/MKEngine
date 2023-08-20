@@ -1,4 +1,4 @@
-#include "mkpch.h"
+#include <mkpch.h>
 #include "presentView.h"
 #include "MKEngine/Platform/PlatformBackend.h"
 #include "device.h"
@@ -50,7 +50,7 @@ namespace MKEngine {
 		if ((formatCount == 1) &&
 			(surfaceFormats[0].format == VK_FORMAT_UNDEFINED))
 		{
-			ColorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+			ColorFormat = VK_FORMAT_B8G8R8A8_SRGB;
 			ColorSpace = surfaceFormats[0].colorSpace;
 		}
 		else
@@ -58,7 +58,7 @@ namespace MKEngine {
 			bool found_B8G8R8A8_UNORM = false;
 			for (auto&& surfaceFormat : surfaceFormats)
 			{
-				if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM)
+				if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB)
 				{
 					ColorFormat = surfaceFormat.format;
 					ColorSpace = surfaceFormat.colorSpace;
@@ -483,12 +483,16 @@ namespace MKEngine {
 
 	void VulkanPresentView::CreateDescriptorPool()
 	{
-		VkDescriptorPoolSize poolSize{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER };
-		poolSize.descriptorCount = ImageCount;
+		std::array<VkDescriptorPoolSize, 2> poolSizes{};
+		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSizes[0].descriptorCount = ImageCount;
+		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		poolSizes[1].descriptorCount = ImageCount;
+
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = 1;
-		poolInfo.pPoolSizes = &poolSize;
+		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+		poolInfo.pPoolSizes = poolSizes.data();
 		poolInfo.maxSets = ImageCount;
 		if (vkCreateDescriptorPool(m_device->LogicalDevice, &poolInfo, nullptr, &DescriptorPool) != VK_SUCCESS) {
 			MK_LOG_ERROR("Failed to create descriptor pool!");
@@ -515,19 +519,32 @@ namespace MKEngine {
 			bufferInfo.offset = 0;
 			bufferInfo.range = sizeof(UniformBufferObject);
 
-			VkWriteDescriptorSet descriptorWrite{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
-			descriptorWrite.dstSet = Buffers[i].DescriptorSet;
-			descriptorWrite.dstBinding = 0;
-			descriptorWrite.dstArrayElement = 0;
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = m_device->TestTexture.View;
+			imageInfo.sampler = m_device->TestTexture.Sampler;
 
-			descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrite.descriptorCount = 1;
+			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
-			descriptorWrite.pBufferInfo = &bufferInfo;
-			descriptorWrite.pImageInfo = nullptr; // Optional
-			descriptorWrite.pTexelBufferView = nullptr; // Optional
+			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[0].dstSet = Buffers[i].DescriptorSet;
+			descriptorWrites[0].dstBinding = 0;
+			descriptorWrites[0].dstArrayElement = 0;
+			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites[0].descriptorCount = 1;
+			descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-			vkUpdateDescriptorSets(m_device->LogicalDevice, 1, &descriptorWrite, 0, nullptr);
+			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[1].dstSet = Buffers[i].DescriptorSet;
+			descriptorWrites[1].dstBinding = 1;
+			descriptorWrites[1].dstArrayElement = 0;
+			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrites[1].descriptorCount = 1;
+			descriptorWrites[1].pImageInfo = &imageInfo;
+		
+
+			vkUpdateDescriptorSets(m_device->LogicalDevice, descriptorWrites.size(),
+				descriptorWrites.data(), 0, nullptr);
 		}
 	}
 
@@ -598,7 +615,7 @@ namespace MKEngine {
 				vkCmdBindIndexBuffer(commandBuffer, this->m_device->IndicesBuffer.Resource, 0, VK_INDEX_TYPE_UINT16);
 
 				vkCmdPushConstants(commandBuffer, m_device->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
-				vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
+				vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(INDICES.size()), 1, 0, 0, 0);
 			}
 		}
 		else
@@ -614,7 +631,7 @@ namespace MKEngine {
 			vkCmdBindIndexBuffer(commandBuffer, this->m_device->IndicesBuffer.Resource, 0, VK_INDEX_TYPE_UINT16);
 
 			vkCmdPushConstants(commandBuffer, m_device->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
-			vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(Indices.size()), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(INDICES.size()), 1, 0, 0, 0);
 		}
 	
 

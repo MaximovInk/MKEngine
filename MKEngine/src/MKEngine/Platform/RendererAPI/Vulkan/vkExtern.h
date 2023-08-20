@@ -2,10 +2,7 @@
 #include "mkpch.h"
 #include "MKEngine/Core/Log.h"
 #include "MKEngine/Platform/Window.h"
-#include "vulkan/vulkan.h"
 #include "../vertex.h"
-
-#include "vulkan/vulkan_win32.h"
 
 #include <vulkan/vk_enum_string_helper.h>
 

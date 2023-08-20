@@ -1,11 +1,9 @@
 #pragma once
-
-#include "vulkan/vulkan.h"
-#include "mkpch.h"
-
 #include "buffer.h"
 #include "MKEngine/Platform/Window.h"
 #include "pipeline.h"
+#include "shaders.h"
+#include "texture.h"
 
 namespace MKEngine {
 	constexpr uint32_t FRAME_IN_FLIGHT = 2;
@@ -41,6 +39,7 @@ namespace MKEngine {
 		Buffer VertexBuffer;
 		Buffer IndicesBuffer;
 		VkDescriptorSetLayout DescriptorSetLayout;
+		Texture TestTexture;
 
 		const std::vector<const char*> DeviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -65,12 +64,18 @@ namespace MKEngine {
 			std::vector<const char*> enabledExtensions, void* pNextChain, 
 			VkQueueFlags requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
 		VkResult		CreateGraphicsPipeline(const GraphicsPipelineDesc& description);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
-
 		
-		Buffer CreateBuffer(BufferDescription description);
-		void DestroyBuffer(const Buffer& buffer);
-		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		Buffer CreateBuffer(const BufferDescription& description);
+		void DestroyBuffer(const Buffer& buffer) const;
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const;
+
+		Shader CreateShader(ShaderCreateDescription description) const;
+		void DestroyShader(const Shader& shader) const;
+
+		Texture CreateTexture(const TextureDescription& description);
+		void DestroyTexture(Texture texture);
+		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void CopyBufferToImage(Buffer buffer, Texture image);
 
 		VkCommandPool   CreateCommandPool(uint32_t queueFamilyIndex,
 			VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) const;

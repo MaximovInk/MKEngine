@@ -121,6 +121,7 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\pipeline.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\texture.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h" />
@@ -141,7 +142,6 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\Window.cpp" />

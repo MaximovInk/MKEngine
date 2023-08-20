@@ -1,8 +1,6 @@
 #pragma once
 #include <vector>
-#include "vulkan/vulkan.h"
 #include "MKEngine/Platform/Window.h"
-#include "../vertex.h"
 #include "buffer.h"
 
 namespace MKEngine {

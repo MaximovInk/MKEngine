@@ -1,9 +1,13 @@
-#include "mkpch.h"
+#include <mkpch.h>
 #include "device.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include <utility>
+#include <SDL.h>
+
 #include "MKEngine/Core/Log.h"
-#include "SDL.h"
 #include "presentView.h"
 #include "shaders.h"
 #include "../vertex.h"
@@ -14,6 +18,26 @@
 #if defined(_WIN32)
 #include "vulkan/vulkan_win32.h"
 #endif
+
+
+
+std::vector<char> ReadFile(std::string filename) {
+	std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+	if (!file.is_open()) {
+		MK_LOG_ERROR("Cannot read file: {0}", filename);
+	}
+
+	const size_t size(static_cast<size_t>(file.tellg()));
+
+	std::vector<char> buffer(size);
+	file.seekg(0);
+	file.read(buffer.data(), size);
+
+	file.close();
+
+	return buffer;
+}
 
 namespace MKEngine {
 
@@ -118,11 +142,9 @@ namespace MKEngine {
 			}
 		}
 
-		const VkPhysicalDeviceFeatures deviceFeatures{};
-		/*
+		VkPhysicalDeviceFeatures deviceFeatures{};
 		deviceFeatures.samplerAnisotropy = true;
-		FEATURES OF DEVICE
-		*/
+
 		if (CreateLogicalDevice(deviceFeatures, DeviceExtensions, nullptr) != VK_SUCCESS)
 			MK_LOG_CRITICAL("Failed to create logical device!");
 		else
@@ -134,6 +156,16 @@ namespace MKEngine {
 		CommandPool = CreateCommandPool(QueueFamilyIndices.Graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
 		CreateCommandBuffer();
+
+		if (TestTexture.Resource == VK_NULL_HANDLE)
+		{
+			TextureDescription description{};
+			description.Path = "textures/texture.jpg";
+			description.Usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+			description.Format = VK_FORMAT_R8G8B8A8_SRGB;
+
+			TestTexture = CreateTexture(description);
+		}
 	}
 
 	VulkanDevice::~VulkanDevice()
@@ -148,6 +180,8 @@ namespace MKEngine {
 			delete view;
 		}
 		PresentViews.clear();
+
+		DestroyTexture(TestTexture);
 
 		if (CommandPool)
 			vkDestroyCommandPool(LogicalDevice, CommandPool, nullptr);
@@ -208,10 +242,10 @@ namespace MKEngine {
 
 		if (VertexBuffer.Resource == VK_NULL_HANDLE)
 		{
-			const auto vertexBufferSize = sizeof(Vertices[0]) * Vertices.size();
+			const auto vertexBufferSize = sizeof(VERTICES[0]) * VERTICES.size();
 			BufferDescription description;
 			description.Size = vertexBufferSize;
-			description.Data = (void*)Vertices.data();
+			description.Data = (void*)VERTICES.data();
 			description.Usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 			description.Access = DataAccess::Device;
 			VertexBuffer = CreateBuffer(description);
@@ -219,14 +253,16 @@ namespace MKEngine {
 
 		if (IndicesBuffer.Resource == VK_NULL_HANDLE)
 		{
-			const auto indicesBufferSize = sizeof(Indices[0]) * Indices.size();
+			const auto indicesBufferSize = sizeof(INDICES[0]) * INDICES.size();
 			BufferDescription indicesDescription;
 			indicesDescription.Size = indicesBufferSize;
-			indicesDescription.Data = (void*)Indices.data();
+			indicesDescription.Data = (void*)INDICES.data();
 			indicesDescription.Usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 			indicesDescription.Access = DataAccess::Device;
 			IndicesBuffer = CreateBuffer(indicesDescription);
 		}
+
+		
 	}
 
 	void VulkanDevice::OnWindowDestroy(const MKEngine::Window* window) {
@@ -407,21 +443,29 @@ namespace MKEngine {
 
 	VkDescriptorSetLayout CreateDescriptorSetLayout(const VkDevice device)
 	{
-		VkDescriptorSetLayout descriptorSetLayout;
-		//Descriptor set layout
+		//UniformBuffers
 		VkDescriptorSetLayoutBinding uboLayoutBinding{};
 		uboLayoutBinding.binding = 0;
 		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uboLayoutBinding.descriptorCount = 1;
-
 		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
 		uboLayoutBinding.pImmutableSamplers = nullptr;
 
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = 1;
-		layoutInfo.pBindings = &uboLayoutBinding;
+		//Sampler
+		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+		samplerLayoutBinding.binding = 1;
+		samplerLayoutBinding.descriptorCount = 1;
+		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		samplerLayoutBinding.pImmutableSamplers = nullptr;
+		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
+		//Create descriptorSetLayout
+		const std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+		VkDescriptorSetLayout descriptorSetLayout;
+		VkDescriptorSetLayoutCreateInfo layoutInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
+		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+		layoutInfo.pBindings = bindings.data();
 
 		if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
 			MK_LOG_ERROR("failed to create descriptor set layout!");
@@ -487,9 +531,9 @@ namespace MKEngine {
 		createInfo.pInputAssemblyState = &inputAssembly;
 
 		//Vertex Shader
-		ShaderCreateDesc vertexShaderDesc;
+		ShaderCreateDescription vertexShaderDesc;
 		vertexShaderDesc.Path = "shaders/vert.spv";
-		Shader vertexShader = CreateShader(*this, vertexShaderDesc);
+		Shader vertexShader = CreateShader(vertexShaderDesc);
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo{ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
 		vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
 		vertShaderStageInfo.module = vertexShader.Resource;
@@ -525,9 +569,9 @@ namespace MKEngine {
 		createInfo.pRasterizationState = &rasterizer;
 
 		//Fragment shader Shader
-		ShaderCreateDesc fragmentShaderDesc;
+		ShaderCreateDescription fragmentShaderDesc;
 		fragmentShaderDesc.Path = "shaders/frag.spv";
-		Shader fragmentShader = CreateShader(*this, fragmentShaderDesc);
+		Shader fragmentShader = CreateShader(fragmentShaderDesc);
 		VkPipelineShaderStageCreateInfo fragShaderStageInfo{ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
 		fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		fragShaderStageInfo.module = fragmentShader.Resource;
@@ -582,8 +626,8 @@ namespace MKEngine {
 
 		GraphicsPipeline = output;
 
-		DestroyShader(*this, fragmentShader);
-		DestroyShader(*this, vertexShader);
+		DestroyShader(fragmentShader);
+		DestroyShader(vertexShader);
 
 		return VK_SUCCESS;
 	}
@@ -605,7 +649,7 @@ namespace MKEngine {
 		return commandPool;
 	}
 
-	Buffer VulkanDevice::CreateBuffer(const BufferDescription description)
+	Buffer VulkanDevice::CreateBuffer(const BufferDescription& description)
 	{
 		Buffer buffer;
 
@@ -690,44 +734,240 @@ namespace MKEngine {
 		return buffer;
 	}
 
-	void VulkanDevice::DestroyBuffer(const Buffer& buffer)
+	void VulkanDevice::DestroyBuffer(const Buffer& buffer) const
 	{
 		vkDestroyBuffer(LogicalDevice, buffer.Resource, nullptr);
 		vkFreeMemory(LogicalDevice, buffer.Memory, nullptr);
 	}
 
-	void VulkanDevice::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+	void VulkanDevice::CopyBuffer(const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size) const
 	{
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = CommandPool;
-		allocInfo.commandBufferCount = 1;
+		ImmediateSubmit([&](VkCommandBuffer commandBuffer)
+		{
+				VkBufferCopy copyRegion{};
+				copyRegion.srcOffset = 0; // Optional
+				copyRegion.dstOffset = 0; // Optional
+				copyRegion.size = size;
+				vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+		});
+	}
 
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(LogicalDevice, &allocInfo, &commandBuffer);
+	Shader VulkanDevice::CreateShader(const ShaderCreateDescription description) const
+	{
+		Shader shader;
+		const auto code = ReadFile(description.Path);
+		shader.Resource = VkExtern::CreateShaderModule(LogicalDevice, code);
+		return shader;
+	}
 
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	void VulkanDevice::DestroyShader(const Shader& shader) const
+	{
+		vkDestroyShaderModule(LogicalDevice, shader.Resource, nullptr);
+	}
 
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	Texture VulkanDevice::CreateTexture(const TextureDescription& description)
+	{
+		//Load from file
+		int texWidth, texHeight, texChannels;
+		stbi_uc* pixels = stbi_load(description.Path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		const VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-		VkBufferCopy copyRegion{};
-		copyRegion.srcOffset = 0; // Optional
-		copyRegion.dstOffset = 0; // Optional
-		copyRegion.size = size;
-		vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-		vkEndCommandBuffer(commandBuffer);
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
+		if (!pixels) {
+			MK_LOG_ERROR("failed to load texture image!");
+		}
 
-		vkQueueSubmit(GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(GraphicsQueue);
+		//Create staging buffer
+		BufferDescription stagingBufferDescription{};
+		stagingBufferDescription.Access = DataAccess::Host;
+		stagingBufferDescription.Usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		stagingBufferDescription.Data = pixels;
+		stagingBufferDescription.Size = imageSize;
+		const Buffer stagingBuffer = CreateBuffer(stagingBufferDescription);
+		//Free stbi image 
+		stbi_image_free(pixels);
 
-		vkFreeCommandBuffers(LogicalDevice, CommandPool, 1, &commandBuffer);
+		//Create image
+		Texture texture;
+		texture.Width = texWidth;
+		texture.Height = texHeight;
+		VkImageCreateInfo imageInfo{ VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
+		imageInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageInfo.extent.width = static_cast<uint32_t>(texWidth);
+		imageInfo.extent.height = static_cast<uint32_t>(texHeight);
+		imageInfo.extent.depth = 1;
+		imageInfo.arrayLayers = 1;
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+		imageInfo.mipLevels = description.MipCount;
+		imageInfo.format = description.Format;
+		imageInfo.initialLayout = description.Layout;
+		imageInfo.usage = description.Usage;
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.flags = 0;
+		if (vkCreateImage(LogicalDevice, &imageInfo, nullptr, &texture.Resource) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to create image!");
+		}
+
+		//Allocate memory for image
+		VkMemoryRequirements memRequirements;
+		vkGetImageMemoryRequirements(LogicalDevice, texture.Resource, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = VkExtern::FindMemoryType(PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+		if (vkAllocateMemory(LogicalDevice, &allocInfo, nullptr, &texture.Memory) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to allocate image memory!");
+		}
+		vkBindImageMemory(LogicalDevice, texture.Resource, texture.Memory, 0);
+
+		//Set TransitionLayout for copy
+		TransitionImageLayout(texture.Resource, description.Format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+		//Copy from buffer to image
+		CopyBufferToImage(stagingBuffer, texture);
+
+		//Set TransitionLayout for shaders 
+		TransitionImageLayout(texture.Resource, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+		//Free staging buffer
+		vkDestroyBuffer(LogicalDevice, stagingBuffer.Resource, nullptr);
+		vkFreeMemory(LogicalDevice, stagingBuffer.Memory, nullptr);
+
+		//Create ImageView
+		VkImageViewCreateInfo viewInfo{ VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
+		viewInfo.image = texture.Resource;
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		viewInfo.subresourceRange.baseMipLevel = 0;
+		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = 1;
+
+		if (vkCreateImageView(LogicalDevice, &viewInfo, nullptr, &texture.View) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to create texture image view!");
+		}
+
+		//Create Sampler
+		VkSamplerCreateInfo samplerInfo{ VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+		samplerInfo.magFilter = VK_FILTER_LINEAR;
+		samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.anisotropyEnable = VK_TRUE;
+		samplerInfo.maxAnisotropy = Properties.limits.maxSamplerAnisotropy;
+		samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+		samplerInfo.unnormalizedCoordinates = VK_FALSE;
+		samplerInfo.compareEnable = VK_FALSE;
+		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+		samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+		samplerInfo.mipLodBias = 0.0f;
+		samplerInfo.minLod = 0.0f;
+		samplerInfo.maxLod = 0.0f;
+
+		if (vkCreateSampler(LogicalDevice, &samplerInfo, nullptr, &texture.Sampler) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to create texture sampler!");
+		}
+
+		return texture;
+	}
+
+	void VulkanDevice::DestroyTexture(Texture texture)
+	{
+		vkDestroySampler(LogicalDevice, texture.Sampler, nullptr);
+		vkDestroyImageView(LogicalDevice, texture.View, nullptr);
+
+		vkDestroyImage(LogicalDevice, texture.Resource, nullptr);
+		vkFreeMemory(LogicalDevice, texture.Memory, nullptr);
+	}
+
+	void VulkanDevice::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+	{
+		ImmediateSubmit([&](VkCommandBuffer commandBuffer)
+		{
+				VkPipelineStageFlags sourceStage;
+				VkPipelineStageFlags destinationStage;
+
+				VkImageMemoryBarrier barrier{};
+				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				barrier.oldLayout = oldLayout;
+				barrier.newLayout = newLayout;
+
+				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+				barrier.image = image;
+				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				barrier.subresourceRange.baseMipLevel = 0;
+				barrier.subresourceRange.levelCount = 1;
+				barrier.subresourceRange.baseArrayLayer = 0;
+				barrier.subresourceRange.layerCount = 1;
+
+				if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+					barrier.srcAccessMask = 0;
+					barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+					sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+					destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+				}
+				else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+					barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+					barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+					sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+					destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				}
+				else {
+					MK_LOG_ERROR("unsupported layout transition!");
+				}
+
+				vkCmdPipelineBarrier(
+					commandBuffer,
+					sourceStage, destinationStage,
+					0,
+					0, nullptr,
+					0, nullptr,
+					1, &barrier
+				);
+		});
+
+		
+	}
+
+	void VulkanDevice::CopyBufferToImage(Buffer buffer, Texture image)
+	{
+		ImmediateSubmit([&](VkCommandBuffer commandBuffer)
+		{
+				VkBufferImageCopy region{};
+				region.bufferOffset = 0;
+				region.bufferRowLength = 0;
+				region.bufferImageHeight = 0;
+
+				region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				region.imageSubresource.mipLevel = 0;
+				region.imageSubresource.baseArrayLayer = 0;
+				region.imageSubresource.layerCount = 1;
+
+				region.imageOffset = { 0, 0, 0 };
+				region.imageExtent = {
+					image.Width,
+					image.Height,
+					1
+				};
+
+				vkCmdCopyBufferToImage(
+					commandBuffer,
+					buffer.Resource,
+					image.Resource,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					1,
+					&region
+				);
+		});
 
 	}
 

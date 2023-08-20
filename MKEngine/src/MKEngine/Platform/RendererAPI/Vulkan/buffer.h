@@ -1,6 +1,4 @@
 #pragma once
-#include "mkpch.h"
-
 #include <glm/glm.hpp>
 #include <vulkan/vulkan_core.h>
 

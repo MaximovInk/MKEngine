@@ -1,9 +1,13 @@
-#include "mkpch.h"
+#include <mkpch.h>
 
 #include <SDL_vulkan.h>
 #include <SDL.h>
 
 #include "vkExtern.h"
+
+#if defined(_WIN32)
+#include "vulkan/vulkan_win32.h"
+#endif
 
 namespace MKEngine {
 	std::vector<std::string> VkExtern::SupportedInstanceExtensions;

@@ -19,7 +19,6 @@ namespace MKEngine {
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
 
-
 }
 
 #define BIT(x) (1 << x)

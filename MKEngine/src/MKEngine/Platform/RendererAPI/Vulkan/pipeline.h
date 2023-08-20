@@ -1,5 +1,4 @@
 #pragma once
-#include "mkpch.h"
 #include "vulkan/vulkan.h"
 
 namespace MKEngine {
