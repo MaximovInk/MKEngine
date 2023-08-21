@@ -107,9 +107,8 @@ namespace MKEngine {
         for (const auto& [key, value] : windows) {
             if(value.MKWindow == nullptr)
             {
-                auto iter = windows.find(key);
-                if (iter != windows.end())
-                    windows.erase(iter);
+	            if (const auto iterator = windows.find(key); iterator != windows.end())
+                    windows.erase(iterator);
                 return;
             }
             value.MKWindow->Update();
@@ -124,8 +123,6 @@ namespace MKEngine {
             RendererAPI::CurrentAPI->OnWindowRender(value.MKWindow);
 
             value.MKWindow->Render();
-
-            RendererAPI::CurrentAPI->OnWindowEndRender(value.MKWindow);
         }
     }
 

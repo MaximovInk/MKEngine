@@ -1,11 +1,11 @@
 #pragma once
 #include "mkpch.h"
+
+#include <vulkan/vulkan_core.h>
+
 #include "MKEngine/Core/Log.h"
 #include "MKEngine/Platform/Window.h"
 #include "../vertex.h"
-
-#include <vulkan/vk_enum_string_helper.h>
-
 
 namespace MKEngine {
 

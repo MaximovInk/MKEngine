@@ -24,7 +24,7 @@ void MKEditor::MainWindow::Update()
 
 void MKEditor::MainWindow::Render()
 {
-	MKEngine::Graphics::DrawTest(1);
+	//MKEngine::Graphics::DrawTest(1);
 }
 
 void MKEditor::MainWindow::OnWindowResize(MKEngine::WindowResizedEvent& event)

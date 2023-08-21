@@ -17,10 +17,7 @@ namespace MKEngine {
 
 		void OnWindowRender(Window* window) override;
 
-		void OnWindowEndRender(Window* window) override;
-
 	public:
 		bool operator==(const VulkanRendererAPI& other) const;
-		void DrawTest(int index) override;
 	};
 }

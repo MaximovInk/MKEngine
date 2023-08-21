@@ -1,45 +1,40 @@
 #include "mkpch.h"
-#include "SDL_vulkan.h"
 #include "VulkanRendererAPI.h"
-#include "Vulkan/device.h"
+#include "Vulkan/VulkanAPI.h"
 
 namespace MKEngine {
-
-	VulkanDevice* device;
-	static Window* currentWindow;
+	VulkanAPI API;
+	Window* currentWindow;
 
 	VulkanRendererAPI::VulkanRendererAPI()
 	{
-		device = new VulkanDevice();
+		API.Initialize();
 	}
 
 	VulkanRendererAPI::~VulkanRendererAPI()
 	{
-		delete device;
+		API.Finalize();
 	}
 
 	void VulkanRendererAPI::OnWindowCreated(Window* window)
 	{
-		device->OnWindowCreate(window);
+		API.OnWindowCreate(window);
 	}
 
 	void VulkanRendererAPI::OnWindowDestroyed(Window* window)
 	{
-		device->OnWindowDestroy(window);
+		API.OnWindowDestroy(window);
 	}
 	void VulkanRendererAPI::OnWindowResized(Window* window)
 	{
-		device->OnWindowResize(window);
+		API.OnWindowResize(window);
 	}
 	void VulkanRendererAPI::OnWindowRender(Window* window)
 	{
-		device->OnWindowRender(window);
+		API.OnWindowRender(window);
 		currentWindow = window;
 	}
-	void VulkanRendererAPI::OnWindowEndRender(Window* window)
-	{
-		device->OnWindowRenderEnd(window);
-	}
+
 }
 
 bool MKEngine::VulkanRendererAPI::operator==(const VulkanRendererAPI& other) const
@@ -47,9 +42,3 @@ bool MKEngine::VulkanRendererAPI::operator==(const VulkanRendererAPI& other) con
 	return false;
 }
 
-void MKEngine::VulkanRendererAPI::DrawTest(int index)
-{
-	if (currentWindow == nullptr)return;
-
-	device->OnWindowDrawTest(currentWindow, index);
-}

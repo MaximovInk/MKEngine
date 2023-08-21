@@ -27,7 +27,7 @@ namespace MKEditor {
 
 	void SecondaryWindow::Render()
 	{
-		MKEngine::Graphics::DrawTest(0);
+		//MKEngine::Graphics::DrawTest(0);
 	}
 
 	void SecondaryWindow::OnWindowResize(MKEngine::WindowResizedEvent& event)

@@ -7,6 +7,7 @@ namespace MKEngine {
 		VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
 		VkPipeline Reference = VK_NULL_HANDLE;
 		VkRenderPass RenderPass;
+		VkDescriptorSetLayout DescriptorSetLayout;
 	};
 
 	struct RasterizationDesc
@@ -35,7 +36,7 @@ namespace MKEngine {
 		VkFormat DepthStencilFormat = VK_FORMAT_UNDEFINED;
 	};
 
-	struct GraphicsPipelineDesc
+	struct GraphicsPipelineDescescription
 	{
 		//Shaders shaders;                     
 		AttachmentLayout AttachmentLayout{};  
@@ -45,4 +46,7 @@ namespace MKEngine {
 		VkExtent2D SwapChainExtent;
 		VkFormat SwapChainFormat;
 	};
+
+
+
 }

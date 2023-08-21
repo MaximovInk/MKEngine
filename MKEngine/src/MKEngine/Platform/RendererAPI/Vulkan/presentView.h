@@ -49,7 +49,7 @@ namespace MKEngine {
 		std::vector<Buffer> UniformBuffers;
 		VkDescriptorPool DescriptorPool;
 
-		explicit VulkanPresentView(VulkanDevice* device);
+		explicit VulkanPresentView();
 		~VulkanPresentView();
 		void InitSurface(Window* window);
 		void CreateSwapChain();
@@ -61,22 +61,16 @@ namespace MKEngine {
 		VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE) const;
 
 		void BeginRender();
-		void EndRender();
 
-		/*TEST*/
-
-		void Record(int testIndex);
+		//void Record(int testIndex);
 
 	private:
-		VulkanDevice* m_device;
 		Window* m_windowRef;
 
 		void CreateFrameBuffer();
 		void CreateCommandBuffers();
 		void CreateSync();
 		void CleanupSwapChain(bool destroySwapChain = true) const;
-
-		void RecordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex, int testIndex);
 
 		void CreateUniformBuffers();
 		void UpdateUniformBuffer(uint32_t currentImage);
@@ -85,5 +79,9 @@ namespace MKEngine {
 
 		VkCommandBuffer m_currentBufferDraw;
 		uint32_t m_currentImageIndexDraw;
+
+		bool m_renderIsBegin = false;
 	};
+
+
 }
