@@ -2,6 +2,8 @@
 #include <SDL_vulkan.h>
 #include "vulkan/vulkan.h"
 
+#include "vk_mem_alloc.h"
+
 namespace MKEngine
 {
 	class vkState
@@ -22,6 +24,7 @@ namespace MKEngine
 		VkQueue PresentQueue{};
 
 		VkPhysicalDeviceProperties Properties;
+		VmaAllocator VMAAllocator;
 
 		struct
 		{

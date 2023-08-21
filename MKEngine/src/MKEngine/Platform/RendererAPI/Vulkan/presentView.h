@@ -62,8 +62,6 @@ namespace MKEngine {
 
 		void BeginRender();
 
-		//void Record(int testIndex);
-
 	private:
 		Window* m_windowRef;
 

@@ -22,19 +22,22 @@ project "MKEngine"
         "./vendor/sdl/include",
         "./vendor/glm/include",
         "./vendor/vulkan/include",
-        "./vendor/stb/include"
+        "./vendor/stb/include",
+        "./vendor/vma/include"
     }
 
     libdirs{
         "./vendor/sdl/lib/x64",
         "./vendor/vulkan/include",
-        "./vendor/vulkan/lib"
+        "./vendor/vulkan/lib",
+        "./vendor/vma/lib"
     }
 
     links{
         "SDL2main.lib",
         "SDL2.lib",
-        "vulkan-1.lib"
+        "vulkan-1.lib",
+        "VulkanMemoryAllocator.lib"
     }
 
     filter "system:windows"

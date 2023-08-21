@@ -81,6 +81,15 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h">
       <Filter>MKEngine\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Mesh.h">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Texture.h">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
@@ -97,6 +106,15 @@
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkFunctions.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkState.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkTexture.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h">
@@ -116,12 +134,6 @@
     </ClInclude>
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkTexture.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Mesh.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Texture.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkFunctions.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -148,6 +160,15 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp">
       <Filter>MKEngine\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Mesh.cpp">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Texture.cpp">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
@@ -155,6 +176,12 @@
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkFunctions.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkState.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp">
@@ -167,10 +194,5 @@
       <Filter>MKEngine\WindowsManager</Filter>
     </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Mesh.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Texture.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkFunctions.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkState.cpp" />
   </ItemGroup>
 </Project>

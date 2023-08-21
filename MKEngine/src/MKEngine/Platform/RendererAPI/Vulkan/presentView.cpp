@@ -491,6 +491,9 @@ namespace MKEngine {
 			vkDestroySemaphore(vkState::API->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
 			vkDestroySemaphore(vkState::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
 			vkFreeCommandBuffers(vkState::API->LogicalDevice, vkState::API->CommandPool, 1, &Buffers[i].CommandBuffer);
+
+
+			//vmaUnmapMemory(vkState::API->VMAAllocator, Buffers[i].UniformBuffer.Allocation);
 			DestroyBuffer(Buffers[i].UniformBuffer);
 		}
 
@@ -524,11 +527,12 @@ namespace MKEngine {
 		bufferDescription.Usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 		bufferDescription.Size = sizeof(UniformBufferObject);
 
+
 		for (size_t i = 0; i < ImageCount; i++)
 		{
 			Buffers[i].UniformBuffer = CreateBuffer(bufferDescription);
 
-			vkMapMemory(vkState::API->LogicalDevice, Buffers[i].UniformBuffer.Memory, 0, bufferDescription.Size, 0, &Buffers[i].UniformBuffer.MappedData);
+			//vmaMapMemory(vkState::API->VMAAllocator, Buffers[i].UniformBuffer.Allocation, &Buffers[i].UniformBuffer.MappedData);
 
 		}
 	}

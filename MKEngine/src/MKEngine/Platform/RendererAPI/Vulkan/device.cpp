@@ -280,13 +280,4 @@ namespace MKEngine {
 		return device;
 	}
 
-	void DestroyDevice(VulkanDevice device)
-	{
-		if (vkState::API->CommandPool)
-			vkDestroyCommandPool(vkState::API->LogicalDevice, vkState::API->CommandPool, nullptr);
-
-		if (vkState::API->LogicalDevice)
-			vkDestroyDevice(vkState::API->LogicalDevice, nullptr);
-	}
-
 }

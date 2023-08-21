@@ -6,8 +6,8 @@ namespace MKEngine {
 	struct Buffer
 	{
 		VkDeviceSize Size = 0;
-		VkDeviceMemory Memory = VK_NULL_HANDLE;
 		VkBuffer Resource = VK_NULL_HANDLE;
+		VmaAllocation Allocation = VK_NULL_HANDLE;
 		void* MappedData = nullptr;
 	};
 
@@ -19,7 +19,7 @@ namespace MKEngine {
 
 	struct BufferDescription
 	{
-		uint32_t Size = 0;
+		VkDeviceSize Size = 0;
 		VkBufferUsageFlags Usage = 0;
 		void* Data = nullptr;
 		DataAccess Access;

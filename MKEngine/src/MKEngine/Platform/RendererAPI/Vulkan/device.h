@@ -3,7 +3,7 @@
 
 namespace MKEngine {
 
-	const std::vector<const char*> DeviceExtensions = {
+	const std::vector DEVICE_EXTENSIONS = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
@@ -15,8 +15,6 @@ namespace MKEngine {
 
 		std::vector<VkQueueFamilyProperties> QueueFamilyProperties;
 		std::vector<std::string> SupportedExtensions;
-
-		
 
 		VulkanDevice() = default;
 
@@ -35,5 +33,4 @@ namespace MKEngine {
 	};
 
 	VulkanDevice CreateDevice();
-	void DestroyDevice(VulkanDevice device);
 }

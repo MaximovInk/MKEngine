@@ -2,6 +2,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "vk_mem_alloc.h"
 
 #include "vkState.h"
 #include "vkFunctions.h"
@@ -242,82 +243,54 @@ namespace MKEngine {
 	{
 		Buffer buffer;
 
+		const VkDeviceSize bufferSize = description.Size;
+
+		VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+		bufferInfo.size = description.Size;
+		bufferInfo.usage = description.Usage;
+
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		VmaAllocationCreateInfo allocationCreateInfo{};
+		allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
+		if(description.Data)
+		{
+			bufferInfo.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		}
 		if (description.Access == DataAccess::Host)
 		{
-			VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-			bufferInfo.size = description.Size;
-			bufferInfo.usage = description.Usage;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			if (vkCreateBuffer(vkState::API->LogicalDevice, &bufferInfo, nullptr, &buffer.Resource) != VK_SUCCESS) {
-				MK_LOG_ERROR("failed to create vertex buffer!");
-			}
-
-			VkMemoryRequirements memRequirements;
-			vkGetBufferMemoryRequirements(vkState::API->LogicalDevice, buffer.Resource, &memRequirements);
-
-			VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = VkExtern::FindMemoryType(vkState::API->PhysicalDevice,
-				memRequirements.memoryTypeBits,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-			if (vkAllocateMemory(vkState::API->LogicalDevice, &allocInfo, nullptr, &buffer.Memory) != VK_SUCCESS) {
-				MK_LOG_ERROR("failed to allocate vertex buffer memory!");
-			}
-			buffer.MappedData = description.Data;
-
-			vkBindBufferMemory(vkState::API->LogicalDevice, buffer.Resource, buffer.Memory, 0);
-
-			if (description.Data != nullptr) {
-				void* data;
-				vkMapMemory(vkState::API->LogicalDevice, buffer.Memory, 0, description.Size, 0, &data);
-				memcpy(data, description.Data, description.Size);
-				vkUnmapMemory(vkState::API->LogicalDevice, buffer.Memory);
-			}
+			allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
 		}
 
-		if (description.Access == DataAccess::Device)
+		vmaCreateBuffer(vkState::API->VMAAllocator, &bufferInfo,
+			&allocationCreateInfo, &buffer.Resource, &buffer.Allocation, nullptr);
+
+		if (description.Access == DataAccess::Host)
 		{
-			const VkDeviceSize bufferSize = description.Size;
+			vmaMapMemory(vkState::API->VMAAllocator, buffer.Allocation, &buffer.MappedData);
+		}
 
-			BufferDescription stagingDescription;
-			stagingDescription.Size = bufferSize;
-			stagingDescription.Data = (void*)description.Data;
-			stagingDescription.Usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-			stagingDescription.Access = DataAccess::Host;
-
-			const Buffer stagingBuffer = CreateBuffer(stagingDescription);
-
-			VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-			bufferInfo.size = description.Size;
-			bufferInfo.usage = description.Usage | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			if (vkCreateBuffer(vkState::API->LogicalDevice, &bufferInfo, nullptr, &buffer.Resource) != VK_SUCCESS) {
-				MK_LOG_ERROR("failed to create vertex buffer!");
+		if (description.Data)
+		{
+			if (description.Access == DataAccess::Host)
+			{
+				memcpy(buffer.MappedData, description.Data, buffer.Size);
 			}
+			else
+			{
+				BufferDescription stagingDescription;
+				stagingDescription.Size = bufferSize;
+				stagingDescription.Data = description.Data;
+				stagingDescription.Usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+				stagingDescription.Access = DataAccess::Host;
 
-			VkMemoryRequirements memRequirements;
-			vkGetBufferMemoryRequirements(vkState::API->LogicalDevice, buffer.Resource, &memRequirements);
+				const Buffer stagingBuffer = CreateBuffer(stagingDescription);
 
-			VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
-			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = VkExtern::FindMemoryType(vkState::API->PhysicalDevice,
-				memRequirements.memoryTypeBits,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+				CopyBuffer(stagingBuffer.Resource, buffer.Resource, description.Size);
 
-			if (vkAllocateMemory(vkState::API->LogicalDevice, &allocInfo, nullptr, &buffer.Memory) != VK_SUCCESS) {
-				MK_LOG_ERROR("failed to allocate vertex buffer memory!");
+				DestroyBuffer(stagingBuffer);
 			}
-			buffer.MappedData = description.Data;
-			vkBindBufferMemory(vkState::API->LogicalDevice, buffer.Resource, buffer.Memory, 0);
-
-			CopyBuffer(stagingBuffer.Resource, buffer.Resource, bufferSize);
-
-			vkDestroyBuffer(vkState::API->LogicalDevice, stagingBuffer.Resource, nullptr);
-			vkFreeMemory(vkState::API->LogicalDevice, stagingBuffer.Memory, nullptr);
-
 		}
 
 		return buffer;
@@ -325,8 +298,12 @@ namespace MKEngine {
 
 	void DestroyBuffer(const Buffer& buffer)
 	{
-		vkDestroyBuffer(vkState::API->LogicalDevice, buffer.Resource, nullptr);
-		vkFreeMemory(vkState::API->LogicalDevice, buffer.Memory, nullptr);
+		if (buffer.MappedData)
+		{
+			vmaUnmapMemory(vkState::API->VMAAllocator, buffer.Allocation);
+		}
+
+		vmaDestroyBuffer(vkState::API->VMAAllocator, buffer.Resource, buffer.Allocation);
 	}
 
 	void CopyBuffer( const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
@@ -393,22 +370,11 @@ namespace MKEngine {
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageInfo.flags = 0;
-		if (vkCreateImage(vkState::API->LogicalDevice, &imageInfo, nullptr, &texture.Resource) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to create image!");
-		}
 
-		//Allocate memory for image
-		VkMemoryRequirements memRequirements;
-		vkGetImageMemoryRequirements(vkState::API->LogicalDevice, texture.Resource, &memRequirements);
+		VmaAllocationCreateInfo imageAllocCreateInfo = {};
+		imageAllocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-		VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
-		allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = VkExtern::FindMemoryType(vkState::API->PhysicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-		if (vkAllocateMemory(vkState::API->LogicalDevice, &allocInfo, nullptr, &texture.Memory) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to allocate image memory!");
-		}
-		vkBindImageMemory(vkState::API->LogicalDevice, texture.Resource, texture.Memory, 0);
+		vmaCreateImage(vkState::API->VMAAllocator, &imageInfo, &imageAllocCreateInfo, &texture.Resource, &texture.Allocation, nullptr);
 
 		//Set TransitionLayout for copy
 		TransitionImageLayout(texture.Resource, description.Format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -419,9 +385,7 @@ namespace MKEngine {
 		//Set TransitionLayout for shaders 
 		TransitionImageLayout(texture.Resource, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		//Free staging buffer
-		vkDestroyBuffer(vkState::API->LogicalDevice, stagingBuffer.Resource, nullptr);
-		vkFreeMemory(vkState::API->LogicalDevice, stagingBuffer.Memory, nullptr);
+		DestroyBuffer(stagingBuffer);
 
 		//Create ImageView
 		VkImageViewCreateInfo viewInfo{ VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
@@ -470,8 +434,7 @@ namespace MKEngine {
 		vkDestroySampler(vkState::API->LogicalDevice, texture.Sampler, nullptr);
 		vkDestroyImageView(vkState::API->LogicalDevice, texture.View, nullptr);
 
-		vkDestroyImage(vkState::API->LogicalDevice, texture.Resource, nullptr);
-		vkFreeMemory(vkState::API->LogicalDevice, texture.Memory, nullptr);
+		vmaDestroyImage(vkState::API->VMAAllocator, texture.Resource, texture.Allocation);
 	}
 
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)

@@ -1,4 +1,8 @@
 #include "mkpch.h"
+
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+
 #include "VulkanAPI.h"
 #include "vkExtern.h"
 #include "vkFunctions.h"
@@ -17,6 +21,13 @@ namespace MKEngine {
 #endif
 
 		Device = CreateDevice();
+
+		VmaAllocatorCreateInfo allocatorCreateInfo{};
+		allocatorCreateInfo.device = vkState::API->LogicalDevice;
+		allocatorCreateInfo.instance = vkState::API->Instance;
+		allocatorCreateInfo.physicalDevice = vkState::API->PhysicalDevice;
+
+		vmaCreateAllocator(&allocatorCreateInfo, &vkState::API->VMAAllocator);
 
 		GraphicsPipelineDescescription description{  };
 		description.SwapChainFormat = VK_FORMAT_B8G8R8A8_SRGB;
@@ -38,8 +49,6 @@ namespace MKEngine {
 		}
 		PresentViews.clear();
 
-		
-
 		if (GraphicsPipeline.Reference)
 			vkDestroyPipeline(vkState::API->LogicalDevice, GraphicsPipeline.Reference, nullptr);
 		if (GraphicsPipeline.PipelineLayout)
@@ -58,10 +67,19 @@ namespace MKEngine {
 
 		DestroyDevice(Device);
 
+		if (vkState::API->CommandPool)
+			vkDestroyCommandPool(vkState::API->LogicalDevice, vkState::API->CommandPool, nullptr);
+
+		vmaDestroyAllocator(vkState::API->VMAAllocator);
+
+		if (vkState::API->LogicalDevice)
+			vkDestroyDevice(vkState::API->LogicalDevice, nullptr);
+
 #if VULKAN_VALIDATION
 		if (DebugMessenger)
 			VkExtern::DestroyDebugMessenger(vkState::API->Instance, DebugMessenger);
 #endif
+
 		if (vkState::API->Instance)
 			vkDestroyInstance(vkState::API->Instance, nullptr);
 	}

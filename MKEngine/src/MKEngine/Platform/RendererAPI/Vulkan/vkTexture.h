@@ -11,7 +11,7 @@ namespace MKEngine
 		VkFormat Format = VK_FORMAT_UNDEFINED;
 		VkSampler Sampler = VK_NULL_HANDLE;
 		VkImage Resource = VK_NULL_HANDLE;
-		VkDeviceMemory Memory = VK_NULL_HANDLE;
+		VmaAllocation Allocation = VK_NULL_HANDLE;
 		VkImageView View = VK_NULL_HANDLE;
 	};
 
