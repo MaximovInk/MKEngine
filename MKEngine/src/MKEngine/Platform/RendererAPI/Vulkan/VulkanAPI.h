@@ -3,14 +3,17 @@
 #include <vulkan/vulkan_core.h>
 #include "MKEngine/Platform/Window.h"
 #include "device.h"
-#include "pipeline.h"
 #include "presentView.h"
+#include "Pipeline/graphicsPipeline.h"
+
 
 
 namespace MKEngine {
 	class VulkanAPI
 	{
 	public:
+
+
 #if VULKAN_VALIDATION
 		VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 #endif
@@ -19,7 +22,7 @@ namespace MKEngine {
 
 		std::map<std::int16_t, VulkanPresentView*> PresentViews;
 
-		Pipeline GraphicsPipeline;
+		GraphicsPipeline GraphicsPipeline;
 
 		void Initialize();
 		void Finalize();

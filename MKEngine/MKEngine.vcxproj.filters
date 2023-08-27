@@ -25,6 +25,9 @@
     <Filter Include="MKEngine\Platform\RendererAPI\Vulkan">
       <UniqueIdentifier>{2726B5CE-130D-77C6-BC5D-DDE3A823F02C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MKEngine\Platform\RendererAPI\Vulkan\Pipeline">
+      <UniqueIdentifier>{2CAA2C30-981A-2FA9-6139-A931CD6867AA}</UniqueIdentifier>
+    </Filter>
     <Filter Include="MKEngine\WindowsManager">
       <UniqueIdentifier>{C8D40432-340C-4DC9-3D16-B1ECA9CC73C2}</UniqueIdentifier>
     </Filter>
@@ -87,6 +90,18 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Texture.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipeline.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipelineDescription.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\pipelineColorAttachment.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\vertexInputDescription.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
+    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
@@ -96,22 +111,19 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\pipeline.h">
-      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shaders.h">
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shader.h">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkContext.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkFunctions.h">
-      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkState.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkTexture.h">
@@ -166,6 +178,18 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Texture.cpp">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipeline.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipelineDescription.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\pipelineColorAttachment.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\vertexInputDescription.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
+    </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
@@ -175,13 +199,13 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkContext.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkFunctions.cpp">
-      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkState.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp">

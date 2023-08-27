@@ -2,13 +2,10 @@
 
 #include "buffer.h"
 #include "vkTexture.h"
-#include "shaders.h"
-#include "pipeline.h"
+#include "shader.h"
 
 namespace MKEngine
 {
-		Pipeline CreateGraphicsPipeline(const GraphicsPipelineDescescription& description);
-
 		Buffer CreateBuffer(const BufferDescription& description);
 		void DestroyBuffer(const Buffer& buffer);
 		void CopyBuffer( VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);

@@ -25,7 +25,6 @@ namespace MKEngine {
 	typedef struct SwapChainBuffers {
 		VkImage Image;
 		VkImageView View;
-		VkFramebuffer FrameBuffer;
 		VkCommandBuffer CommandBuffer;
 		ViewSync Sync;
 		Buffer UniformBuffer;
@@ -60,12 +59,12 @@ namespace MKEngine {
 		VkResult AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex) const;
 		VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE) const;
 
-		void BeginRender();
+		void Render();
+
 
 	private:
 		Window* m_windowRef;
 
-		void CreateFrameBuffer();
 		void CreateCommandBuffers();
 		void CreateSync();
 		void CleanupSwapChain(bool destroySwapChain = true) const;
@@ -79,6 +78,9 @@ namespace MKEngine {
 		uint32_t m_currentImageIndexDraw;
 
 		bool m_renderIsBegin = false;
+
+		void EndRender();
+		void BeginRender();
 	};
 
 

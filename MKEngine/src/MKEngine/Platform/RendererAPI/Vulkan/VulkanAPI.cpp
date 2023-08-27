@@ -6,57 +6,70 @@
 #include "VulkanAPI.h"
 #include "vkExtern.h"
 #include "vkFunctions.h"
+#include "Pipeline/graphicsPipeline.h"
 
-#include "vkState.h"
+#include "VkContext.h"
 
 namespace MKEngine {
 
 	void VulkanAPI::Initialize()
 	{
-		vkState::API = new vkState();
+		VkContext::API = new VkContext();
 
-		vkState::API->Instance = VkExtern::CreateInstance();
+		VkContext::API->Instance = VkExtern::CreateInstance();
 #if VULKAN_VALIDATION
-		DebugMessenger = VkExtern::CreateDebugMessenger(vkState::API->Instance);
+		DebugMessenger = VkExtern::CreateDebugMessenger(VkContext::API->Instance);
 #endif
 
 		Device = CreateDevice();
 
 		VmaAllocatorCreateInfo allocatorCreateInfo{};
-		allocatorCreateInfo.device = vkState::API->LogicalDevice;
-		allocatorCreateInfo.instance = vkState::API->Instance;
-		allocatorCreateInfo.physicalDevice = vkState::API->PhysicalDevice;
+		allocatorCreateInfo.device = VkContext::API->LogicalDevice;
+		allocatorCreateInfo.instance = VkContext::API->Instance;
+		allocatorCreateInfo.physicalDevice = VkContext::API->PhysicalDevice;
 
-		vmaCreateAllocator(&allocatorCreateInfo, &vkState::API->VMAAllocator);
+		vmaCreateAllocator(&allocatorCreateInfo, &VkContext::API->VMAAllocator);
 
-		GraphicsPipelineDescescription description{  };
-		description.SwapChainFormat = VK_FORMAT_B8G8R8A8_SRGB;
-		
-		GraphicsPipeline = CreateGraphicsPipeline(description);
+		GraphicsPipelineDescription description{};
+		ShaderCreateDescription vertDesc;
+		vertDesc.Path = "shaders/vert.spv";
+		ShaderCreateDescription fragDesc;
+		fragDesc.Path = "shaders/frag.spv";
+		VkContext::API->DescriptorSetLayout = CreateDescriptorSetLayout(VkContext::API->LogicalDevice);
+		const auto layout = CreatePipelineLayout(VkContext::API->LogicalDevice, VkContext::API->DescriptorSetLayout);
 
-		vkState::API->GraphicsPipeline = GraphicsPipeline.Reference;
-		vkState::API->RenderPass = GraphicsPipeline.RenderPass;
-		vkState::API->PipelineLayout = GraphicsPipeline.PipelineLayout;
-		vkState::API->DescriptorSetLayout = GraphicsPipeline.DescriptorSetLayout;
+		description.Shaders.emplace_back(CreateShader(vertDesc));
+		description.Shaders.emplace_back(CreateShader(fragDesc));
+
+		description.VertexInput.DefineAttribute(0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, Position));
+		description.VertexInput.DefineAttribute(0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, Color));
+		description.VertexInput.DefineAttribute(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, TexCoord));
+
+		description.PipelineLayout = layout;
+
+		description.VertexInput.VertexDefineSlot(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+
+		GraphicsPipeline = GraphicsPipeline::CreateGraphicsPipeline(description);
+
+		VkContext::API->GraphicsPipeline = GraphicsPipeline.Reference;
+		VkContext::API->PipelineLayout = GraphicsPipeline.PipelineLayout;
 	}
 
 	void VulkanAPI::Finalize()
 	{
 		WaitDeviceIdle();
-
+		
 		for (const auto [id, view] : PresentViews) {
 			delete view;
 		}
 		PresentViews.clear();
 
-		if (GraphicsPipeline.Reference)
-			vkDestroyPipeline(vkState::API->LogicalDevice, GraphicsPipeline.Reference, nullptr);
 		if (GraphicsPipeline.PipelineLayout)
-			vkDestroyPipelineLayout(vkState::API->LogicalDevice, GraphicsPipeline.PipelineLayout, nullptr);
-		if (GraphicsPipeline.RenderPass)
-			vkDestroyRenderPass(vkState::API->LogicalDevice, GraphicsPipeline.RenderPass, nullptr);
-		if (GraphicsPipeline.DescriptorSetLayout)
-			vkDestroyDescriptorSetLayout(vkState::API->LogicalDevice, GraphicsPipeline.DescriptorSetLayout, nullptr);
+			vkDestroyPipelineLayout(VkContext::API->LogicalDevice, GraphicsPipeline.PipelineLayout, nullptr);
+		if (VkContext::API->DescriptorSetLayout)
+			vkDestroyDescriptorSetLayout(VkContext::API->LogicalDevice, VkContext::API->DescriptorSetLayout, nullptr);
+		if (GraphicsPipeline.Reference)
+			GraphicsPipeline::DestroyGraphicsPipeline(GraphicsPipeline);
 
 		for (const auto& [id, view] : PresentViews)
 		{
@@ -65,23 +78,21 @@ namespace MKEngine {
 
 		PresentViews.clear();
 
-		DestroyDevice(Device);
+		if (VkContext::API->CommandPool)
+			vkDestroyCommandPool(VkContext::API->LogicalDevice, VkContext::API->CommandPool, nullptr);
 
-		if (vkState::API->CommandPool)
-			vkDestroyCommandPool(vkState::API->LogicalDevice, vkState::API->CommandPool, nullptr);
+		vmaDestroyAllocator(VkContext::API->VMAAllocator);
 
-		vmaDestroyAllocator(vkState::API->VMAAllocator);
-
-		if (vkState::API->LogicalDevice)
-			vkDestroyDevice(vkState::API->LogicalDevice, nullptr);
+		if (VkContext::API->LogicalDevice)
+			vkDestroyDevice(VkContext::API->LogicalDevice, nullptr);
 
 #if VULKAN_VALIDATION
 		if (DebugMessenger)
-			VkExtern::DestroyDebugMessenger(vkState::API->Instance, DebugMessenger);
+			VkExtern::DestroyDebugMessenger(VkContext::API->Instance, DebugMessenger);
 #endif
 
-		if (vkState::API->Instance)
-			vkDestroyInstance(vkState::API->Instance, nullptr);
+		if (VkContext::API->Instance)
+			vkDestroyInstance(VkContext::API->Instance, nullptr);
 	}
 
 	void VulkanAPI::OnWindowCreate(Window* window) {
@@ -118,7 +129,7 @@ namespace MKEngine {
 	void VulkanAPI::OnWindowRender(const Window* window)
 	{
 		const int id = window->GetID();
-		PresentViews[id]->BeginRender();
+		PresentViews[id]->Render();
 	}
 
 

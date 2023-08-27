@@ -1,5 +1,5 @@
 #include <mkpch.h>
-#include "vkState.h"
+#include "VkContext.h"
 #include "device.h"
 #include "MKEngine/Core/Log.h"
 #include "buffer.h"
@@ -17,7 +17,7 @@ namespace MKEngine {
 		for (uint32_t i = 0; i < QueueFamilyProperties.size(); i++)
 		{
 #if defined(_WIN32)
-			if (vkGetPhysicalDeviceWin32PresentationSupportKHR(vkState::API->PhysicalDevice, i))
+			if (vkGetPhysicalDeviceWin32PresentationSupportKHR(VkContext::API->PhysicalDevice, i))
 				return i;
 #else
 			if (QueueFamilyProperties[i].queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
@@ -86,28 +86,28 @@ namespace MKEngine {
 		// Graphics queue
 		if (requestedQueueTypes & VK_QUEUE_GRAPHICS_BIT)
 		{
-			vkState::API->QueueFamilyIndices.Graphics = GetQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
+			VkContext::API->QueueFamilyIndices.Graphics = GetQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
 			VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-			queueInfo.queueFamilyIndex = vkState::API->QueueFamilyIndices.Graphics;
+			queueInfo.queueFamilyIndex = VkContext::API->QueueFamilyIndices.Graphics;
 			queueInfo.queueCount = 1;
 			queueInfo.pQueuePriorities = &defaultQueuePriority;
 			queueCreateInfos.push_back(queueInfo);
 		}
 		else
-			vkState::API->QueueFamilyIndices.Graphics = 0;
+			VkContext::API->QueueFamilyIndices.Graphics = 0;
 
-		MK_LOG_INFO("graphics family: {0}", vkState::API->QueueFamilyIndices.Graphics);
+		MK_LOG_INFO("graphics family: {0}", VkContext::API->QueueFamilyIndices.Graphics);
 
 		// Dedicated compute queue
 		if (requestedQueueTypes & VK_QUEUE_COMPUTE_BIT)
 		{
-			vkState::API->QueueFamilyIndices.Compute = GetQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT);
-			if (vkState::API->QueueFamilyIndices.Compute != vkState::API->QueueFamilyIndices.Graphics)
+			VkContext::API->QueueFamilyIndices.Compute = GetQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT);
+			if (VkContext::API->QueueFamilyIndices.Compute != VkContext::API->QueueFamilyIndices.Graphics)
 			{
 				// If compute family index differs, 
 				//we need an additional queue create info for the compute queue
 				VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-				queueInfo.queueFamilyIndex = vkState::API->QueueFamilyIndices.Compute;
+				queueInfo.queueFamilyIndex = VkContext::API->QueueFamilyIndices.Compute;
 				queueInfo.queueCount = 1;
 				queueInfo.pQueuePriorities = &defaultQueuePriority;
 				queueCreateInfos.push_back(queueInfo);
@@ -115,21 +115,21 @@ namespace MKEngine {
 		}
 		else
 			// Else we use the same queue
-			vkState::API->QueueFamilyIndices.Compute = vkState::API->QueueFamilyIndices.Graphics;
+			VkContext::API->QueueFamilyIndices.Compute = VkContext::API->QueueFamilyIndices.Graphics;
 
-		MK_LOG_INFO("compute family: {0}", vkState::API->QueueFamilyIndices.Compute);
+		MK_LOG_INFO("compute family: {0}", VkContext::API->QueueFamilyIndices.Compute);
 
 		// Dedicated transfer queue
 		if (requestedQueueTypes & VK_QUEUE_TRANSFER_BIT)
 		{
-			vkState::API->QueueFamilyIndices.Transfer = GetQueueFamilyIndex(VK_QUEUE_TRANSFER_BIT);
-			if ((vkState::API->QueueFamilyIndices.Transfer != vkState::API->QueueFamilyIndices.Graphics)
-				&& (vkState::API->QueueFamilyIndices.Transfer != vkState::API->QueueFamilyIndices.Compute))
+			VkContext::API->QueueFamilyIndices.Transfer = GetQueueFamilyIndex(VK_QUEUE_TRANSFER_BIT);
+			if ((VkContext::API->QueueFamilyIndices.Transfer != VkContext::API->QueueFamilyIndices.Graphics)
+				&& (VkContext::API->QueueFamilyIndices.Transfer != VkContext::API->QueueFamilyIndices.Compute))
 			{
 				// If transfer family index differs, 
 				//we need an additional queue create info for the transfer queue
 				VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-				queueInfo.queueFamilyIndex = vkState::API->QueueFamilyIndices.Transfer;
+				queueInfo.queueFamilyIndex = VkContext::API->QueueFamilyIndices.Transfer;
 				queueInfo.queueCount = 1;
 				queueInfo.pQueuePriorities = &defaultQueuePriority;
 				queueCreateInfos.push_back(queueInfo);
@@ -137,17 +137,17 @@ namespace MKEngine {
 		}
 		else
 			// Else we use the same queue
-			vkState::API->QueueFamilyIndices.Transfer = vkState::API->QueueFamilyIndices.Graphics;
+			VkContext::API->QueueFamilyIndices.Transfer = VkContext::API->QueueFamilyIndices.Graphics;
 
-		MK_LOG_INFO("transfer family: {0}", vkState::API->QueueFamilyIndices.Transfer);
+		MK_LOG_INFO("transfer family: {0}", VkContext::API->QueueFamilyIndices.Transfer);
 
 		//Present view queue
 		{
-			vkState::API->QueueFamilyIndices.Present = GetPresentViewQueueFamilyIndex();
-			if (vkState::API->QueueFamilyIndices.Present != vkState::API->QueueFamilyIndices.Graphics)
+			VkContext::API->QueueFamilyIndices.Present = GetPresentViewQueueFamilyIndex();
+			if (VkContext::API->QueueFamilyIndices.Present != VkContext::API->QueueFamilyIndices.Graphics)
 			{
 				VkDeviceQueueCreateInfo queueInfo{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-				queueInfo.queueFamilyIndex = vkState::API->QueueFamilyIndices.Present;
+				queueInfo.queueFamilyIndex = VkContext::API->QueueFamilyIndices.Present;
 				queueInfo.queueCount = 1;
 				queueInfo.pQueuePriorities = &defaultQueuePriority;
 				queueCreateInfos.push_back(queueInfo);
@@ -155,7 +155,7 @@ namespace MKEngine {
 
 		}
 
-		MK_LOG_INFO("present family: {0}", vkState::API->QueueFamilyIndices.Present);
+		MK_LOG_INFO("present family: {0}", VkContext::API->QueueFamilyIndices.Present);
 
 		std::vector<const char*> deviceExtensions(std::move(enabledExtensions));
 
@@ -163,6 +163,7 @@ namespace MKEngine {
 		EXTENSIONS FOR DEVICE
 		*/
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+		deviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
 
 		VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
@@ -175,13 +176,10 @@ namespace MKEngine {
 		deviceCreateInfo.enabledLayerCount = 0;
 #endif
 
-		VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
-		if (pNextChain) {
-			physicalDeviceFeatures2.features = enabledFeatures;
-			physicalDeviceFeatures2.pNext = pNextChain;
-			deviceCreateInfo.pEnabledFeatures = nullptr;
-			deviceCreateInfo.pNext = &physicalDeviceFeatures2;
-		}
+		//Dynamic rendering
+		dynamicRenderingFeaturesKHR.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+		dynamicRenderingFeaturesKHR.dynamicRendering = VK_TRUE;
+		deviceCreateInfo.pNext = &dynamicRenderingFeaturesKHR;
 
 		if (!deviceExtensions.empty())
 		{
@@ -198,7 +196,7 @@ namespace MKEngine {
 
 		this->EnabledFeatures = enabledFeatures;
 
-		return vkCreateDevice(vkState::API->PhysicalDevice, &deviceCreateInfo, nullptr, &vkState::API->LogicalDevice);
+		return vkCreateDevice(VkContext::API->PhysicalDevice, &deviceCreateInfo, nullptr, &VkContext::API->LogicalDevice);
 	}
 
 	VkCommandPool   VulkanDevice::CreateCommandPool(const uint32_t queueFamilyIndex,
@@ -209,7 +207,7 @@ namespace MKEngine {
 		commandPoolInfo.flags = createFlags;
 		VkCommandPool commandPool;
 
-		if (vkCreateCommandPool(vkState::API->LogicalDevice, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+		if (vkCreateCommandPool(VkContext::API->LogicalDevice, &commandPoolInfo, nullptr, &commandPool) != VK_SUCCESS) {
 			MK_LOG_CRITICAL("Failed to create command pool");
 		}
 		else
@@ -221,11 +219,11 @@ namespace MKEngine {
 	void VulkanDevice::CreateCommandBuffer() {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = vkState::API->CommandPool;
+		allocInfo.commandPool = VkContext::API->CommandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = 1;
 
-		if (vkAllocateCommandBuffers(vkState::API->LogicalDevice, &allocInfo, &vkState::API->MainCommandBuffer) != VK_SUCCESS) {
+		if (vkAllocateCommandBuffers(VkContext::API->LogicalDevice, &allocInfo, &VkContext::API->MainCommandBuffer) != VK_SUCCESS) {
 			MK_LOG_ERROR("failed to allocate command buffer!");
 		}
 	}
@@ -236,24 +234,24 @@ namespace MKEngine {
 
 		std::vector<const char*> enabledExtensions;
 
-		vkState::API->PhysicalDevice = VkExtern::CreatePhysicalDevice(vkState::API->Instance);
+		VkContext::API->PhysicalDevice = VkExtern::CreatePhysicalDevice(VkContext::API->Instance);
 
-		vkGetPhysicalDeviceProperties(vkState::API->PhysicalDevice, &vkState::API->Properties);
-		vkGetPhysicalDeviceFeatures(vkState::API->PhysicalDevice, &device.Features);
-		vkGetPhysicalDeviceMemoryProperties(vkState::API->PhysicalDevice, &device.MemoryProperties);
+		vkGetPhysicalDeviceProperties(VkContext::API->PhysicalDevice, &VkContext::API->Properties);
+		vkGetPhysicalDeviceFeatures(VkContext::API->PhysicalDevice, &device.Features);
+		vkGetPhysicalDeviceMemoryProperties(VkContext::API->PhysicalDevice, &device.MemoryProperties);
 		uint32_t queueFamilyCount;
-		vkGetPhysicalDeviceQueueFamilyProperties(vkState::API->PhysicalDevice, &queueFamilyCount, nullptr);
+		vkGetPhysicalDeviceQueueFamilyProperties(VkContext::API->PhysicalDevice, &queueFamilyCount, nullptr);
 		MK_ASSERT(queueFamilyCount > 0, "QUEUE FAMILY COUNT MUST BE > 0");
 		MK_LOG_INFO("QUEUE FAMILY COUNT: {0}", queueFamilyCount);
 		device.QueueFamilyProperties.resize(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(vkState::API->PhysicalDevice, &queueFamilyCount, device.QueueFamilyProperties.data());
+		vkGetPhysicalDeviceQueueFamilyProperties(VkContext::API->PhysicalDevice, &queueFamilyCount, device.QueueFamilyProperties.data());
 
 		uint32_t extensionCount = 0;
-		vkEnumerateDeviceExtensionProperties(vkState::API->PhysicalDevice, nullptr, &extensionCount, nullptr);
+		vkEnumerateDeviceExtensionProperties(VkContext::API->PhysicalDevice, nullptr, &extensionCount, nullptr);
 		if (extensionCount > 0)
 		{
 			if (std::vector<VkExtensionProperties> extensions(extensionCount);
-				vkEnumerateDeviceExtensionProperties(vkState::API->PhysicalDevice, nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS)
+				vkEnumerateDeviceExtensionProperties(VkContext::API->PhysicalDevice, nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS)
 			{
 				for (const auto& [extensionName, specVersion] : extensions)
 				{
@@ -265,17 +263,20 @@ namespace MKEngine {
 		VkPhysicalDeviceFeatures deviceFeatures{};
 		deviceFeatures.samplerAnisotropy = true;
 
-		if (device.CreateLogicalDevice(deviceFeatures, DeviceExtensions, nullptr) != VK_SUCCESS)
+		if (device.CreateLogicalDevice(deviceFeatures, DEVICE_EXTENSIONS, nullptr) != VK_SUCCESS)
 			MK_LOG_CRITICAL("Failed to create logical device!");
 		else
 			MK_LOG_INFO("Logical device successfully created");
 
-		vkState::API->GraphicsQueue = VkExtern::GetQueue(vkState::API->LogicalDevice, vkState::API->QueueFamilyIndices.Graphics, 0);
-		vkState::API->PresentQueue = VkExtern::GetQueue(vkState::API->LogicalDevice, vkState::API->QueueFamilyIndices.Present, 0);
+		VkContext::API->GraphicsQueue = VkExtern::GetQueue(VkContext::API->LogicalDevice, VkContext::API->QueueFamilyIndices.Graphics, 0);
+		VkContext::API->PresentQueue = VkExtern::GetQueue(VkContext::API->LogicalDevice, VkContext::API->QueueFamilyIndices.Present, 0);
 
-		vkState::API->CommandPool = device.CreateCommandPool(vkState::API->QueueFamilyIndices.Graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+		VkContext::API->CommandPool = device.CreateCommandPool(VkContext::API->QueueFamilyIndices.Graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
 		device.CreateCommandBuffer();
+
+		VkContext::API->Begin = reinterpret_cast<PFN_vkCmdBeginRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdBeginRendering"));
+		VkContext::API->End = reinterpret_cast<PFN_vkCmdEndRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdEndRendering"));
 
 		return device;
 	}

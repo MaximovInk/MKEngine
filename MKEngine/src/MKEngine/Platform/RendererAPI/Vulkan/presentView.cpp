@@ -1,12 +1,13 @@
 #include <mkpch.h>
 
 #include <vulkan/vk_enum_string_helper.h>
-#include "vkState.h"
+#include "VkContext.h"
 #include "presentView.h"
 #include "MKEngine/Platform/PlatformBackend.h"
 #include "vkExtern.h"
 #include "../vertex.h"
 #include "vkFunctions.h"
+
 
 namespace MKEngine {
 	
@@ -30,22 +31,22 @@ namespace MKEngine {
 	{
 		CleanupSwapChain();
 
-		vkDestroySurfaceKHR(vkState::API->Instance, Surface, nullptr);
+		vkDestroySurfaceKHR(VkContext::API->Instance, Surface, nullptr);
 
 		SwapChain = VK_NULL_HANDLE;
 	}
 
 	void VulkanPresentView::InitSurface(Window* window)
 	{
-		Surface = VkExtern::CreateWindowSurface(vkState::API->Instance, window);
+		Surface = VkExtern::CreateWindowSurface(VkContext::API->Instance, window);
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(vkState::API->PhysicalDevice,
+		vkGetPhysicalDeviceSurfaceFormatsKHR(VkContext::API->PhysicalDevice,
 			Surface, &formatCount, nullptr);
 		assert(formatCount > 0);
 
 		std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(vkState::API->PhysicalDevice,
+		vkGetPhysicalDeviceSurfaceFormatsKHR(VkContext::API->PhysicalDevice,
 			Surface, &formatCount, surfaceFormats.data());
 
 		if ((formatCount == 1) &&
@@ -89,18 +90,18 @@ namespace MKEngine {
 		auto [title, width, height, VSync] = m_windowRef->GetData();
 
 		VkSurfaceCapabilitiesKHR surfCaps;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkState::API->PhysicalDevice,
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(VkContext::API->PhysicalDevice,
 			Surface, &surfCaps);
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(vkState::API->PhysicalDevice,
+		vkGetPhysicalDeviceSurfacePresentModesKHR(VkContext::API->PhysicalDevice,
 			Surface, &presentModeCount, nullptr);
 
 		std::vector<VkPresentModeKHR> presentModes(presentModeCount);
 
 		if (presentModeCount != 0) {
 			presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(vkState::API->PhysicalDevice,
+			vkGetPhysicalDeviceSurfacePresentModesKHR(VkContext::API->PhysicalDevice,
 				Surface, &presentModeCount, presentModes.data());
 		}
 
@@ -175,9 +176,9 @@ namespace MKEngine {
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		createInfo.preTransform = static_cast<VkSurfaceTransformFlagBitsKHR>(preTransform);
 
-		if (vkState::API->QueueFamilyIndices.Present != vkState::API->QueueFamilyIndices.Graphics)
+		if (VkContext::API->QueueFamilyIndices.Present != VkContext::API->QueueFamilyIndices.Graphics)
 		{
-			uint32_t queueFamilyIndices[] = { vkState::API->QueueFamilyIndices.Graphics , vkState::API->QueueFamilyIndices.Present };
+			uint32_t queueFamilyIndices[] = { VkContext::API->QueueFamilyIndices.Graphics , VkContext::API->QueueFamilyIndices.Present };
 			createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 			createInfo.queueFamilyIndexCount = 2;
 			createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -197,7 +198,7 @@ namespace MKEngine {
 		if (surfCaps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
 			createInfo.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-		if (vkCreateSwapchainKHR(vkState::API->LogicalDevice, &createInfo,
+		if (vkCreateSwapchainKHR(VkContext::API->LogicalDevice, &createInfo,
 			nullptr, &SwapChain) != VK_SUCCESS) {
 			MK_LOG_CRITICAL("failed to create swap chain!");
 		}
@@ -205,15 +206,15 @@ namespace MKEngine {
 
 		if (oldSwapchain != VK_NULL_HANDLE) {
 			
-			vkDestroySwapchainKHR(vkState::API->LogicalDevice, oldSwapchain, VK_NULL_HANDLE);
+			vkDestroySwapchainKHR(VkContext::API->LogicalDevice, oldSwapchain, VK_NULL_HANDLE);
 		}
 
 
 		std::vector<VkImage> images;
-		vkGetSwapchainImagesKHR(vkState::API->LogicalDevice, SwapChain,
+		vkGetSwapchainImagesKHR(VkContext::API->LogicalDevice, SwapChain,
 			&ImageCount, nullptr);
 		images.resize(ImageCount);
-		vkGetSwapchainImagesKHR(vkState::API->LogicalDevice, SwapChain,
+		vkGetSwapchainImagesKHR(VkContext::API->LogicalDevice, SwapChain,
 			&ImageCount, images.data());
 
 		Buffers.resize(ImageCount);
@@ -241,7 +242,7 @@ namespace MKEngine {
 
 			viewInfo.image = Buffers[i].Image;
 
-			vkCreateImageView(vkState::API->LogicalDevice, &viewInfo, nullptr, &Buffers[i].View);
+			vkCreateImageView(VkContext::API->LogicalDevice, &viewInfo, nullptr, &Buffers[i].View);
 
 			
 		}
@@ -254,7 +255,7 @@ namespace MKEngine {
 	void VulkanPresentView::FinalizeCreation()
 	{
 		CreateUniformBuffers();
-		CreateFrameBuffer();
+		//CreateFrameBuffer();
 		CreateCommandBuffers();
 
 		CreateSync();
@@ -285,6 +286,7 @@ namespace MKEngine {
 		//Graphics pipeline ()
 		FinalizeCreation();
 	}
+	/*
 
 	void VulkanPresentView::CreateFrameBuffer()
 	{
@@ -295,36 +297,37 @@ namespace MKEngine {
 
 			VkFramebufferCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			createInfo.renderPass = vkState::API->RenderPass;
+			//createInfo.renderPass = VkContext::API->RenderPass;
 			createInfo.attachmentCount = 1;
 			createInfo.pAttachments = attachments;
 			createInfo.width = SwapChainExtent.width;
 			createInfo.height = SwapChainExtent.height;
 			createInfo.layers = 1;
 
-			if (vkCreateFramebuffer(vkState::API->LogicalDevice, &createInfo, VK_NULL_HANDLE, &(Buffers[i].FrameBuffer)) != VK_SUCCESS) {
+			if (vkCreateFramebuffer(VkContext::API->LogicalDevice, &createInfo, VK_NULL_HANDLE, &(Buffers[i].FrameBuffer)) != VK_SUCCESS) {
 				MK_LOG_ERROR("Failed to create framebuffer");
 			}
-		
+
 		}
 		MK_LOG_INFO("Created framebuffers x{0}", ImageCount);
 	}
 
+	*/
 	void VulkanPresentView::CreateSync()
 	{
 		for (size_t i = 0; i < ImageCount; i++)
 		{
 			ViewSync sync{};
-			sync.InFlightFence = VkExtern::CreateFence(vkState::API->LogicalDevice);
-			sync.ImageAvailableSemaphore = VkExtern::CreateSemaphore(vkState::API->LogicalDevice);
-			sync.RenderFinishedSemaphore = VkExtern::CreateSemaphore(vkState::API->LogicalDevice);
+			sync.InFlightFence = VkExtern::CreateFence(VkContext::API->LogicalDevice);
+			sync.ImageAvailableSemaphore = VkExtern::CreateSemaphore(VkContext::API->LogicalDevice);
+			sync.RenderFinishedSemaphore = VkExtern::CreateSemaphore(VkContext::API->LogicalDevice);
 			Buffers[i].Sync = sync;
 		}
 	}
 
 	VkResult VulkanPresentView::AcquireNextImage(const VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex) const
 	{
-		return vkAcquireNextImageKHR(vkState::API->LogicalDevice, SwapChain, UINT64_MAX,
+		return vkAcquireNextImageKHR(VkContext::API->LogicalDevice, SwapChain, UINT64_MAX,
 			presentCompleteSemaphore, VK_NULL_HANDLE, imageIndex);
 	}
 
@@ -345,161 +348,37 @@ namespace MKEngine {
 		return vkQueuePresentKHR(queue, &presentInfo);
 	}
 
-	void VulkanPresentView::BeginRender()
+	void VulkanPresentView::Render()
 	{
 		if(m_renderIsBegin)
 		{
-			auto commandBuffer = m_currentBufferDraw;
-			auto imageIndex = m_currentImageIndexDraw;
-
-			vkCmdEndRenderPass(commandBuffer);
-
-			if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-				MK_LOG_ERROR("failed to record command buffer!");
-			}
-
-			VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
-
-			const VkSemaphore waitSemaphores[] = { Buffers[FrameNumber].Sync.ImageAvailableSemaphore };
-			constexpr VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-			submitInfo.waitSemaphoreCount = 1;
-			submitInfo.pWaitSemaphores = waitSemaphores;
-			submitInfo.pWaitDstStageMask = waitStages;
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &commandBuffer;
-			const VkSemaphore signalSemaphores[] = { Buffers[FrameNumber].Sync.RenderFinishedSemaphore };
-			submitInfo.signalSemaphoreCount = 1;
-			submitInfo.pSignalSemaphores = signalSemaphores;
-
-			vkResetFences(vkState::API->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence));
-			if (vkQueueSubmit(vkState::API->GraphicsQueue, 1, &submitInfo, (Buffers[FrameNumber].Sync.InFlightFence)) != VK_SUCCESS) {
-				MK_LOG_ERROR("failed to submit draw command buffer!");
-			}
-
-			VkPresentInfoKHR presentInfo{ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
-
-			presentInfo.waitSemaphoreCount = 1;
-			presentInfo.pWaitSemaphores = signalSemaphores;
-
-			const VkSwapchainKHR swapChains[] = { SwapChain };
-			presentInfo.swapchainCount = 1;
-			presentInfo.pSwapchains = swapChains;
-			presentInfo.pImageIndices = &imageIndex;
-
-			VkResult result = vkQueuePresentKHR(vkState::API->PresentQueue, &presentInfo);
-
-			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-				RecreateSwapChain();
-			}
-			else if (result != VK_SUCCESS) {
-				MK_LOG_ERROR("failed to present swap chain image!");
-			}
-
-
-			FrameNumber = (FrameNumber + 1) % MaxFramesInFlight;
-
-			m_renderIsBegin = false;
+			EndRender();
 		}
 
-		//Wait CPU unlock 
-		vkWaitForFences(vkState::API->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence), TRUE, UINT64_MAX);
-		uint32_t imageIndex;
-		//Get image to draw
-		VkResult result = vkAcquireNextImageKHR(vkState::API->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[FrameNumber].Sync.ImageAvailableSemaphore), nullptr, &imageIndex);
-
-		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-
-			RecreateSwapChain();
-			return;
-		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-			MK_LOG_ERROR("failed to acquire swap chain image!");
-		}
-
-		//Reset command buffer
-		const VkCommandBuffer commandBuffer = Buffers[FrameNumber].CommandBuffer;
-
-		vkResetCommandBuffer(commandBuffer, 0);
-
-		m_currentImageIndexDraw = imageIndex;
-		m_currentBufferDraw = commandBuffer;
-
-		m_renderIsBegin = true;
-
-		//Begin renderPass
-		VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		beginInfo.flags = 0; // Optional
-		beginInfo.pInheritanceInfo = nullptr; // Optional
-
-		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to begin recording command buffer!");
-		}
-
-		VkRenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = vkState::API->RenderPass;
-		renderPassInfo.framebuffer = Buffers[imageIndex].FrameBuffer;
-		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = SwapChainExtent;
-		constexpr VkClearValue clearColor = { {{1.0f, 0.5f, 0.25f, 1.0f}} };
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &clearColor;
-
-		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vkState::API->GraphicsPipeline);
-
-		const auto [Title, Width, Height, VSync] = m_windowRef->GetData();
-
-		const VkViewport viewport = {
-			0,
-			0,
-			static_cast<float>(Width),
-			static_cast<float>(Height) };
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = VkExtent2D{
-			Width,
-			Height
-		};
-
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-		UpdateUniformBuffer(imageIndex);
-
-		vkCmdBindDescriptorSets(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			vkState::API->PipelineLayout,
-			0,
-			1,
-			&Buffers[imageIndex].DescriptorSet,
-			0,
-			nullptr);
+		BeginRender();
 	}
 
-	void VulkanPresentView::CleanupSwapChain(bool destroySwapChain) const
+	void VulkanPresentView::CleanupSwapChain(const bool destroySwapChain) const
 	{
 		WaitDeviceIdle();
 
 		for (uint32_t i = 0; i < ImageCount; i++)
 		{
-			vkDestroyImageView(vkState::API->LogicalDevice, Buffers[i].View, VK_NULL_HANDLE);
-			vkDestroyFramebuffer(vkState::API->LogicalDevice, Buffers[i].FrameBuffer, VK_NULL_HANDLE);
-			vkDestroyFence(vkState::API->LogicalDevice, Buffers[i].Sync.InFlightFence, VK_NULL_HANDLE);
-			vkDestroySemaphore(vkState::API->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
-			vkDestroySemaphore(vkState::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
-			vkFreeCommandBuffers(vkState::API->LogicalDevice, vkState::API->CommandPool, 1, &Buffers[i].CommandBuffer);
+			vkDestroyImageView(VkContext::API->LogicalDevice, Buffers[i].View, VK_NULL_HANDLE);
+			//vkDestroyFramebuffer(VkContext::API->LogicalDevice, Buffers[i].FrameBuffer, VK_NULL_HANDLE);
+			vkDestroyFence(VkContext::API->LogicalDevice, Buffers[i].Sync.InFlightFence, VK_NULL_HANDLE);
+			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
+			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
+			vkFreeCommandBuffers(VkContext::API->LogicalDevice, VkContext::API->CommandPool, 1, &Buffers[i].CommandBuffer);
 
 
-			//vmaUnmapMemory(vkState::API->VMAAllocator, Buffers[i].UniformBuffer.Allocation);
+			//vmaUnmapMemory(VkContext::API->VMAAllocator, Buffers[i].UniformBuffer.Allocation);
 			DestroyBuffer(Buffers[i].UniformBuffer);
 		}
 
-		vkDestroyDescriptorPool(vkState::API->LogicalDevice, DescriptorPool, nullptr);
+		vkDestroyDescriptorPool(VkContext::API->LogicalDevice, DescriptorPool, nullptr);
 		if(destroySwapChain)
-			vkDestroySwapchainKHR(vkState::API->LogicalDevice, SwapChain, VK_NULL_HANDLE);
+			vkDestroySwapchainKHR(VkContext::API->LogicalDevice, SwapChain, VK_NULL_HANDLE);
 
 
 	}
@@ -507,13 +386,13 @@ namespace MKEngine {
 	void VulkanPresentView::CreateCommandBuffers() {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = vkState::API->CommandPool;
+		allocInfo.commandPool = VkContext::API->CommandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = 1;
 
 		for (size_t i = 0; i < ImageCount; i++)
 		{
-			if (vkAllocateCommandBuffers(vkState::API->LogicalDevice, &allocInfo, &(Buffers[i].CommandBuffer)) != VK_SUCCESS) {
+			if (vkAllocateCommandBuffers(VkContext::API->LogicalDevice, &allocInfo, &(Buffers[i].CommandBuffer)) != VK_SUCCESS) {
 				MK_LOG_ERROR("Failed to allocate command buffers!");
 			}
 		}
@@ -532,7 +411,7 @@ namespace MKEngine {
 		{
 			Buffers[i].UniformBuffer = CreateBuffer(bufferDescription);
 
-			//vmaMapMemory(vkState::API->VMAAllocator, Buffers[i].UniformBuffer.Allocation, &Buffers[i].UniformBuffer.MappedData);
+			//vmaMapMemory(VkContext::API->VMAAllocator, Buffers[i].UniformBuffer.Allocation, &Buffers[i].UniformBuffer.MappedData);
 
 		}
 	}
@@ -565,7 +444,7 @@ namespace MKEngine {
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
 		poolInfo.maxSets = ImageCount;
-		if (vkCreateDescriptorPool(vkState::API->LogicalDevice, &poolInfo, nullptr, &DescriptorPool) != VK_SUCCESS) {
+		if (vkCreateDescriptorPool(VkContext::API->LogicalDevice, &poolInfo, nullptr, &DescriptorPool) != VK_SUCCESS) {
 			MK_LOG_ERROR("Failed to create descriptor pool!");
 		}
 	}
@@ -575,11 +454,11 @@ namespace MKEngine {
 		VkDescriptorSetAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
 		allocInfo.descriptorPool = DescriptorPool;
 		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &vkState::API->DescriptorSetLayout;
+		allocInfo.pSetLayouts = &VkContext::API->DescriptorSetLayout;
 
 		for (size_t i = 0; i < ImageCount; i++)
 		{
-			if (vkAllocateDescriptorSets(vkState::API->LogicalDevice, &allocInfo, &Buffers[i].DescriptorSet) != VK_SUCCESS) {
+			if (vkAllocateDescriptorSets(VkContext::API->LogicalDevice, &allocInfo, &Buffers[i].DescriptorSet) != VK_SUCCESS) {
 				MK_LOG_ERROR("failed to allocate descriptor sets!");
 			}
 		}
@@ -592,8 +471,8 @@ namespace MKEngine {
 
 			//VkDescriptorImageInfo imageInfo{};
 			//imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			//imageInfo.imageView = vkState::API->TestTexture.View;
-			//imageInfo.sampler = vkState::API->TestTexture.Sampler;
+			//imageInfo.imageView = VkContext::API->TestTexture.View;
+			//imageInfo.sampler = VkContext::API->TestTexture.Sampler;
 
 			std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
@@ -617,9 +496,206 @@ namespace MKEngine {
 			 */
 		
 
-			vkUpdateDescriptorSets(vkState::API->LogicalDevice, descriptorWrites.size(),
+			vkUpdateDescriptorSets(VkContext::API->LogicalDevice, descriptorWrites.size(),
 				descriptorWrites.data(), 0, nullptr);
 		}
+	}
+
+	void VulkanPresentView::EndRender()
+	{
+		const auto commandBuffer = m_currentBufferDraw;
+		const auto imageIndex = m_currentImageIndexDraw;
+
+		VkContext::API->End(commandBuffer);
+
+		const VkImageMemoryBarrier imageMemoryBarrier{
+.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+.image = Buffers[imageIndex].Image,
+.subresourceRange = {
+  .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+  .baseMipLevel = 0,
+  .levelCount = 1,
+  .baseArrayLayer = 0,
+  .layerCount = 1,
+}
+		};
+
+		vkCmdPipelineBarrier(
+			commandBuffer,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // srcStageMask
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, // dstStageMask
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1, // imageMemoryBarrierCount
+			&imageMemoryBarrier // pImageMemoryBarriers
+		);
+
+		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to record command buffer!");
+		}
+
+		VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
+
+		const VkSemaphore waitSemaphores[] = { Buffers[FrameNumber].Sync.ImageAvailableSemaphore };
+		constexpr VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+		const VkSemaphore signalSemaphores[] = { Buffers[FrameNumber].Sync.RenderFinishedSemaphore };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		vkResetFences(VkContext::API->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence));
+		if (vkQueueSubmit(VkContext::API->GraphicsQueue, 1, &submitInfo, (Buffers[FrameNumber].Sync.InFlightFence)) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to submit draw command buffer!");
+		}
+
+		VkPresentInfoKHR presentInfo{ VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
+
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+
+		const VkSwapchainKHR swapChains[] = { SwapChain };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &imageIndex;
+
+		const VkResult result = vkQueuePresentKHR(VkContext::API->PresentQueue, &presentInfo);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+			RecreateSwapChain();
+		}
+		else if (result != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to present swap chain image!");
+		}
+
+
+		FrameNumber = (FrameNumber + 1) % MaxFramesInFlight;
+
+		m_renderIsBegin = false;
+	}
+
+	void VulkanPresentView::BeginRender()
+	{
+
+		//Wait CPU unlock 
+		vkWaitForFences(VkContext::API->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence), TRUE, UINT64_MAX);
+		uint32_t imageIndex;
+
+		//Get image to draw
+
+		if (const VkResult result = 
+			vkAcquireNextImageKHR(VkContext::API->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[FrameNumber].Sync.ImageAvailableSemaphore), nullptr, &imageIndex);
+			result == VK_ERROR_OUT_OF_DATE_KHR) {
+			RecreateSwapChain();
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			MK_LOG_ERROR("failed to acquire swap chain image!");
+		}
+
+		//Reset command buffer
+		const VkCommandBuffer commandBuffer = Buffers[FrameNumber].CommandBuffer;
+
+		vkResetCommandBuffer(commandBuffer, 0);
+
+		m_currentImageIndexDraw = imageIndex;
+		m_currentBufferDraw = commandBuffer;
+
+		const auto [Title, Width, Height, VSync] = m_windowRef->GetData();
+
+		const VkViewport viewport = {
+			0,
+			0,
+			static_cast<float>(Width),
+			static_cast<float>(Height) };
+
+		//Begin command buffer
+		VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+		beginInfo.flags = 0; // Optional
+		beginInfo.pInheritanceInfo = nullptr; // Optional
+
+		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+			MK_LOG_ERROR("failed to begin recording command buffer!");
+		}
+
+		const VkImageMemoryBarrier imageMemoryBarrier{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+			.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			.image = Buffers[imageIndex].Image,
+			.subresourceRange = {
+			  .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			  .baseMipLevel = 0,
+			  .levelCount = 1,
+			  .baseArrayLayer = 0,
+			  .layerCount = 1,
+			}
+		};
+		constexpr VkClearColorValue color = { .float32 = {1.0, 0.0, 0.0} };
+
+		vkCmdPipelineBarrier(
+			commandBuffer,
+			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			0,
+			0,
+			nullptr,
+			0,
+			nullptr,
+			1, 
+			&imageMemoryBarrier
+		);
+
+		VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
+		colorAttachment.imageView = Buffers[imageIndex].View;
+		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.clearValue.color = color;
+
+		VkRenderingInfoKHR renderingInfo{ VK_STRUCTURE_TYPE_RENDERING_INFO };
+		renderingInfo.viewMask = 0;
+		renderingInfo.renderArea = { 0, 0, Width, Height };
+		renderingInfo.layerCount = 1;
+		renderingInfo.colorAttachmentCount = 1;
+		renderingInfo.pColorAttachments = &colorAttachment;
+		VkContext::API->Begin(commandBuffer, &renderingInfo);
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, VkContext::API->GraphicsPipeline);
+
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = VkExtent2D{
+			Width,
+			Height
+		};
+
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		UpdateUniformBuffer(imageIndex);
+
+		vkCmdBindDescriptorSets(
+			commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			VkContext::API->PipelineLayout,
+			0,
+			1,
+			&Buffers[imageIndex].DescriptorSet,
+			0,
+			nullptr);
+
+		m_renderIsBegin = true;
 	}
 
 }

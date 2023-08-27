@@ -1,5 +1,5 @@
 #pragma once
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 
 namespace MKEngine {
 
@@ -16,6 +16,8 @@ namespace MKEngine {
 		std::vector<VkQueueFamilyProperties> QueueFamilyProperties;
 		std::vector<std::string> SupportedExtensions;
 
+		VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeaturesKHR{};
+
 		VulkanDevice() = default;
 
 		uint32_t		GetPresentViewQueueFamilyIndex();
@@ -28,7 +30,6 @@ namespace MKEngine {
 		VkCommandPool   CreateCommandPool(uint32_t queueFamilyIndex,
 			VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 		void CreateCommandBuffer();
-
 
 	};
 

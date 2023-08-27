@@ -1,12 +1,12 @@
 #pragma once
 #include <SDL_vulkan.h>
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 
 #include "vk_mem_alloc.h"
 
 namespace MKEngine
 {
-	class vkState
+	class VkContext
 	{
 	public:
 		VkInstance Instance = nullptr;
@@ -17,7 +17,7 @@ namespace MKEngine
 		VkCommandBuffer MainCommandBuffer = nullptr;
 
 		VkPipeline GraphicsPipeline = nullptr;
-		VkRenderPass RenderPass = nullptr;
+		//VkRenderPass RenderPass = nullptr;
 		VkPipelineLayout PipelineLayout = nullptr;
 
 		VkQueue GraphicsQueue{};
@@ -35,7 +35,11 @@ namespace MKEngine
 		} QueueFamilyIndices;
 		VkDescriptorSetLayout DescriptorSetLayout;
 
-		static vkState* API;
+		static VkContext* API;
+
+		PFN_vkCmdBeginRendering Begin;
+		PFN_vkCmdEndRendering End;
+
 	};
 
 	void WaitDeviceIdle();

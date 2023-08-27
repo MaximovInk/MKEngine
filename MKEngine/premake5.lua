@@ -23,21 +23,24 @@ project "MKEngine"
         "./vendor/glm/include",
         "./vendor/vulkan/include",
         "./vendor/stb/include",
-        "./vendor/vma/include"
+        "./vendor/vma/include",
+        "./vendor/spirv-reflect/include"
     }
 
     libdirs{
         "./vendor/sdl/lib/x64",
         "./vendor/vulkan/include",
         "./vendor/vulkan/lib",
-        "./vendor/vma/lib"
+        "./vendor/vma/lib",
+        "./vendor/spirv-reflect/lib"
     }
 
     links{
         "SDL2main.lib",
         "SDL2.lib",
         "vulkan-1.lib",
-        "VulkanMemoryAllocator.lib"
+        "VulkanMemoryAllocator.lib",
+        "spirv-reflect-static.lib"
     }
 
     filter "system:windows"
