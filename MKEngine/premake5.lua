@@ -1,7 +1,7 @@
 project "MKEngine"
     kind "StaticLib"
     language "C++"
-    cppdialect "C++17"
+    cppdialect "C++20"
 	staticruntime "on"
 
     pchheader "mkpch.h"
@@ -13,7 +13,8 @@ project "MKEngine"
     files
 	{
 		"src/**.h",
-		"src/**.cpp"
+		"src/**.cpp",
+        --"./vendor/rapidobj/src/**.hpp"
     }
 
     includedirs{
@@ -24,7 +25,8 @@ project "MKEngine"
         "./vendor/vulkan/include",
         "./vendor/stb/include",
         "./vendor/vma/include",
-        "./vendor/spirv-reflect/include"
+        "./vendor/spirv-reflect/include",
+        "./vendor/rapidobj/src"
     }
 
     libdirs{

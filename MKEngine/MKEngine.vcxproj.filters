@@ -218,5 +218,6 @@
       <Filter>MKEngine\WindowsManager</Filter>
     </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.cpp" />
   </ItemGroup>
 </Project>

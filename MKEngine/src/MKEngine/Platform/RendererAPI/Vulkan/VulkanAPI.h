@@ -18,6 +18,9 @@ namespace MKEngine {
 		VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 #endif
 
+		static Mesh testMesh;
+		static VkTexture testTexture;
+
 		VulkanDevice Device;
 
 		std::map<std::int16_t, VulkanPresentView*> PresentViews;

@@ -5,9 +5,8 @@
 #include "presentView.h"
 #include "MKEngine/Platform/PlatformBackend.h"
 #include "vkExtern.h"
-#include "../vertex.h"
 #include "vkFunctions.h"
-
+#include "VulkanAPI.h"
 
 namespace MKEngine {
 	
@@ -34,6 +33,7 @@ namespace MKEngine {
 		vkDestroySurfaceKHR(VkContext::API->Instance, Surface, nullptr);
 
 		SwapChain = VK_NULL_HANDLE;
+
 	}
 
 	void VulkanPresentView::InitSurface(Window* window)
@@ -79,7 +79,6 @@ namespace MKEngine {
 		m_windowRef = window;
 
 		MK_LOG_INFO("CHOOSED FORMAT: {0}, {1}", string_VkFormat(ColorFormat), string_VkColorSpaceKHR(ColorSpace));
-
 	}
 	
 	void VulkanPresentView::CreateSwapChain()
@@ -286,33 +285,7 @@ namespace MKEngine {
 		//Graphics pipeline ()
 		FinalizeCreation();
 	}
-	/*
-
-	void VulkanPresentView::CreateFrameBuffer()
-	{
-		for (size_t i = 0; i < ImageCount; i++) {
-			const VkImageView attachments[] = {
-				Buffers[i].View
-			};
-
-			VkFramebufferCreateInfo createInfo{};
-			createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			//createInfo.renderPass = VkContext::API->RenderPass;
-			createInfo.attachmentCount = 1;
-			createInfo.pAttachments = attachments;
-			createInfo.width = SwapChainExtent.width;
-			createInfo.height = SwapChainExtent.height;
-			createInfo.layers = 1;
-
-			if (vkCreateFramebuffer(VkContext::API->LogicalDevice, &createInfo, VK_NULL_HANDLE, &(Buffers[i].FrameBuffer)) != VK_SUCCESS) {
-				MK_LOG_ERROR("Failed to create framebuffer");
-			}
-
-		}
-		MK_LOG_INFO("Created framebuffers x{0}", ImageCount);
-	}
-
-	*/
+	
 	void VulkanPresentView::CreateSync()
 	{
 		for (size_t i = 0; i < ImageCount; i++)
@@ -350,12 +323,24 @@ namespace MKEngine {
 
 	void VulkanPresentView::Render()
 	{
+
 		if(m_renderIsBegin)
 		{
 			EndRender();
+			m_renderIsBegin = false;
 		}
 
 		BeginRender();
+
+		const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -1)) * glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
+		//const glm::mat4 model = glm::mat4(1.0f);
+		ObjectData data;
+		data.Model = model;
+		vkCmdPushConstants(m_currentBufferDraw, VkContext::API->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
+
+		VulkanAPI::testMesh.Draw(m_currentBufferDraw);
+
+		m_renderIsBegin = true;
 	}
 
 	void VulkanPresentView::CleanupSwapChain(const bool destroySwapChain) const
@@ -365,15 +350,11 @@ namespace MKEngine {
 		for (uint32_t i = 0; i < ImageCount; i++)
 		{
 			vkDestroyImageView(VkContext::API->LogicalDevice, Buffers[i].View, VK_NULL_HANDLE);
-			//vkDestroyFramebuffer(VkContext::API->LogicalDevice, Buffers[i].FrameBuffer, VK_NULL_HANDLE);
 			vkDestroyFence(VkContext::API->LogicalDevice, Buffers[i].Sync.InFlightFence, VK_NULL_HANDLE);
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
 			vkFreeCommandBuffers(VkContext::API->LogicalDevice, VkContext::API->CommandPool, 1, &Buffers[i].CommandBuffer);
-
-
-			//vmaUnmapMemory(VkContext::API->VMAAllocator, Buffers[i].UniformBuffer.Allocation);
-			DestroyBuffer(Buffers[i].UniformBuffer);
+			Buffer::Destroy(Buffers[i].UniformBuffer);
 		}
 
 		vkDestroyDescriptorPool(VkContext::API->LogicalDevice, DescriptorPool, nullptr);
@@ -409,7 +390,7 @@ namespace MKEngine {
 
 		for (size_t i = 0; i < ImageCount; i++)
 		{
-			Buffers[i].UniformBuffer = CreateBuffer(bufferDescription);
+			Buffers[i].UniformBuffer = Buffer::Create(bufferDescription);
 
 			//vmaMapMemory(VkContext::API->VMAAllocator, Buffers[i].UniformBuffer.Allocation, &Buffers[i].UniformBuffer.MappedData);
 
@@ -417,6 +398,7 @@ namespace MKEngine {
 	}
 
 	void VulkanPresentView::UpdateUniformBuffer(const uint32_t currentImage) {
+		const auto [Title, Width, Height, VSync] = m_windowRef->GetData();
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
 		const auto currentTime = std::chrono::high_resolution_clock::now();
@@ -426,7 +408,7 @@ namespace MKEngine {
 		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		ubo.view = glm::lookAtRH(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 
-		ubo.proj = glm::perspectiveRH_ZO(glm::radians(45.0f), SwapChainExtent.width / (float)SwapChainExtent.height, 0.1f, 10.0f);
+		ubo.proj = glm::perspectiveRH_ZO(glm::radians(45.0f), Width / static_cast<float>(Height), 0.1f, 10.0f);
 		//ubo.proj[1][1] *= -1;
 		memcpy(Buffers[currentImage].UniformBuffer.MappedData, &ubo, sizeof(ubo));
 	}
@@ -469,12 +451,12 @@ namespace MKEngine {
 			bufferInfo.offset = 0;
 			bufferInfo.range = sizeof(UniformBufferObject);
 
-			//VkDescriptorImageInfo imageInfo{};
-			//imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			//imageInfo.imageView = VkContext::API->TestTexture.View;
-			//imageInfo.sampler = VkContext::API->TestTexture.Sampler;
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = VulkanAPI::testTexture.View;
+			imageInfo.sampler = VulkanAPI::testTexture.Sampler;
 
-			std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[0].dstSet = Buffers[i].DescriptorSet;
@@ -484,16 +466,16 @@ namespace MKEngine {
 			descriptorWrites[0].descriptorCount = 1;
 			descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-			/*
-			 *descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			
+			 descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[1].dstSet = Buffers[i].DescriptorSet;
 			descriptorWrites[1].dstBinding = 1;
 			descriptorWrites[1].dstArrayElement = 0;
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			descriptorWrites[1].descriptorCount = 1;
 			descriptorWrites[1].pImageInfo = &imageInfo;
-			 *
-			 */
+
+			 
 		
 
 			vkUpdateDescriptorSets(VkContext::API->LogicalDevice, descriptorWrites.size(),
@@ -577,10 +559,7 @@ namespace MKEngine {
 			MK_LOG_ERROR("failed to present swap chain image!");
 		}
 
-
 		FrameNumber = (FrameNumber + 1) % MaxFramesInFlight;
-
-		m_renderIsBegin = false;
 	}
 
 	void VulkanPresentView::BeginRender()
@@ -685,7 +664,8 @@ namespace MKEngine {
 
 		UpdateUniformBuffer(imageIndex);
 
-		vkCmdBindDescriptorSets(
+		
+		 vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			VkContext::API->PipelineLayout,
@@ -694,8 +674,6 @@ namespace MKEngine {
 			&Buffers[imageIndex].DescriptorSet,
 			0,
 			nullptr);
-
-		m_renderIsBegin = true;
 	}
 
 }

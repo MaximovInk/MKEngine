@@ -2,6 +2,10 @@
 #include <vector>
 #include "MKEngine/Platform/Window.h"
 #include "buffer.h"
+#include "vkTexture.h"
+
+#include "../Mesh.h"
+//#include "MKEngine/Platform/RendererAPI/Texture.h"
 
 namespace MKEngine {
 
@@ -47,6 +51,7 @@ namespace MKEngine {
 		//Test
 		std::vector<Buffer> UniformBuffers;
 		VkDescriptorPool DescriptorPool;
+		
 
 		explicit VulkanPresentView();
 		~VulkanPresentView();

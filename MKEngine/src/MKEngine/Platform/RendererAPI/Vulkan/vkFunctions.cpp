@@ -100,84 +100,7 @@ namespace MKEngine {
 	 
 	 
 	 */
-	Buffer CreateBuffer(const BufferDescription& description)
-	{
-		Buffer buffer;
 
-		const VkDeviceSize bufferSize = description.Size;
-
-		VkBufferCreateInfo bufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-		bufferInfo.size = description.Size;
-		bufferInfo.usage = description.Usage;
-
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VmaAllocationCreateInfo allocationCreateInfo{};
-		allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-
-		if(description.Data)
-		{
-			bufferInfo.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		}
-		if (description.Access == DataAccess::Host)
-		{
-			allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
-		}
-
-		vmaCreateBuffer(VkContext::API->VMAAllocator, &bufferInfo,
-			&allocationCreateInfo, &buffer.Resource, &buffer.Allocation, nullptr);
-
-		if (description.Access == DataAccess::Host)
-		{
-			vmaMapMemory(VkContext::API->VMAAllocator, buffer.Allocation, &buffer.MappedData);
-		}
-
-		if (description.Data)
-		{
-			if (description.Access == DataAccess::Host)
-			{
-				memcpy(buffer.MappedData, description.Data, buffer.Size);
-			}
-			else
-			{
-				BufferDescription stagingDescription;
-				stagingDescription.Size = bufferSize;
-				stagingDescription.Data = description.Data;
-				stagingDescription.Usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-				stagingDescription.Access = DataAccess::Host;
-
-				const Buffer stagingBuffer = CreateBuffer(stagingDescription);
-
-				CopyBuffer(stagingBuffer.Resource, buffer.Resource, description.Size);
-
-				DestroyBuffer(stagingBuffer);
-			}
-		}
-
-		return buffer;
-	}
-
-	void DestroyBuffer(const Buffer& buffer)
-	{
-		if (buffer.MappedData)
-		{
-			vmaUnmapMemory(VkContext::API->VMAAllocator, buffer.Allocation);
-		}
-
-		vmaDestroyBuffer(VkContext::API->VMAAllocator, buffer.Resource, buffer.Allocation);
-	}
-
-	void CopyBuffer( const VkBuffer srcBuffer, const VkBuffer dstBuffer, const VkDeviceSize size)
-	{
-		ImmediateSubmit([&](VkCommandBuffer commandBuffer)
-			{
-				VkBufferCopy copyRegion{};
-				copyRegion.srcOffset = 0; // Optional
-				copyRegion.dstOffset = 0; // Optional
-				copyRegion.size = size;
-				vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-			});
-	}
 
 	static VkShaderStageFlags GetShaderStage(
 		const SpvReflectShaderStageFlagBits reflectShaderStage)
@@ -297,6 +220,8 @@ namespace MKEngine {
 
 	VkTexture CreateTexture(const TextureDescription& description)
 	{
+
+		MK_LOG_INFO("CREATING TEXTURE");
 		//Load from file
 		int texWidth, texHeight, texChannels;
 		stbi_uc* pixels = stbi_load(description.Path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -312,7 +237,7 @@ namespace MKEngine {
 		stagingBufferDescription.Usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		stagingBufferDescription.Data = pixels;
 		stagingBufferDescription.Size = imageSize;
-		const Buffer stagingBuffer = CreateBuffer(stagingBufferDescription);
+		const Buffer stagingBuffer = Buffer::Create(stagingBufferDescription);
 		//Free stbi image 
 		stbi_image_free(pixels);
 
@@ -349,7 +274,7 @@ namespace MKEngine {
 		//Set TransitionLayout for shaders 
 		TransitionImageLayout(texture.Resource, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-		DestroyBuffer(stagingBuffer);
+		Buffer::Destroy(stagingBuffer);
 
 		//Create ImageView
 		VkImageViewCreateInfo viewInfo{ VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
@@ -395,10 +320,14 @@ namespace MKEngine {
 
 	void DestroyTexture(VkTexture texture)
 	{
-		vkDestroySampler(VkContext::API->LogicalDevice, texture.Sampler, nullptr);
-		vkDestroyImageView(VkContext::API->LogicalDevice, texture.View, nullptr);
+		MK_LOG_INFO("DEstroying texture {0}, {1}, {2}", texture.Sampler != VK_NULL_HANDLE, texture.View != VK_NULL_HANDLE, texture.Resource != VK_NULL_HANDLE);
 
-		vmaDestroyImage(VkContext::API->VMAAllocator, texture.Resource, texture.Allocation);
+		 if(texture.Sampler != VK_NULL_HANDLE)
+		 vkDestroySampler(VkContext::API->LogicalDevice, texture.Sampler, nullptr);
+		if (texture.View != VK_NULL_HANDLE)
+		 vkDestroyImageView(VkContext::API->LogicalDevice, texture.View, nullptr);
+		if (texture.Resource != VK_NULL_HANDLE)
+		 vmaDestroyImage(VkContext::API->VMAAllocator, texture.Resource, texture.Allocation);
 	}
 
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -485,38 +414,6 @@ namespace MKEngine {
 				);
 			});
 
-	}
-
-	VkVertexInputBindingDescription GetBindingDescription()
-	{
-		VkVertexInputBindingDescription bindingDescription;
-		bindingDescription.binding = 0;
-		bindingDescription.stride = sizeof(Vertex);
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		return bindingDescription;
-	}
-
-	std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions()
-	{
-		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions;
-
-		attributeDescriptions[0].binding = 0;
-		attributeDescriptions[0].location = 0;
-		attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[0].offset = offsetof(Vertex, Position);
-
-		attributeDescriptions[1].binding = 0;
-		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescriptions[1].offset = offsetof(Vertex, Color);
-
-		attributeDescriptions[2].binding = 0;
-		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[2].offset = offsetof(Vertex, TexCoord);
-
-		return attributeDescriptions;
 	}
 
 	void ImmediateSubmit(std::function<void(VkCommandBuffer)> const& callback)
