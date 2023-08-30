@@ -1,12 +1,12 @@
 #pragma once
-#include "vk_mem_alloc.h"
 #include <vulkan/vulkan_core.h>
 #include "MKEngine/Platform/Window.h"
 #include "device.h"
 #include "presentView.h"
+#include "vkTexture.h"
 #include "Pipeline/graphicsPipeline.h"
-
-
+#include "../model.h"
+#include "../Mesh.h"
 
 namespace MKEngine {
 	class VulkanAPI
@@ -20,6 +20,7 @@ namespace MKEngine {
 
 		static Mesh testMesh;
 		static VkTexture testTexture;
+		static Model testModel;
 
 		VulkanDevice Device;
 

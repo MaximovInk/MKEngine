@@ -14,6 +14,7 @@ namespace MKEngine {
 
 	Mesh VulkanAPI::testMesh;
 	VkTexture VulkanAPI::testTexture;
+	Model VulkanAPI::testModel;
 
 	void VulkanAPI::Initialize()
 	{
@@ -44,7 +45,7 @@ namespace MKEngine {
 		description.Shaders.emplace_back(CreateShader(vertDesc));
 		description.Shaders.emplace_back(CreateShader(fragDesc));
 
-		description.VertexInput.DefineAttribute(0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, Position));
+		description.VertexInput.DefineAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Position));
 		description.VertexInput.DefineAttribute(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Color));
 		description.VertexInput.DefineAttribute(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, TexCoord));
 		description.FrontFace = VK_FRONT_FACE_CLOCKWISE;
@@ -62,22 +63,21 @@ namespace MKEngine {
 		testMesh.Apply();
 
 		TextureDescription textureDescription{};
-		textureDescription.Path = "textures/texture.jpg";
+		textureDescription.Path = "textures/uvcheck.png";
 		textureDescription.Usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		textureDescription.Format = VK_FORMAT_R8G8B8A8_SRGB;
 		testTexture = CreateTexture(textureDescription);
 
-
+		testModel = Model::LoadModel("models/untitled.obj");
 	}
 
 	void VulkanAPI::Finalize()
 	{
 		WaitDeviceIdle();
 
-		MK_LOG_INFO("DESTROY TEXTURE");
 		Mesh::Destroy(testMesh);
 		DestroyTexture(testTexture);
-		MK_LOG_INFO("DESTROYED");
+		Model::DestroyModel(testModel);
 
 		for (const auto [id, view] : PresentViews) {
 			delete view;

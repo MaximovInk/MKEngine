@@ -14,7 +14,6 @@ project "MKEngine"
 	{
 		"src/**.h",
 		"src/**.cpp",
-        --"./vendor/rapidobj/src/**.hpp"
     }
 
     includedirs{
@@ -26,7 +25,7 @@ project "MKEngine"
         "./vendor/stb/include",
         "./vendor/vma/include",
         "./vendor/spirv-reflect/include",
-        "./vendor/rapidobj/src"
+        "./vendor/assimp/include"
     }
 
     libdirs{
@@ -34,7 +33,8 @@ project "MKEngine"
         "./vendor/vulkan/include",
         "./vendor/vulkan/lib",
         "./vendor/vma/lib",
-        "./vendor/spirv-reflect/lib"
+        "./vendor/spirv-reflect/lib",
+        "./vendor/assimp/lib"
     }
 
     links{
@@ -42,7 +42,9 @@ project "MKEngine"
         "SDL2.lib",
         "vulkan-1.lib",
         "VulkanMemoryAllocator.lib",
-        "spirv-reflect-static.lib"
+        "spirv-reflect-static.lib",
+        "zlibstaticd.lib",
+        "assimp-vc143-mtd.lib"
     }
 
     filter "system:windows"

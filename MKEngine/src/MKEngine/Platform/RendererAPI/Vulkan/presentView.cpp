@@ -338,7 +338,7 @@ namespace MKEngine {
 		data.Model = model;
 		vkCmdPushConstants(m_currentBufferDraw, VkContext::API->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
 
-		VulkanAPI::testMesh.Draw(m_currentBufferDraw);
+		VulkanAPI::testModel.Draw(m_currentBufferDraw);
 
 		m_renderIsBegin = true;
 	}

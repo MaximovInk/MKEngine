@@ -13,7 +13,6 @@ namespace MKEngine
 		Mesh() = default;
 
 		void Apply();
-		static Mesh LoadObjMesh(std::string filename);
 		void Draw(VkCommandBuffer commandBuffer) const;
 		static void Destroy(const Mesh& mesh);
 

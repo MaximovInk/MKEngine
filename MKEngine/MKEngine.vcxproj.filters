@@ -84,12 +84,6 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h">
       <Filter>MKEngine\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Mesh.h">
-      <Filter>MKEngine\Platform\RendererAPI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Texture.h">
-      <Filter>MKEngine\Platform\RendererAPI</Filter>
-    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipeline.h">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
     </ClInclude>
@@ -132,6 +126,15 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\mesh.h">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\model.h">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\texture.h">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
@@ -172,12 +175,6 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp">
       <Filter>MKEngine\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Mesh.cpp">
-      <Filter>MKEngine\Platform\RendererAPI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Texture.cpp">
-      <Filter>MKEngine\Platform\RendererAPI</Filter>
-    </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipeline.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
     </ClCompile>
@@ -191,6 +188,9 @@
       <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.cpp">
+      <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp">
@@ -211,6 +211,15 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\mesh.cpp">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\model.cpp">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\texture.cpp">
+      <Filter>MKEngine\Platform\RendererAPI</Filter>
+    </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\Window.cpp">
       <Filter>MKEngine\Platform</Filter>
     </ClCompile>
@@ -218,6 +227,5 @@
       <Filter>MKEngine\WindowsManager</Filter>
     </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.cpp" />
   </ItemGroup>
 </Project>
