@@ -72,10 +72,10 @@
     <ClInclude Include="src\MKEngine\Graphics.h">
       <Filter>MKEngine</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Input\KeyCode.h">
+    <ClInclude Include="src\MKEngine\Input\keyCode.h">
       <Filter>MKEngine\Input</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Input\MouseCode.h">
+    <ClInclude Include="src\MKEngine\Input\mouseCode.h">
       <Filter>MKEngine\Input</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h">
@@ -149,6 +149,8 @@
     </ClInclude>
     <ClInclude Include="src\mkengine.h" />
     <ClInclude Include="src\mkpch.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\camera.h" />
+    <ClInclude Include="src\MKEngine\Input\input.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -227,5 +229,7 @@
       <Filter>MKEngine\WindowsManager</Filter>
     </ClCompile>
     <ClCompile Include="src\mkpch.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\camera.cpp" />
+    <ClCompile Include="src\MKEngine\Input\input.cpp" />
   </ItemGroup>
 </Project>

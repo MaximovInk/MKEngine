@@ -7,13 +7,12 @@
 #include "Pipeline/graphicsPipeline.h"
 #include "../model.h"
 #include "../Mesh.h"
+#include "MKEngine/Platform/RendererAPI/camera.h"
 
 namespace MKEngine {
 	class VulkanAPI
 	{
 	public:
-
-
 #if VULKAN_VALIDATION
 		VkDebugUtilsMessengerEXT DebugMessenger = VK_NULL_HANDLE;
 #endif
@@ -21,6 +20,7 @@ namespace MKEngine {
 		static Mesh testMesh;
 		static VkTexture testTexture;
 		static Model testModel;
+		static Camera testCamera;
 
 		VulkanDevice Device;
 

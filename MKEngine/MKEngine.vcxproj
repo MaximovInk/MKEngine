@@ -114,10 +114,12 @@
     <ClInclude Include="src\MKEngine\Events\MouseEvent.h" />
     <ClInclude Include="src\MKEngine\Events\WindowEvent.h" />
     <ClInclude Include="src\MKEngine\Graphics.h" />
-    <ClInclude Include="src\MKEngine\Input\KeyCode.h" />
-    <ClInclude Include="src\MKEngine\Input\MouseCode.h" />
+    <ClInclude Include="src\MKEngine\Input\input.h" />
+    <ClInclude Include="src\MKEngine\Input\keyCode.h" />
+    <ClInclude Include="src\MKEngine\Input\mouseCode.h" />
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\camera.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipeline.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipelineDescription.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\pipelineColorAttachment.h" />
@@ -149,8 +151,10 @@
     <ClCompile Include="src\MKEngine\Core\LayerStack.cpp" />
     <ClCompile Include="src\MKEngine\Core\Log.cpp" />
     <ClCompile Include="src\MKEngine\Graphics.cpp" />
+    <ClCompile Include="src\MKEngine\Input\input.cpp" />
     <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\camera.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipeline.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipelineDescription.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\pipelineColorAttachment.cpp" />

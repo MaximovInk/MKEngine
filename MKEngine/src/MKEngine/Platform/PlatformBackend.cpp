@@ -5,6 +5,7 @@
 
 #include "PlatformBackend.h"
 #include "MKEngine/Core/Log.h"
+#include "MKEngine/Input/input.h"
 
 namespace MKEngine {
 
@@ -62,6 +63,7 @@ namespace MKEngine {
 
     void PlatformBackend::HandleEvents() const
     {
+        Input::update();
         SDL_Event event;
 
         while (SDL_PollEvent(&event)) {
@@ -99,11 +101,16 @@ namespace MKEngine {
                 }
             default: ;
             }
+
+            Input::EventUpdate(&event);
         }
     }
 
     void PlatformBackend::Update()
     {
+        
+
+
         for (const auto& [key, value] : windows) {
             if(value.MKWindow == nullptr)
             {

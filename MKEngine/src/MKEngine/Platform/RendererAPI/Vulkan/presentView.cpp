@@ -7,6 +7,7 @@
 #include "vkExtern.h"
 #include "vkFunctions.h"
 #include "VulkanAPI.h"
+#include "MKEngine/Input/input.h"
 
 namespace MKEngine {
 	
@@ -332,8 +333,12 @@ namespace MKEngine {
 
 		BeginRender();
 
-		const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -1)) * glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
+		const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
 		//const glm::mat4 model = glm::mat4(1.0f);
+
+		
+		//const glm::mat4 model = VulkanAPI::testCamera.Matrices.Perspective * VulkanAPI::testCamera.Matrices.View * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -1));
+
 		ObjectData data;
 		data.Model = model;
 		vkCmdPushConstants(m_currentBufferDraw, VkContext::API->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
@@ -405,11 +410,48 @@ namespace MKEngine {
 		const float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 		UniformBufferObject ubo{};
-		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		ubo.view = glm::lookAtRH(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-		ubo.proj = glm::perspectiveRH_ZO(glm::radians(45.0f), Width / static_cast<float>(Height), 0.1f, 10.0f);
-		//ubo.proj[1][1] *= -1;
+
+		const auto wnd = m_windowRef->GetData();
+
+		VulkanAPI::testCamera.UpdateAspectRatio(static_cast<float>(wnd.Width) / wnd.Height);
+
+		CameraInput input;
+
+		if (Input::getKey(Key::A))
+			input.moveInput.x -= 1;
+		if (Input::getKey(Key::D))
+			input.moveInput.x += 1;
+		if (Input::getKey(Key::W))
+			input.moveInput.y += 1;
+		if (Input::getKey(Key::S))
+			input.moveInput.y -= 1;
+
+		glm::vec3 delta;
+		delta.y = time * glm::radians(90.0f);
+
+		VulkanAPI::testCamera.Update(Application::DeltaTime, input);
+
+		const auto wheelDelta = Input::getMouseScrollDelta();
+
+		float deltaY = 0;
+		float deltaX = 0;
+
+		if (Input::getMouseButton(Mouse::LeftButton))
+		{
+			deltaX = Input::getMouseDeltaX();
+			deltaY = -Input::getMouseDeltaY();
+		}
+
+		VulkanAPI::testCamera.Rotate(glm::vec3(deltaY, 0.0f, 0.0f));
+		VulkanAPI::testCamera.Rotate(glm::vec3(0.0f, deltaX, 0.0f));
+		VulkanAPI::testCamera.Translate(glm::vec3(0.0f, 0.0f, (float)wheelDelta * 0.5f));
+
+		ubo.view = VulkanAPI::testCamera.Matrices.View;
+		ubo.proj = VulkanAPI::testCamera.Matrices.Perspective;
+		//ubo.model = glm::mat4(1.0);
+
 		memcpy(Buffers[currentImage].UniformBuffer.MappedData, &ubo, sizeof(ubo));
 	}
 

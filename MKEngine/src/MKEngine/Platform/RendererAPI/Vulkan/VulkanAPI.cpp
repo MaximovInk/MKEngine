@@ -10,11 +10,14 @@
 
 #include "VkContext.h"
 
+#include "../camera.h"
+
 namespace MKEngine {
 
 	Mesh VulkanAPI::testMesh;
 	VkTexture VulkanAPI::testTexture;
 	Model VulkanAPI::testModel;
+	Camera VulkanAPI::testCamera;
 
 	void VulkanAPI::Initialize()
 	{
@@ -69,6 +72,11 @@ namespace MKEngine {
 		testTexture = CreateTexture(textureDescription);
 
 		testModel = Model::LoadModel("models/untitled.obj");
+
+		testCamera.FlipY = true;
+		testCamera.SetPerspective(75, 1, 0.1, 100);
+		testCamera.SetPosition(glm::vec3(0.0f, 2.5f, -10.25f));
+		testCamera.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 	}
 
 	void VulkanAPI::Finalize()

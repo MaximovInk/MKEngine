@@ -1,12 +1,13 @@
 #include "mkpch.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 #include "model.h"
 
 #include "MKEngine/Core/Log.h"
+
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 
 namespace MKEngine {
