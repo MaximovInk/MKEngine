@@ -49,7 +49,6 @@ namespace MKEngine {
 		desc.AddBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
 		desc.AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 
-
 		VkContext::API->DescriptorSetLayout = DescriptorSetLayout::CreateDescriptorSetLayout(desc);
 		const auto layout = CreatePipelineLayout(VkContext::API->LogicalDevice, VkContext::API->DescriptorSetLayout.Resource);
 
@@ -61,6 +60,8 @@ namespace MKEngine {
 		description.VertexInput.DefineAttribute(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, TexCoord));
 		description.FrontFace = VK_FRONT_FACE_CLOCKWISE;
 		description.PipelineLayout = layout;
+
+		description.ColorAttachment.SetDepthAttachment(VK_FORMAT_D32_SFLOAT, VK_COMPARE_OP_LESS, true);
 
 		description.VertexInput.VertexDefineSlot(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
 

@@ -149,6 +149,11 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayout.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetDescription.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingInfo.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingDepthAttachment.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingColorAttachment.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\ImageView.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\Image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -225,5 +230,8 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayout.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Texture.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingInfo.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\ImageView.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\Image.cpp" />
   </ItemGroup>
 </Project>

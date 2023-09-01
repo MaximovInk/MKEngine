@@ -10,12 +10,13 @@ namespace MKEngine
 		DescriptorSetLayout Layout;
 	};
 
-
 	class DescriptorSet
 	{
 	public:
 		VkDescriptorSet Resource;
 		VkDescriptorPool Pool;
+
+		DescriptorSet() = default;
 
 		static DescriptorSet Create(const DescriptorSetDescription& description);
 		static void Destroy(DescriptorSet descriptorSet);

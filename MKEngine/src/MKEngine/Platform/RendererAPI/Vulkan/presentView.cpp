@@ -7,6 +7,7 @@
 #include "vkExtern.h"
 #include "VulkanAPI.h"
 #include "MKEngine/Input/input.h"
+#include "Rendering/RenderingInfo.h"
 
 namespace MKEngine {
 	
@@ -559,7 +560,7 @@ namespace MKEngine {
 
 		//Get image to draw
 
-		if (const VkResult result = 
+		if (const VkResult result =
 			vkAcquireNextImageKHR(VkContext::API->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[FrameNumber].Sync.ImageAvailableSemaphore), nullptr, &imageIndex);
 			result == VK_ERROR_OUT_OF_DATE_KHR) {
 			RecreateSwapChain();
@@ -608,7 +609,11 @@ namespace MKEngine {
 			  .layerCount = 1,
 			}
 		};
-		constexpr VkClearColorValue color = { .float32 = {1.0, 0.0, 0.0} };
+
+		VkClearValue clearValue;
+
+		clearValue.color = { {1.0, 0.0, 0.0} };
+		clearValue.depthStencil = { 1.0f, 0 };
 
 		vkCmdPipelineBarrier(
 			commandBuffer,
@@ -619,16 +624,17 @@ namespace MKEngine {
 			nullptr,
 			0,
 			nullptr,
-			1, 
+			1,
 			&imageMemoryBarrier
 		);
 
-		VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
+		
+		 VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
 		colorAttachment.imageView = Buffers[imageIndex].View;
 		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.clearValue.color = color;
+		colorAttachment.clearValue = clearValue;
 
 		VkRenderingInfoKHR renderingInfo{ VK_STRUCTURE_TYPE_RENDERING_INFO };
 		renderingInfo.viewMask = 0;
@@ -636,6 +642,14 @@ namespace MKEngine {
 		renderingInfo.layerCount = 1;
 		renderingInfo.colorAttachmentCount = 1;
 		renderingInfo.pColorAttachments = &colorAttachment;
+		 
+
+		//RenderingInfo renderingInfo({ 0, 0, Width, Height });
+
+		//renderingInfo.AddColorAttachment(Buffers[imageIndex].View);
+		//renderingInfo.SetDepthAttachment(Buffers[imageIndex].);
+
+
 		VkContext::API->Begin(commandBuffer, &renderingInfo);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, VkContext::API->GraphicsPipeline);
@@ -652,8 +666,8 @@ namespace MKEngine {
 
 		UpdateUniformBuffer(imageIndex);
 
-		
-		 vkCmdBindDescriptorSets(
+
+		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			VkContext::API->PipelineLayout,

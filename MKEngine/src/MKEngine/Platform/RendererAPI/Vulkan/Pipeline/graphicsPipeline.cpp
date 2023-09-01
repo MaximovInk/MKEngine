@@ -86,6 +86,7 @@ namespace MKEngine {
         depthState.depthCompareOp = description.ColorAttachment.HasDepthAttachment() ? description.ColorAttachment.GetDepthAttachmentInfo().DepthTestPassCondition : VK_COMPARE_OP_ALWAYS;
         depthState.depthBoundsTestEnable = false;
         depthState.stencilTestEnable = false;
+		MK_LOG_INFO("DEPTH: {0}", description.ColorAttachment.HasDepthAttachment());
         return depthState;
     }
 
@@ -226,6 +227,7 @@ namespace MKEngine {
 
 		return output;
 	}
+
     VkPipelineLayout CreatePipelineLayout(const VkDevice device, const VkDescriptorSetLayout descriptorSetLayout)
 	{
 		VkPipelineLayout pipelineLayout;
