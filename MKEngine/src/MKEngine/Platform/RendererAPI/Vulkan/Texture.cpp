@@ -1,18 +1,18 @@
 #include "mkpch.h"
+#include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
 #include "vk_mem_alloc.h"
 
+#include "MKEngine/Core/Log.h"
+#include "buffer.h"
 #include "VkContext.h"
-#include "vkFunctions.h"
-#include "vkExtern.h"
-#include "DescriptorSet/descriptorSetLayout.h"
 
 namespace MKEngine {
-
-	VkTexture CreateTexture(const TextureDescription& description)
-	{
+    Texture Texture::CreateTexture(const TextureDescription& description)
+    {
 
 		MK_LOG_INFO("CREATING TEXTURE");
 		//Load from file
@@ -35,7 +35,7 @@ namespace MKEngine {
 		stbi_image_free(pixels);
 
 		//Create image
-		VkTexture texture;
+		Texture texture;
 		texture.Width = texWidth;
 		texture.Height = texHeight;
 		VkImageCreateInfo imageInfo{ VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
@@ -109,21 +109,19 @@ namespace MKEngine {
 		}
 
 		return texture;
-	}
+    }
 
-	void DestroyTexture(VkTexture texture)
+	void Texture::DestroyTexture(Texture texture)
 	{
-		MK_LOG_INFO("DEstroying texture {0}, {1}, {2}", texture.Sampler != VK_NULL_HANDLE, texture.View != VK_NULL_HANDLE, texture.Resource != VK_NULL_HANDLE);
-
-		 if(texture.Sampler != VK_NULL_HANDLE)
-		 vkDestroySampler(VkContext::API->LogicalDevice, texture.Sampler, nullptr);
+		if (texture.Sampler != VK_NULL_HANDLE)
+			vkDestroySampler(VkContext::API->LogicalDevice, texture.Sampler, nullptr);
 		if (texture.View != VK_NULL_HANDLE)
-		 vkDestroyImageView(VkContext::API->LogicalDevice, texture.View, nullptr);
+			vkDestroyImageView(VkContext::API->LogicalDevice, texture.View, nullptr);
 		if (texture.Resource != VK_NULL_HANDLE)
-		 vmaDestroyImage(VkContext::API->VmaAllocator, texture.Resource, texture.Allocation);
+			vmaDestroyImage(VkContext::API->VmaAllocator, texture.Resource, texture.Allocation);
 	}
 
-	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+	void Texture::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 	{
 		ImmediateSubmit([&](VkCommandBuffer commandBuffer)
 			{
@@ -173,10 +171,9 @@ namespace MKEngine {
 				);
 			});
 
-
 	}
 
-	void CopyBufferToImage(Buffer buffer, VkTexture image)
+	void Texture::CopyBufferToImage(Buffer buffer, Texture image)
 	{
 		ImmediateSubmit([&](VkCommandBuffer commandBuffer)
 			{
@@ -209,37 +206,6 @@ namespace MKEngine {
 
 	}
 
-	void ImmediateSubmit(std::function<void(VkCommandBuffer)> const& callback)
-	{
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = VkContext::API->CommandPool;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		if (vkAllocateCommandBuffers(VkContext::API->LogicalDevice, &allocInfo, &commandBuffer) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to allocate command buffer for immediate submit!");
-		}
-
-		VkCommandBufferBeginInfo beginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-		callback(commandBuffer);
-
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(VkContext::API->GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(VkContext::API->GraphicsQueue);
-
-		vkFreeCommandBuffers(VkContext::API->LogicalDevice, VkContext::API->CommandPool, 1, &commandBuffer);
-	}
 
 
 }

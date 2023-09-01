@@ -5,7 +5,6 @@
 #include "presentView.h"
 #include "MKEngine/Platform/PlatformBackend.h"
 #include "vkExtern.h"
-#include "vkFunctions.h"
 #include "VulkanAPI.h"
 #include "MKEngine/Input/input.h"
 
@@ -520,9 +519,6 @@ namespace MKEngine {
 			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			descriptorWrites[1].descriptorCount = 1;
 			descriptorWrites[1].pImageInfo = &imageInfo;
-
-			 
-		
 
 			vkUpdateDescriptorSets(VkContext::API->LogicalDevice, descriptorWrites.size(),
 				descriptorWrites.data(), 0, nullptr);

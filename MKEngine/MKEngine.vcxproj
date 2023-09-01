@@ -120,6 +120,7 @@
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\camera.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetDescription.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSet.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayout.h" />
@@ -134,8 +135,7 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\shader.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkContext.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkFunctions.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkTexture.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Texture.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\mesh.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\model.h" />
@@ -164,13 +164,13 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\pipelineColorAttachment.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\vertexInputDescription.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\shader.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Texture.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\presentView.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkContext.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkExtern.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\vkFunctions.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\mesh.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\model.cpp" />

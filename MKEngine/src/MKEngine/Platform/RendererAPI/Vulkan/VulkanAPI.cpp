@@ -7,7 +7,6 @@
 
 #include "model.h"
 #include "vkExtern.h"
-#include "vkFunctions.h"
 #include "Pipeline/graphicsPipeline.h"
 
 #include "VkContext.h"
@@ -18,7 +17,7 @@
 namespace MKEngine {
 
 	Mesh VulkanAPI::testMesh;
-	VkTexture VulkanAPI::testTexture;
+	Texture VulkanAPI::testTexture;
 	Model VulkanAPI::testModel;
 	Camera VulkanAPI::testCamera;
 
@@ -78,7 +77,7 @@ namespace MKEngine {
 		textureDescription.Path = "textures/uvcheck.png";
 		textureDescription.Usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		textureDescription.Format = VK_FORMAT_R8G8B8A8_SRGB;
-		testTexture = CreateTexture(textureDescription);
+		testTexture = Texture::CreateTexture(textureDescription);
 
 		testModel = Model::LoadModel("models/scene.gltf");
 
@@ -94,7 +93,7 @@ namespace MKEngine {
 		WaitDeviceIdle();
 
 		Mesh::Destroy(testMesh);
-		DestroyTexture(testTexture);
+		Texture::DestroyTexture(testTexture);
 		Model::DestroyModel(testModel);
 
 		for (const auto [id, view] : PresentViews) {

@@ -38,10 +38,9 @@ namespace MKEngine
 
 		PFN_vkCmdBeginRendering Begin;
 		PFN_vkCmdEndRendering End;
-
-
-
 	};
+
+	void ImmediateSubmit(std::function<void(VkCommandBuffer)> const& callback);
 
 	void WaitDeviceIdle();
 

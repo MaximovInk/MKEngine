@@ -2,7 +2,6 @@
 #include "Mesh.h"
 #include "MKEngine/Core/Log.h"
 #include "VkContext.h"
-#include "vkFunctions.h"
 
 namespace MKEngine {
 
@@ -32,7 +31,6 @@ namespace MKEngine {
 
 	void Mesh::Draw(const VkCommandBuffer commandBuffer) const
 	{
-
 		const VkBuffer vertexBuffers[] = { m_verticesBuffer.Resource };
 		constexpr VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);

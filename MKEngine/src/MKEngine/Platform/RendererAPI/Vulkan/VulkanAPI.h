@@ -3,7 +3,7 @@
 #include "MKEngine/Platform/Window.h"
 #include "device.h"
 #include "presentView.h"
-#include "vkTexture.h"
+#include "Texture.h"
 #include "Pipeline/graphicsPipeline.h"
 #include "model.h"
 #include "mesh.h"
@@ -18,7 +18,7 @@ namespace MKEngine {
 #endif
 
 		static Mesh testMesh;
-		static VkTexture testTexture;
+		static Texture testTexture;
 		static Model testModel;
 		static Camera testCamera;
 
@@ -37,31 +37,3 @@ namespace MKEngine {
 		void OnWindowRender(const Window* window);
 	};
 }
-
-
-
-
-
-
-
-
-/*
- TEST
-Buffer VertexBuffer;
-	 Buffer IndicesBuffer;
-	 VkDescriptorSetLayout DescriptorSetLayout;
-	 VkTexture TestTexture;
-
-	 if (TestTexture.Resource == VK_NULL_HANDLE)
-		{
-			TextureDescription description{};
-			description.Path = "textures/texture.jpg";
-			description.Usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-			description.Format = VK_FORMAT_R8G8B8A8_SRGB;
-
-			TestTexture = CreateTexture(description);
-		}
-
-
-	 
-	 */

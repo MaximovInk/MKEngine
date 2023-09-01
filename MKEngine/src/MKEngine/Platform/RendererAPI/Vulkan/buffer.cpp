@@ -1,8 +1,6 @@
 #include "mkpch.h"
 #include "buffer.h"
-
 #include "VkContext.h"
-#include "vkFunctions.h"
 
 namespace MKEngine {
 	Buffer Buffer::Create(const BufferDescription& description)

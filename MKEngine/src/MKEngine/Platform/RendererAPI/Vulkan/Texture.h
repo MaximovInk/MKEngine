@@ -1,5 +1,7 @@
 #pragma once
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan_core.h>
+//#include "buffer.h"
 
 namespace MKEngine
 {
@@ -20,7 +22,9 @@ namespace MKEngine
 		VkImageLayout Layout = VK_IMAGE_LAYOUT_UNDEFINED;
 	};
 
-	struct VkTexture
+	struct Buffer;
+
+	struct Texture
 	{
 		uint32_t Width;
 		uint32_t Height;
@@ -30,6 +34,11 @@ namespace MKEngine
 		VkImage Resource = VK_NULL_HANDLE;
 		VmaAllocation Allocation = VK_NULL_HANDLE;
 		VkImageView View = VK_NULL_HANDLE;
+
+		static Texture CreateTexture(const TextureDescription& description);
+		static void DestroyTexture(Texture texture);
+		static void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		static void CopyBufferToImage(Buffer buffer, Texture image);
 	};
 
 	

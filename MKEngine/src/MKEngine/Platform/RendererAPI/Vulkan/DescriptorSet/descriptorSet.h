@@ -8,7 +8,7 @@ namespace MKEngine
 	public:
 		VkDescriptorSet Resource;
 
-		void BindTexture();
+		void BindImage(uint32_t bindingIndex, VkImage image, uint32_t arrayIndex = 0);
 		void BindBuffer();
 		void BindSampler();
 		void Create();
