@@ -3,7 +3,7 @@
 
 namespace MKEngine
 {
-	const BindingInfo& DescriptorSetLayoutDescription::GetBindingInfo(uint32_t bindingIndex) const
+	const BindingInfo& DescriptorSetLayoutDescription::GetBindingInfo(const uint32_t bindingIndex) const
 	{
 		return m_bindingInfos[bindingIndex];
 	}
@@ -13,7 +13,7 @@ namespace MKEngine
 		return m_bindingInfos;
 	}
 
-	void DescriptorSetLayoutDescription::AddBinding(VkDescriptorType type, uint32_t count, VkShaderStageFlags shaderStages)
+	void DescriptorSetLayoutDescription::AddBinding(const VkDescriptorType type, const uint32_t count, const VkShaderStageFlags shaderStages)
 	{
 		BindingInfo bindingInfo;
 		bindingInfo.Type = type;

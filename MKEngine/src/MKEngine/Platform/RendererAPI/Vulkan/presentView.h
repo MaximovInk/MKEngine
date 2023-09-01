@@ -2,6 +2,7 @@
 #include <vector>
 #include "MKEngine/Platform/Window.h"
 #include "buffer.h"
+#include "DescriptorSet/descriptorSet.h"
 
 namespace MKEngine {
 
@@ -28,7 +29,7 @@ namespace MKEngine {
 		VkCommandBuffer CommandBuffer;
 		ViewSync Sync;
 		Buffer UniformBuffer;
-		VkDescriptorSet DescriptorSet;
+		DescriptorSet DescriptorSet;
 
 	} SwapChainBuffer;
 
@@ -72,7 +73,6 @@ namespace MKEngine {
 
 		void CreateUniformBuffers();
 		void UpdateUniformBuffer(uint32_t currentImage);
-		void CreateDescriptorPool();
 		void CreateDescriptorSets();
 
 		VkCommandBuffer m_currentBufferDraw;

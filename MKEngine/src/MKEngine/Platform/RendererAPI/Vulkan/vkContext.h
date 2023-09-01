@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include "vk_mem_alloc.h"
+#include "DescriptorSet/descriptorSet.h"
 
 namespace MKEngine
 {
@@ -32,7 +33,7 @@ namespace MKEngine
 			uint32_t Transfer;
 			uint32_t Present;
 		} QueueFamilyIndices;
-		VkDescriptorSetLayout DescriptorSetLayout;
+		DescriptorSetLayout DescriptorSetLayout;
 
 		static VkContext* API;
 

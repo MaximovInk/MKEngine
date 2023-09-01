@@ -12,7 +12,7 @@
 #include "VkContext.h"
 
 #include "../camera.h"
-#include "DescriptorSet/descriptorSetLayout.h"
+#include "DescriptorSet/descriptorSet.h"
 
 namespace MKEngine {
 
@@ -50,8 +50,8 @@ namespace MKEngine {
 		desc.AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 
 
-		VkContext::API->DescriptorSetLayout = DescriptorSetLayout::CreateDescriptorSetLayout(desc).Resource;
-		const auto layout = CreatePipelineLayout(VkContext::API->LogicalDevice, VkContext::API->DescriptorSetLayout);
+		VkContext::API->DescriptorSetLayout = DescriptorSetLayout::CreateDescriptorSetLayout(desc);
+		const auto layout = CreatePipelineLayout(VkContext::API->LogicalDevice, VkContext::API->DescriptorSetLayout.Resource);
 
 		description.Shaders.emplace_back(Shader::CreateShader(vertDesc));
 		description.Shaders.emplace_back(Shader::CreateShader(fragDesc));
@@ -103,8 +103,8 @@ namespace MKEngine {
 
 		if (GraphicsPipeline.PipelineLayout)
 			vkDestroyPipelineLayout(VkContext::API->LogicalDevice, GraphicsPipeline.PipelineLayout, nullptr);
-		if (VkContext::API->DescriptorSetLayout)
-			vkDestroyDescriptorSetLayout(VkContext::API->LogicalDevice, VkContext::API->DescriptorSetLayout, nullptr);
+		if (VkContext::API->DescriptorSetLayout.Resource)
+			DescriptorSetLayout::DestroyDescriptorSetLayout(VkContext::API->DescriptorSetLayout);
 		if (GraphicsPipeline.Reference)
 			GraphicsPipeline::DestroyGraphicsPipeline(GraphicsPipeline);
 

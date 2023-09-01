@@ -254,11 +254,8 @@ namespace MKEngine {
 	void VulkanPresentView::FinalizeCreation()
 	{
 		CreateUniformBuffers();
-		//CreateFrameBuffer();
 		CreateCommandBuffers();
-
 		CreateSync();
-		CreateDescriptorPool();
 		CreateDescriptorSets();
 	}
 
@@ -359,9 +356,10 @@ namespace MKEngine {
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
 			vkFreeCommandBuffers(VkContext::API->LogicalDevice, VkContext::API->CommandPool, 1, &Buffers[i].CommandBuffer);
 			Buffer::Destroy(Buffers[i].UniformBuffer);
+			DescriptorSet::Destroy(Buffers[i].DescriptorSet);
 		}
 
-		vkDestroyDescriptorPool(VkContext::API->LogicalDevice, DescriptorPool, nullptr);
+		
 		if(destroySwapChain)
 			vkDestroySwapchainKHR(VkContext::API->LogicalDevice, SwapChain, VK_NULL_HANDLE);
 
@@ -457,71 +455,19 @@ namespace MKEngine {
 
 		memcpy(Buffers[currentImage].UniformBuffer.MappedData, &ubo, sizeof(ubo));
 	}
-
-	void VulkanPresentView::CreateDescriptorPool()
-	{
-		std::array<VkDescriptorPoolSize, 2> poolSizes{};
-		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = ImageCount;
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = ImageCount;
-
-		VkDescriptorPoolCreateInfo poolInfo{};
-		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = ImageCount;
-		if (vkCreateDescriptorPool(VkContext::API->LogicalDevice, &poolInfo, nullptr, &DescriptorPool) != VK_SUCCESS) {
-			MK_LOG_ERROR("Failed to create descriptor pool!");
-		}
-	}
-
+	
 	void VulkanPresentView::CreateDescriptorSets()
 	{
-		VkDescriptorSetAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
-		allocInfo.descriptorPool = DescriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &VkContext::API->DescriptorSetLayout;
+		DescriptorSetDescription desc;
+		desc.Layout = VkContext::API->DescriptorSetLayout;
 
 		for (size_t i = 0; i < ImageCount; i++)
 		{
-			if (vkAllocateDescriptorSets(VkContext::API->LogicalDevice, &allocInfo, &Buffers[i].DescriptorSet) != VK_SUCCESS) {
-				MK_LOG_ERROR("failed to allocate descriptor sets!");
-			}
-		}
+			auto descriptorSet = DescriptorSet::Create(desc);
+			descriptorSet.BindBuffer(0, Buffers[i].UniformBuffer.Resource, 0, sizeof(UniformBufferObject));
+			descriptorSet.BindCombinedImageSampler(1, VulkanAPI::testTexture.View, VulkanAPI::testTexture.Sampler);
 
-		for (size_t i = 0; i < ImageCount; i++) {
-			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = Buffers[i].UniformBuffer.Resource;
-			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(UniformBufferObject);
-
-			VkDescriptorImageInfo imageInfo{};
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = VulkanAPI::testTexture.View;
-			imageInfo.sampler = VulkanAPI::testTexture.Sampler;
-
-			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = Buffers[i].DescriptorSet;
-			descriptorWrites[0].dstBinding = 0;
-			descriptorWrites[0].dstArrayElement = 0;
-			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrites[0].descriptorCount = 1;
-			descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-			
-			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = Buffers[i].DescriptorSet;
-			descriptorWrites[1].dstBinding = 1;
-			descriptorWrites[1].dstArrayElement = 0;
-			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrites[1].descriptorCount = 1;
-			descriptorWrites[1].pImageInfo = &imageInfo;
-
-			vkUpdateDescriptorSets(VkContext::API->LogicalDevice, descriptorWrites.size(),
-				descriptorWrites.data(), 0, nullptr);
+			Buffers[i].DescriptorSet = descriptorSet;
 		}
 	}
 
@@ -713,7 +659,7 @@ namespace MKEngine {
 			VkContext::API->PipelineLayout,
 			0,
 			1,
-			&Buffers[imageIndex].DescriptorSet,
+			&Buffers[imageIndex].DescriptorSet.Resource,
 			0,
 			nullptr);
 	}
