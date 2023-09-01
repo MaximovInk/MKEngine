@@ -4,6 +4,8 @@
 #include "vk_mem_alloc.h"
 
 #include "VulkanAPI.h"
+
+#include "model.h"
 #include "vkExtern.h"
 #include "vkFunctions.h"
 #include "Pipeline/graphicsPipeline.h"
@@ -11,6 +13,7 @@
 #include "VkContext.h"
 
 #include "../camera.h"
+#include "DescriptorSet/descriptorSetLayout.h"
 
 namespace MKEngine {
 
@@ -35,18 +38,24 @@ namespace MKEngine {
 		allocatorCreateInfo.instance = VkContext::API->Instance;
 		allocatorCreateInfo.physicalDevice = VkContext::API->PhysicalDevice;
 
-		vmaCreateAllocator(&allocatorCreateInfo, &VkContext::API->VMAAllocator);
+		vmaCreateAllocator(&allocatorCreateInfo, &VkContext::API->VmaAllocator);
 
 		GraphicsPipelineDescription description{};
 		ShaderCreateDescription vertDesc;
 		vertDesc.Path = "shaders/vert.spv";
 		ShaderCreateDescription fragDesc;
 		fragDesc.Path = "shaders/frag.spv";
-		VkContext::API->DescriptorSetLayout = CreateDescriptorSetLayout(VkContext::API->LogicalDevice);
+
+		DescriptorSetLayoutDescription desc;
+		desc.AddBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
+		desc.AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+
+		VkContext::API->DescriptorSetLayout = DescriptorSetLayout::CreateDescriptorSetLayout(desc).Resource;
 		const auto layout = CreatePipelineLayout(VkContext::API->LogicalDevice, VkContext::API->DescriptorSetLayout);
 
-		description.Shaders.emplace_back(CreateShader(vertDesc));
-		description.Shaders.emplace_back(CreateShader(fragDesc));
+		description.Shaders.emplace_back(Shader::CreateShader(vertDesc));
+		description.Shaders.emplace_back(Shader::CreateShader(fragDesc));
 
 		description.VertexInput.DefineAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Position));
 		description.VertexInput.DefineAttribute(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Color));
@@ -71,12 +80,13 @@ namespace MKEngine {
 		textureDescription.Format = VK_FORMAT_R8G8B8A8_SRGB;
 		testTexture = CreateTexture(textureDescription);
 
-		testModel = Model::LoadModel("models/untitled.obj");
+		testModel = Model::LoadModel("models/scene.gltf");
 
 		testCamera.FlipY = true;
 		testCamera.SetPerspective(75, 1, 0.1, 100);
 		testCamera.SetPosition(glm::vec3(0.0f, 2.5f, -10.25f));
 		testCamera.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+
 	}
 
 	void VulkanAPI::Finalize()
@@ -109,7 +119,7 @@ namespace MKEngine {
 		if (VkContext::API->CommandPool)
 			vkDestroyCommandPool(VkContext::API->LogicalDevice, VkContext::API->CommandPool, nullptr);
 
-		vmaDestroyAllocator(VkContext::API->VMAAllocator);
+		vmaDestroyAllocator(VkContext::API->VmaAllocator);
 
 		if (VkContext::API->LogicalDevice)
 			vkDestroyDevice(VkContext::API->LogicalDevice, nullptr);

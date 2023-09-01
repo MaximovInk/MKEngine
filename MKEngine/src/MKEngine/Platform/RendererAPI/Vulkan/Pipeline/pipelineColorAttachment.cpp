@@ -25,6 +25,7 @@ namespace MKEngine {
     {
         return m_depthAttachmentInfo.has_value();
     }
+
     const DepthAttachmentInfo& PipelineColorAttachment::GetDepthAttachmentInfo() const
     {
         return m_depthAttachmentInfo.value();

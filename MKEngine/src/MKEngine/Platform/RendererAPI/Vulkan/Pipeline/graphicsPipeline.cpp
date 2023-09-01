@@ -140,7 +140,7 @@ namespace MKEngine {
 
     }
 
-	void GraphicsPipeline::DestroyGraphicsPipeline(GraphicsPipeline& graphicsPipeline)
+	void GraphicsPipeline::DestroyGraphicsPipeline(const GraphicsPipeline& graphicsPipeline)
 	{
 		vkDestroyPipeline(VkContext::API->LogicalDevice, graphicsPipeline.Reference, nullptr);
 	}

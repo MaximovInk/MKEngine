@@ -5,8 +5,8 @@
 #include "presentView.h"
 #include "vkTexture.h"
 #include "Pipeline/graphicsPipeline.h"
-#include "../model.h"
-#include "../Mesh.h"
+#include "model.h"
+#include "mesh.h"
 #include "MKEngine/Platform/RendererAPI/camera.h"
 
 namespace MKEngine {

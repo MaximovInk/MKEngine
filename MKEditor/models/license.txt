@@ -1,0 +1,11 @@
+Model Information:
+* title:	1971 GAZ-24 Volga (LP)
+* source:	https://sketchfab.com/3d-models/1971-gaz-24-volga-lp-784ffea507354f70adf94d7fe0fd4b2a
+* author:	KrStolorz (Krzysztof Stolorz) (https://sketchfab.com/KrStolorz)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "1971 GAZ-24 Volga (LP)" (https://sketchfab.com/3d-models/1971-gaz-24-volga-lp-784ffea507354f70adf94d7fe0fd4b2a) by KrStolorz (Krzysztof Stolorz) (https://sketchfab.com/KrStolorz) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

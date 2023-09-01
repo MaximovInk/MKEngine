@@ -17,14 +17,13 @@ namespace MKEngine
 		VkCommandBuffer MainCommandBuffer = nullptr;
 
 		VkPipeline GraphicsPipeline = nullptr;
-		//VkRenderPass RenderPass = nullptr;
 		VkPipelineLayout PipelineLayout = nullptr;
 
 		VkQueue GraphicsQueue{};
 		VkQueue PresentQueue{};
 
 		VkPhysicalDeviceProperties Properties;
-		VmaAllocator VMAAllocator;
+		VmaAllocator VmaAllocator;
 
 		struct
 		{
@@ -39,6 +38,8 @@ namespace MKEngine
 
 		PFN_vkCmdBeginRendering Begin;
 		PFN_vkCmdEndRendering End;
+
+
 
 	};
 

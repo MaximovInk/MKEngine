@@ -1,6 +1,6 @@
 #pragma once
-#include "vertex.h"
-#include "Vulkan/buffer.h"
+#include "../vertex.h"
+#include "buffer.h"
 
 namespace MKEngine
 {

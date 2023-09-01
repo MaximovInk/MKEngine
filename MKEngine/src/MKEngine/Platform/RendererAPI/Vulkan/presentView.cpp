@@ -443,6 +443,10 @@ namespace MKEngine {
 			deltaX = Input::getMouseDeltaX();
 			deltaY = -Input::getMouseDeltaY();
 		}
+		if (Input::getMouseButton(Mouse::MiddleButton))
+		{
+			VulkanAPI::testCamera.Translate(glm::vec3(0.0f, Input::getMouseDeltaY() *0.05f,0));
+		}
 
 		VulkanAPI::testCamera.Rotate(glm::vec3(deltaY, 0.0f, 0.0f));
 		VulkanAPI::testCamera.Rotate(glm::vec3(0.0f, deltaX, 0.0f));
@@ -509,7 +513,7 @@ namespace MKEngine {
 			descriptorWrites[0].pBufferInfo = &bufferInfo;
 
 			
-			 descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[1].dstSet = Buffers[i].DescriptorSet;
 			descriptorWrites[1].dstBinding = 1;
 			descriptorWrites[1].dstArrayElement = 0;

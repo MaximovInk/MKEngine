@@ -6,8 +6,7 @@
 
 namespace MKEngine
 {
-		Shader CreateShader(ShaderCreateDescription description);
-		void DestroyShader(const Shader& shader);
+	
 
 		VkTexture CreateTexture(const TextureDescription& description);
 		void DestroyTexture(VkTexture texture);
@@ -15,7 +14,5 @@ namespace MKEngine
 		void CopyBufferToImage( Buffer buffer, VkTexture image);
 
         void ImmediateSubmit(std::function<void(VkCommandBuffer)> const& callback);
-
-		VkDescriptorSetLayout CreateDescriptorSetLayout(const VkDevice device);
 
 }

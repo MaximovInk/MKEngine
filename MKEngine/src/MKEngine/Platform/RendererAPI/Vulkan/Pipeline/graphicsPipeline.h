@@ -13,7 +13,7 @@ namespace MKEngine {
 		VkPipeline Reference = VK_NULL_HANDLE;
 		//VkDescriptorSetLayout DescriptorSetLayout;
 
-		static void DestroyGraphicsPipeline(GraphicsPipeline& graphicsPipeline);
+		static void DestroyGraphicsPipeline(const GraphicsPipeline& graphicsPipeline);
 		static GraphicsPipeline CreateGraphicsPipeline(GraphicsPipelineDescription& description);
 
 	private:

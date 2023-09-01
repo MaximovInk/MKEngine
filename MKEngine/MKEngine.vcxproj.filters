@@ -126,13 +126,10 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\mesh.h">
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\mesh.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\model.h">
-      <Filter>MKEngine\Platform\RendererAPI</Filter>
-    </ClInclude>
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\texture.h">
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\model.h">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClInclude>
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\vertex.h">
@@ -151,6 +148,9 @@
     <ClInclude Include="src\mkpch.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\camera.h" />
     <ClInclude Include="src\MKEngine\Input\input.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSet.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayout.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -178,9 +178,6 @@
       <Filter>MKEngine\Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipeline.cpp">
-      <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\graphicsPipelineDescription.cpp">
       <Filter>MKEngine\Platform\RendererAPI\Vulkan\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\pipelineColorAttachment.cpp">
@@ -213,13 +210,10 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\VulkanRendererAPI.cpp">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\mesh.cpp">
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\mesh.cpp">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\model.cpp">
-      <Filter>MKEngine\Platform\RendererAPI</Filter>
-    </ClCompile>
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\texture.cpp">
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\model.cpp">
       <Filter>MKEngine\Platform\RendererAPI</Filter>
     </ClCompile>
     <ClCompile Include="src\MKEngine\Platform\Window.cpp">
@@ -231,5 +225,9 @@
     <ClCompile Include="src\mkpch.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\camera.cpp" />
     <ClCompile Include="src\MKEngine\Input\input.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\shader.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSet.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayout.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.cpp" />
   </ItemGroup>
 </Project>

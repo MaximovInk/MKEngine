@@ -4,219 +4,12 @@
 #include <stb_image.h>
 #include "vk_mem_alloc.h"
 
-#include "spirv_reflect.h"
-
 #include "VkContext.h"
 #include "vkFunctions.h"
 #include "vkExtern.h"
+#include "DescriptorSet/descriptorSetLayout.h"
 
-std::vector<char> ReadFile(std::string filename) {
-	std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-	if (!file.is_open()) {
-		MK_LOG_ERROR("Cannot read file: {0}", filename);
-	}
-
-	const size_t size(static_cast<size_t>(file.tellg()));
-
-	std::vector<char> buffer(size);
-	file.seekg(0);
-	file.read(buffer.data(), size);
-
-	file.close();
-
-	return buffer;
-}
 namespace MKEngine {
-
-	
-	VkDescriptorSetLayout CreateDescriptorSetLayout(const VkDevice device)
-	{
-		//UniformBuffers
-		VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		uboLayoutBinding.pImmutableSamplers = nullptr;
-
-		//Sampler
-		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-		samplerLayoutBinding.binding = 1;
-		samplerLayoutBinding.descriptorCount = 1;
-		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		samplerLayoutBinding.pImmutableSamplers = nullptr;
-		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-
-		//Create descriptorSetLayout
-		const std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
-		VkDescriptorSetLayout descriptorSetLayout;
-		VkDescriptorSetLayoutCreateInfo layoutInfo{ VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
-		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-		layoutInfo.pBindings = bindings.data();
-
-		if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to create descriptor set layout!");
-		}
-		return descriptorSetLayout;
-	}
-	/*
-	 
-	VkRenderPass CreateRenderPass(const VkDevice device, const VkFormat format) {
-		VkRenderPass renderPass;
-		VkAttachmentDescription colorAttachment{};
-		colorAttachment.format = format;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference colorAttachmentRef{};
-		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &colorAttachmentRef;
-
-		VkRenderPassCreateInfo renderPassInfo{ VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachment;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpass;
-
-		if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-			MK_LOG_ERROR("Failed to create render pass");
-		}
-
-		return renderPass;
-	}
-
-	 
-	 
-	 */
-
-
-	static VkShaderStageFlags GetShaderStage(
-		const SpvReflectShaderStageFlagBits reflectShaderStage)
-	{
-		switch (reflectShaderStage)
-		{
-		case SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT:
-			return VK_SHADER_STAGE_COMPUTE_BIT;
-
-		case SPV_REFLECT_SHADER_STAGE_TASK_BIT_NV:
-			return VK_SHADER_STAGE_TASK_BIT_NV;
-
-		case SPV_REFLECT_SHADER_STAGE_MESH_BIT_NV:
-			return VK_SHADER_STAGE_MESH_BIT_NV;
-
-		case SPV_REFLECT_SHADER_STAGE_VERTEX_BIT:
-			return VK_SHADER_STAGE_VERTEX_BIT;
-
-		case SPV_REFLECT_SHADER_STAGE_FRAGMENT_BIT:
-			return VK_SHADER_STAGE_FRAGMENT_BIT;
-
-		default:
-			MK_LOG_ERROR(!"Unsupported SpvReflectShaderStageFlagBits!");
-			return {};
-		}
-	}
-
-	static VkDescriptorType GetDescriptorType(
-		const SpvReflectDescriptorType reflectDescriptorType)
-	{
-		switch (reflectDescriptorType)
-		{
-		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
-			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-
-		case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
-			return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER:
-			break;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
-			break;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
-			break;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
-			break;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
-			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			break;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
-			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-			break;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
-			break;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
-			break;
-		case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:
-			break;
-		}
-
-		MK_LOG_ERROR(!"Unsupported SpvReflectDescriptorType!");
-		return {};
-	}
-
-	Shader CreateShader(const ShaderCreateDescription description) 
-	{
-		Shader shader;
-		const auto code = ReadFile(description.Path);
-		
-		SpvReflectShaderModule spvModule;
-		spvReflectCreateShaderModule(code.size(), code.data(), &spvModule);
-
-		if (spvModule.entry_point_count < 1)
-			MK_LOG_ERROR("Shader has not entry points: {0}", description.Path);
-
-		shader.Stage = GetShaderStage(spvModule.shader_stage);
-		shader.Resource = VkExtern::CreateShaderModule(VkContext::API->LogicalDevice, code);
-
-		if (spvModule.push_constant_block_count > 0 && spvModule.push_constant_blocks != nullptr)
-		{
-			shader.PushConstants.stageFlags = shader.Stage;
-			shader.PushConstants.offset = spvModule.push_constant_blocks->offset;
-			shader.PushConstants.size = spvModule.push_constant_blocks->size;
-		}
-
-		uint32_t spvBindingCount = 0;
-		spvReflectEnumerateDescriptorBindings(&spvModule, &spvBindingCount, nullptr);
-		std::vector<SpvReflectDescriptorBinding*> spvBindings(spvBindingCount);
-		spvReflectEnumerateDescriptorBindings(&spvModule, &spvBindingCount, spvBindings.data());
-
-		shader.LayoutBindings.reserve(spvBindingCount);
-		for (uint32_t layoutBindingIndex = 0; layoutBindingIndex < spvBindingCount; ++layoutBindingIndex)
-		{
-			VkDescriptorSetLayoutBinding descriptorSetLayoutBinding{};
-			descriptorSetLayoutBinding.binding = spvBindings[layoutBindingIndex]->binding;
-			descriptorSetLayoutBinding.descriptorCount = 1;
-			descriptorSetLayoutBinding.descriptorType = GetDescriptorType(spvBindings[layoutBindingIndex]->descriptor_type);
-			descriptorSetLayoutBinding.stageFlags = shader.Stage;
-			descriptorSetLayoutBinding.pImmutableSamplers = nullptr;
-
-			shader.LayoutBindings.push_back(descriptorSetLayoutBinding);
-		}
-
-		spvReflectDestroyShaderModule(&spvModule);
-
-
-
-		return shader;
-	}
-
-	void DestroyShader(const Shader& shader) 
-	{
-		vkDestroyShaderModule(VkContext::API->LogicalDevice, shader.Resource, nullptr);
-	}
 
 	VkTexture CreateTexture(const TextureDescription& description)
 	{
@@ -263,7 +56,7 @@ namespace MKEngine {
 		VmaAllocationCreateInfo imageAllocCreateInfo = {};
 		imageAllocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-		vmaCreateImage(VkContext::API->VMAAllocator, &imageInfo, &imageAllocCreateInfo, &texture.Resource, &texture.Allocation, nullptr);
+		vmaCreateImage(VkContext::API->VmaAllocator, &imageInfo, &imageAllocCreateInfo, &texture.Resource, &texture.Allocation, nullptr);
 
 		//Set TransitionLayout for copy
 		TransitionImageLayout(texture.Resource, description.Format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -327,7 +120,7 @@ namespace MKEngine {
 		if (texture.View != VK_NULL_HANDLE)
 		 vkDestroyImageView(VkContext::API->LogicalDevice, texture.View, nullptr);
 		if (texture.Resource != VK_NULL_HANDLE)
-		 vmaDestroyImage(VkContext::API->VMAAllocator, texture.Resource, texture.Allocation);
+		 vmaDestroyImage(VkContext::API->VmaAllocator, texture.Resource, texture.Allocation);
 	}
 
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)

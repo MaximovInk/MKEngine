@@ -106,6 +106,8 @@ namespace MKEngine {
 
         ProcessNode(model, scene->mRootNode, scene);
 
+        MK_LOG_INFO("Successfully loaded model: {0}", filepath);
+
         return model;
     }
 
