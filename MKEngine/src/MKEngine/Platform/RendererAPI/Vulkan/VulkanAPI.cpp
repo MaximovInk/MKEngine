@@ -30,7 +30,7 @@ namespace MKEngine {
 		DebugMessenger = VkExtern::CreateDebugMessenger(VkContext::API->Instance);
 #endif
 
-		Device = CreateDevice();
+		Device = Device::Create();
 
 		VmaAllocatorCreateInfo allocatorCreateInfo{};
 		allocatorCreateInfo.device = VkContext::API->LogicalDevice;
@@ -97,8 +97,8 @@ namespace MKEngine {
 		Texture::DestroyTexture(testTexture);
 		Model::DestroyModel(testModel);
 
-		for (const auto [id, view] : PresentViews) {
-			delete view;
+		for (const auto [id, presentView] : PresentViews) {
+			PresentView::Destroy(presentView);
 		}
 		PresentViews.clear();
 
@@ -108,13 +108,6 @@ namespace MKEngine {
 			DescriptorSetLayout::DestroyDescriptorSetLayout(VkContext::API->DescriptorSetLayout);
 		if (GraphicsPipeline.Reference)
 			GraphicsPipeline::DestroyGraphicsPipeline(GraphicsPipeline);
-
-		for (const auto& [id, view] : PresentViews)
-		{
-			delete view;
-		}
-
-		PresentViews.clear();
 
 		if (VkContext::API->CommandPool)
 			vkDestroyCommandPool(VkContext::API->LogicalDevice, VkContext::API->CommandPool, nullptr);
@@ -137,7 +130,7 @@ namespace MKEngine {
 
 		const int id = window->GetID();
 
-		const auto presentView = new VulkanPresentView();
+		const auto presentView = PresentView::Create();
 		presentView->InitSurface(window);
 
 		presentView->CreateSwapChain();
@@ -150,7 +143,7 @@ namespace MKEngine {
 	void VulkanAPI::OnWindowDestroy(const Window* window) {
 		const int id = window->GetID();
 		if (!PresentViews.empty()) {
-			delete PresentViews[id];
+			PresentView::Destroy(PresentViews[id]);
 			int c = PresentViews.erase(id);
 		}
 	}

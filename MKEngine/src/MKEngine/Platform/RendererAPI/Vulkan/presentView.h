@@ -7,7 +7,7 @@
 
 namespace MKEngine {
 
-	class VulkanDevice;
+	class Device;
 	class Window;
 
 	struct ViewSync
@@ -25,8 +25,6 @@ namespace MKEngine {
 	};
 
 	typedef struct SwapChainBuffers {
-		//VkImage Image;
-		//VkImageView Resource;
 		ImageView View;
 		VkCommandBuffer CommandBuffer;
 		ViewSync Sync;
@@ -35,7 +33,7 @@ namespace MKEngine {
 
 	} SwapChainBuffer;
 
-	class VulkanPresentView {
+	class PresentView {
 	public:
 		VkSwapchainKHR SwapChain = VK_NULL_HANDLE;
 		VkSurfaceKHR Surface;
@@ -49,11 +47,12 @@ namespace MKEngine {
 
 		//Test
 		std::vector<Buffer> UniformBuffers;
-		VkDescriptorPool DescriptorPool;
-		
 
-		explicit VulkanPresentView();
-		~VulkanPresentView();
+		PresentView() = default;
+
+		static PresentView* Create();
+		static void Destroy(PresentView* presentView);
+
 		void InitSurface(Window* window);
 		void CreateSwapChain();
 		void FinalizeCreation();
@@ -64,8 +63,6 @@ namespace MKEngine {
 		VkResult QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE) const;
 
 		void Render();
-
-
 	private:
 		Window* m_windowRef;
 
@@ -74,7 +71,7 @@ namespace MKEngine {
 		void CleanupSwapChain(bool destroySwapChain = true) const;
 
 		void CreateUniformBuffers();
-		void UpdateUniformBuffer(uint32_t currentImage);
+		void UpdateUniformBuffer(uint32_t currentImage) const;
 		void CreateDescriptorSets();
 
 		VkCommandBuffer m_currentBufferDraw;

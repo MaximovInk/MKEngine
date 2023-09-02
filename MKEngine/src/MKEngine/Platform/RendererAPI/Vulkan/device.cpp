@@ -11,7 +11,61 @@
 
 namespace MKEngine {
 
-	uint32_t VulkanDevice::GetPresentViewQueueFamilyIndex() {
+	class Device Device::Create()
+	{
+		Device device;
+
+		std::vector<const char*> enabledExtensions;
+
+		VkContext::API->PhysicalDevice = VkExtern::CreatePhysicalDevice(VkContext::API->Instance);
+
+		vkGetPhysicalDeviceProperties(VkContext::API->PhysicalDevice, &VkContext::API->Properties);
+		vkGetPhysicalDeviceFeatures(VkContext::API->PhysicalDevice, &device.Features);
+		vkGetPhysicalDeviceMemoryProperties(VkContext::API->PhysicalDevice, &device.MemoryProperties);
+		uint32_t queueFamilyCount;
+		vkGetPhysicalDeviceQueueFamilyProperties(VkContext::API->PhysicalDevice, &queueFamilyCount, nullptr);
+		MK_ASSERT(queueFamilyCount > 0, "QUEUE FAMILY COUNT MUST BE > 0");
+		MK_LOG_INFO("QUEUE FAMILY COUNT: {0}", queueFamilyCount);
+		device.QueueFamilyProperties.resize(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(VkContext::API->PhysicalDevice, &queueFamilyCount, device.QueueFamilyProperties.data());
+
+		uint32_t extensionCount = 0;
+		vkEnumerateDeviceExtensionProperties(VkContext::API->PhysicalDevice, nullptr, &extensionCount, nullptr);
+		if (extensionCount > 0)
+		{
+			if (std::vector<VkExtensionProperties> extensions(extensionCount);
+				vkEnumerateDeviceExtensionProperties(VkContext::API->PhysicalDevice, nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS)
+			{
+				for (const auto& [extensionName, specVersion] : extensions)
+				{
+					device.SupportedExtensions.emplace_back(extensionName);
+				}
+			}
+		}
+
+		VkPhysicalDeviceFeatures deviceFeatures{};
+		deviceFeatures.samplerAnisotropy = true;
+
+		if (device.CreateLogicalDevice(deviceFeatures, DEVICE_EXTENSIONS, nullptr) != VK_SUCCESS)
+			MK_LOG_CRITICAL("Failed to create logical device!");
+		else
+			MK_LOG_INFO("Logical device successfully created");
+
+		VkContext::API->GraphicsQueue = VkExtern::GetQueue(VkContext::API->LogicalDevice, VkContext::API->QueueFamilyIndices.Graphics, 0);
+		VkContext::API->PresentQueue = VkExtern::GetQueue(VkContext::API->LogicalDevice, VkContext::API->QueueFamilyIndices.Present, 0);
+
+		VkContext::API->CommandPool = device.CreateCommandPool(VkContext::API->QueueFamilyIndices.Graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+
+		device.CreateCommandBuffer();
+
+		VkContext::API->Begin = reinterpret_cast<PFN_vkCmdBeginRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdBeginRendering"));
+		VkContext::API->End = reinterpret_cast<PFN_vkCmdEndRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdEndRendering"));
+
+		return device;
+	}
+
+	uint32_t Device::GetPresentViewQueueFamilyIndex() const
+	{
 
 		std::vector<VkBool32> supportsPresent(QueueFamilyProperties.size());
 		for (uint32_t i = 0; i < QueueFamilyProperties.size(); i++)
@@ -31,7 +85,7 @@ namespace MKEngine {
 
 	}
 
-	uint32_t VulkanDevice::GetQueueFamilyIndex(const VkQueueFlags queueFlags)
+	uint32_t Device::GetQueueFamilyIndex(const VkQueueFlags queueFlags) const
 	{
 		if ((queueFlags & VK_QUEUE_COMPUTE_BIT) == queueFlags)
 		{
@@ -72,12 +126,12 @@ namespace MKEngine {
 		return 0;
 	}
 
-	bool VulkanDevice::ExtensionSupported(const std::string& extension)
+	bool Device::ExtensionSupported(const std::string& extension)
 	{
 		return (std::find(SupportedExtensions.begin(), SupportedExtensions.end(), extension) != SupportedExtensions.end());
 	}
 
-	VkResult VulkanDevice::CreateLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
+	VkResult Device::CreateLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
 		std::vector<const char*> enabledExtensions, void* pNextChain, VkQueueFlags requestedQueueTypes)
 	{
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{};
@@ -177,9 +231,9 @@ namespace MKEngine {
 #endif
 
 		//Dynamic rendering
-		dynamicRenderingFeaturesKHR.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-		dynamicRenderingFeaturesKHR.dynamicRendering = VK_TRUE;
-		deviceCreateInfo.pNext = &dynamicRenderingFeaturesKHR;
+		DynamicRenderingFeaturesKhr.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+		DynamicRenderingFeaturesKhr.dynamicRendering = VK_TRUE;
+		deviceCreateInfo.pNext = &DynamicRenderingFeaturesKhr;
 
 		if (!deviceExtensions.empty())
 		{
@@ -199,7 +253,7 @@ namespace MKEngine {
 		return vkCreateDevice(VkContext::API->PhysicalDevice, &deviceCreateInfo, nullptr, &VkContext::API->LogicalDevice);
 	}
 
-	VkCommandPool   VulkanDevice::CreateCommandPool(const uint32_t queueFamilyIndex,
+	VkCommandPool   Device::CreateCommandPool(const uint32_t queueFamilyIndex,
 	                                                const VkCommandPoolCreateFlags createFlags)
 	{
 		VkCommandPoolCreateInfo commandPoolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
@@ -216,7 +270,7 @@ namespace MKEngine {
 		return commandPool;
 	}
 
-	void VulkanDevice::CreateCommandBuffer() {
+	void Device::CreateCommandBuffer() {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = VkContext::API->CommandPool;
@@ -226,59 +280,6 @@ namespace MKEngine {
 		if (vkAllocateCommandBuffers(VkContext::API->LogicalDevice, &allocInfo, &VkContext::API->MainCommandBuffer) != VK_SUCCESS) {
 			MK_LOG_ERROR("failed to allocate command buffer!");
 		}
-	}
-
-	VulkanDevice CreateDevice()
-	{
-		VulkanDevice device{};
-
-		std::vector<const char*> enabledExtensions;
-
-		VkContext::API->PhysicalDevice = VkExtern::CreatePhysicalDevice(VkContext::API->Instance);
-
-		vkGetPhysicalDeviceProperties(VkContext::API->PhysicalDevice, &VkContext::API->Properties);
-		vkGetPhysicalDeviceFeatures(VkContext::API->PhysicalDevice, &device.Features);
-		vkGetPhysicalDeviceMemoryProperties(VkContext::API->PhysicalDevice, &device.MemoryProperties);
-		uint32_t queueFamilyCount;
-		vkGetPhysicalDeviceQueueFamilyProperties(VkContext::API->PhysicalDevice, &queueFamilyCount, nullptr);
-		MK_ASSERT(queueFamilyCount > 0, "QUEUE FAMILY COUNT MUST BE > 0");
-		MK_LOG_INFO("QUEUE FAMILY COUNT: {0}", queueFamilyCount);
-		device.QueueFamilyProperties.resize(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(VkContext::API->PhysicalDevice, &queueFamilyCount, device.QueueFamilyProperties.data());
-
-		uint32_t extensionCount = 0;
-		vkEnumerateDeviceExtensionProperties(VkContext::API->PhysicalDevice, nullptr, &extensionCount, nullptr);
-		if (extensionCount > 0)
-		{
-			if (std::vector<VkExtensionProperties> extensions(extensionCount);
-				vkEnumerateDeviceExtensionProperties(VkContext::API->PhysicalDevice, nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS)
-			{
-				for (const auto& [extensionName, specVersion] : extensions)
-				{
-					device.SupportedExtensions.emplace_back(extensionName);
-				}
-			}
-		}
-
-		VkPhysicalDeviceFeatures deviceFeatures{};
-		deviceFeatures.samplerAnisotropy = true;
-
-		if (device.CreateLogicalDevice(deviceFeatures, DEVICE_EXTENSIONS, nullptr) != VK_SUCCESS)
-			MK_LOG_CRITICAL("Failed to create logical device!");
-		else
-			MK_LOG_INFO("Logical device successfully created");
-
-		VkContext::API->GraphicsQueue = VkExtern::GetQueue(VkContext::API->LogicalDevice, VkContext::API->QueueFamilyIndices.Graphics, 0);
-		VkContext::API->PresentQueue = VkExtern::GetQueue(VkContext::API->LogicalDevice, VkContext::API->QueueFamilyIndices.Present, 0);
-
-		VkContext::API->CommandPool = device.CreateCommandPool(VkContext::API->QueueFamilyIndices.Graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-
-		device.CreateCommandBuffer();
-
-		VkContext::API->Begin = reinterpret_cast<PFN_vkCmdBeginRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdBeginRendering"));
-		VkContext::API->End = reinterpret_cast<PFN_vkCmdEndRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdEndRendering"));
-
-		return device;
 	}
 
 }

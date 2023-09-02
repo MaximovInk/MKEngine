@@ -22,9 +22,9 @@ namespace MKEngine {
 		static Model testModel;
 		static Camera testCamera;
 
-		VulkanDevice Device;
+		Device Device;
 
-		std::map<std::int16_t, VulkanPresentView*> PresentViews;
+		std::map<std::int16_t, PresentView*> PresentViews;
 
 		GraphicsPipeline GraphicsPipeline;
 

@@ -14,24 +14,24 @@ namespace MKEngine {
 
 		buffer.Size = description.Size;
 
-		if (description.Data && description.Access == DataAccess::Device)
+		if (description.Data && description.Access == ACCESS_DEVICE)
 			bufferInfo.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
 		VmaAllocationCreateInfo allocationCreateInfo{};
 		allocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-		if (description.Access == DataAccess::Host)
+		if (description.Access == ACCESS_HOST)
 			allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
 		vmaCreateBuffer(VkContext::API->VmaAllocator, &bufferInfo,
 			&allocationCreateInfo, &buffer.Resource, &buffer.Allocation, nullptr);
 
-		if (description.Access == DataAccess::Host) {
+		if (description.Access == ACCESS_HOST) {
 			vmaMapMemory(VkContext::API->VmaAllocator, buffer.Allocation, &buffer.MappedData);
 
 		}
 		if (description.Data != nullptr)
 		{
-			if (description.Access == DataAccess::Host)
+			if (description.Access == ACCESS_HOST)
 			{
 				memcpy(buffer.MappedData, description.Data, description.Size);
 			}
@@ -41,7 +41,7 @@ namespace MKEngine {
 				stagingDescription.Size = description.Size;
 				stagingDescription.Data = description.Data;
 				stagingDescription.Usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-				stagingDescription.Access = DataAccess::Host;
+				stagingDescription.Access = ACCESS_HOST;
 
 				const Buffer stagingBuffer = Create(stagingDescription);
 

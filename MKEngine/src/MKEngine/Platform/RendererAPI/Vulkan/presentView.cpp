@@ -10,34 +10,27 @@
 #include "Rendering/RenderingInfo.h"
 
 namespace MKEngine {
-	
-	std::vector<glm::vec3> trianglePositions;
 
-	VulkanPresentView::VulkanPresentView()
+	PresentView* PresentView::Create()
 	{
-		MaxFramesInFlight = 2;
-		FrameNumber = 0;
+		const auto presentView = new PresentView();
 
-		for (float x = -1.0f; x < 1.0f; x+=0.2f)
-		{
-			for (float y = -1.0f; y < 1.0f; y += 0.2f)
-			{
-				trianglePositions.emplace_back(x,y,0.0f);
-			}
-		}
+		presentView->MaxFramesInFlight = 2;
+		presentView->FrameNumber = 0;
+
+		return presentView;
 	}
 
-	VulkanPresentView::~VulkanPresentView()
+	void PresentView::Destroy(PresentView* presentView)
 	{
-		CleanupSwapChain();
+		presentView->CleanupSwapChain();
 
-		vkDestroySurfaceKHR(VkContext::API->Instance, Surface, nullptr);
+		vkDestroySurfaceKHR(VkContext::API->Instance, presentView->Surface, nullptr);
 
-		SwapChain = VK_NULL_HANDLE;
-
+		presentView->SwapChain = VK_NULL_HANDLE;
 	}
 
-	void VulkanPresentView::InitSurface(Window* window)
+	void PresentView::InitSurface(Window* window)
 	{
 		Surface = VkExtern::CreateWindowSurface(VkContext::API->Instance, window);
 
@@ -82,7 +75,7 @@ namespace MKEngine {
 		MK_LOG_INFO("CHOOSED FORMAT: {0}, {1}", string_VkFormat(ColorFormat), string_VkColorSpaceKHR(ColorSpace));
 	}
 	
-	void VulkanPresentView::CreateSwapChain()
+	void PresentView::CreateSwapChain()
 	{
 		WaitDeviceIdle();
 		VkSwapchainKHR oldSwapchain = SwapChain;
@@ -203,12 +196,10 @@ namespace MKEngine {
 			MK_LOG_CRITICAL("failed to create swap chain!");
 		}
 
-
 		if (oldSwapchain != VK_NULL_HANDLE) {
 			
 			vkDestroySwapchainKHR(VkContext::API->LogicalDevice, oldSwapchain, VK_NULL_HANDLE);
 		}
-
 
 		std::vector<VkImage> images;
 		vkGetSwapchainImagesKHR(VkContext::API->LogicalDevice, SwapChain,
@@ -221,38 +212,12 @@ namespace MKEngine {
 
 		for (uint32_t i = 0; i < ImageCount; i++)
 		{
-			/*
-			  VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
-			viewInfo.pNext = nullptr;
-			viewInfo.format = ColorFormat;
-			viewInfo.components = {
-				VK_COMPONENT_SWIZZLE_R,
-				VK_COMPONENT_SWIZZLE_G,
-				VK_COMPONENT_SWIZZLE_B,
-				VK_COMPONENT_SWIZZLE_A
-			};
-			viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			viewInfo.subresourceRange.baseMipLevel = 0;
-			viewInfo.subresourceRange.levelCount = 1;
-			viewInfo.subresourceRange.baseArrayLayer = 0;
-			viewInfo.subresourceRange.layerCount = 1;
-			viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			viewInfo.flags = 0;
-
-			Buffers[i].Image = images[i];
-
-			viewInfo.image = Buffers[i].Image;
-
-			vkCreateImageView(VkContext::API->LogicalDevice, &viewInfo, nullptr, &Buffers[i].Resource);
-			 */
-
 			ImageViewDescription imageViewDescription;
 			imageViewDescription.Format = ColorFormat;
 			imageViewDescription.IsSwapchain = true;
 			imageViewDescription.Image = Image::Create(images[i]);
 
 			Buffers[i].View = ImageView::CreateImageView(imageViewDescription);
-			
 		}
 
 		SwapChainExtent = swapchainExtent;
@@ -260,7 +225,7 @@ namespace MKEngine {
 		MK_LOG_INFO("Created PresentViews {0} - {1}x{2}", ImageCount, width, height);
 	}
 
-	void VulkanPresentView::FinalizeCreation()
+	void PresentView::FinalizeCreation()
 	{
 		CreateUniformBuffers();
 		CreateCommandBuffers();
@@ -268,7 +233,7 @@ namespace MKEngine {
 		CreateDescriptorSets();
 	}
 
-	void VulkanPresentView::RecreateSwapChain()
+	void PresentView::RecreateSwapChain()
 	{
 		m_renderIsBegin = false;
 		MK_LOG_INFO("Recreate swapchain");
@@ -292,7 +257,7 @@ namespace MKEngine {
 		FinalizeCreation();
 	}
 	
-	void VulkanPresentView::CreateSync()
+	void PresentView::CreateSync()
 	{
 		for (size_t i = 0; i < ImageCount; i++)
 		{
@@ -304,13 +269,13 @@ namespace MKEngine {
 		}
 	}
 
-	VkResult VulkanPresentView::AcquireNextImage(const VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex) const
+	VkResult PresentView::AcquireNextImage(const VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex) const
 	{
 		return vkAcquireNextImageKHR(VkContext::API->LogicalDevice, SwapChain, UINT64_MAX,
 			presentCompleteSemaphore, VK_NULL_HANDLE, imageIndex);
 	}
 
-	VkResult VulkanPresentView::QueuePresent(const VkQueue queue, const uint32_t imageIndex, const VkSemaphore waitSemaphore) const
+	VkResult PresentView::QueuePresent(const VkQueue queue, const uint32_t imageIndex, const VkSemaphore waitSemaphore) const
 	{
 		VkPresentInfoKHR presentInfo = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
 		presentInfo.pNext = VK_NULL_HANDLE;
@@ -327,7 +292,7 @@ namespace MKEngine {
 		return vkQueuePresentKHR(queue, &presentInfo);
 	}
 
-	void VulkanPresentView::Render()
+	void PresentView::Render()
 	{
 
 		if(m_renderIsBegin)
@@ -353,7 +318,7 @@ namespace MKEngine {
 		m_renderIsBegin = true;
 	}
 
-	void VulkanPresentView::CleanupSwapChain(const bool destroySwapChain) const
+	void PresentView::CleanupSwapChain(const bool destroySwapChain) const
 	{
 		WaitDeviceIdle();
 
@@ -375,7 +340,7 @@ namespace MKEngine {
 
 	}
 
-	void VulkanPresentView::CreateCommandBuffers() {
+	void PresentView::CreateCommandBuffers() {
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocInfo.commandPool = VkContext::API->CommandPool;
@@ -390,11 +355,11 @@ namespace MKEngine {
 		}
 	}
 
-	void VulkanPresentView::CreateUniformBuffers()
+	void PresentView::CreateUniformBuffers()
 	{
 		UniformBuffers.resize(ImageCount);
-		BufferDescription bufferDescription{};
-		bufferDescription.Access = DataAccess::Host;
+		BufferDescription bufferDescription;
+		bufferDescription.Access = ACCESS_HOST;
 		bufferDescription.Usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 		bufferDescription.Size = sizeof(UniformBufferObject);
 
@@ -408,7 +373,8 @@ namespace MKEngine {
 		}
 	}
 
-	void VulkanPresentView::UpdateUniformBuffer(const uint32_t currentImage) {
+	void PresentView::UpdateUniformBuffer(const uint32_t currentImage) const
+	{
 		const auto [Title, Width, Height, VSync] = m_windowRef->GetData();
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -465,7 +431,7 @@ namespace MKEngine {
 		memcpy(Buffers[currentImage].UniformBuffer.MappedData, &ubo, sizeof(ubo));
 	}
 	
-	void VulkanPresentView::CreateDescriptorSets()
+	void PresentView::CreateDescriptorSets()
 	{
 		DescriptorSetDescription desc;
 		desc.Layout = VkContext::API->DescriptorSetLayout;
@@ -480,7 +446,7 @@ namespace MKEngine {
 		}
 	}
 
-	void VulkanPresentView::EndRender()
+	void PresentView::EndRender()
 	{
 		const auto commandBuffer = m_currentBufferDraw;
 		const auto imageIndex = m_currentImageIndexDraw;
@@ -559,9 +525,8 @@ namespace MKEngine {
 		FrameNumber = (FrameNumber + 1) % MaxFramesInFlight;
 	}
 
-	void VulkanPresentView::BeginRender()
+	void PresentView::BeginRender()
 	{
-
 		//Wait CPU unlock 
 		vkWaitForFences(VkContext::API->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence), TRUE, UINT64_MAX);
 		uint32_t imageIndex;

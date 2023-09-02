@@ -26,7 +26,7 @@ namespace MKEngine {
 
 		//Create staging buffer
 		BufferDescription stagingBufferDescription{};
-		stagingBufferDescription.Access = DataAccess::Host;
+		stagingBufferDescription.Access = ACCESS_HOST;
 		stagingBufferDescription.Usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		stagingBufferDescription.Data = pixels;
 		stagingBufferDescription.Size = imageSize;

@@ -8,8 +8,8 @@ namespace MKEngine {
 
 	enum DataAccess
 	{
-		Host,
-		Device
+		ACCESS_HOST,
+		ACCESS_DEVICE
 	};
 
 	struct BufferDescription

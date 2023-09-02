@@ -7,7 +7,7 @@ namespace MKEngine {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 
-	class VulkanDevice {
+	class Device {
 	public:
 		VkPhysicalDeviceFeatures Features;
 		VkPhysicalDeviceFeatures EnabledFeatures;
@@ -16,12 +16,14 @@ namespace MKEngine {
 		std::vector<VkQueueFamilyProperties> QueueFamilyProperties;
 		std::vector<std::string> SupportedExtensions;
 
-		VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeaturesKHR{};
+		VkPhysicalDeviceDynamicRenderingFeaturesKHR DynamicRenderingFeaturesKhr{};
 
-		VulkanDevice() = default;
+		Device() = default;
 
-		uint32_t		GetPresentViewQueueFamilyIndex();
-		uint32_t		GetQueueFamilyIndex(VkQueueFlags queueFlags);
+		static Device Create();
+
+		uint32_t		GetPresentViewQueueFamilyIndex() const;
+		uint32_t		GetQueueFamilyIndex(VkQueueFlags queueFlags) const;
 		bool			ExtensionSupported(const std::string& extension);
 		VkResult        CreateLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures,
 			std::vector<const char*> enabledExtensions, void* pNextChain, 
@@ -32,6 +34,4 @@ namespace MKEngine {
 		void CreateCommandBuffer();
 
 	};
-
-	VulkanDevice CreateDevice();
 }

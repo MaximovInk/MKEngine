@@ -17,7 +17,7 @@ namespace MKEngine {
 		vertexBufferDescription.Size = vertexBufferSize;
 		vertexBufferDescription.Data = static_cast<void*>(Vertices.data());
 		vertexBufferDescription.Usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		vertexBufferDescription.Access = DataAccess::Device;
+		vertexBufferDescription.Access = ACCESS_DEVICE;
 		m_verticesBuffer = Buffer::Create(vertexBufferDescription);
 		
 		const auto indicesBufferSize = sizeof(Indices[0]) * Indices.size();
@@ -25,7 +25,7 @@ namespace MKEngine {
 		indicesDescription.Size = indicesBufferSize;
 		indicesDescription.Data = static_cast<void*>(Indices.data());
 		indicesDescription.Usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-		indicesDescription.Access = DataAccess::Device;
+		indicesDescription.Access = ACCESS_DEVICE;
 		m_indicesBuffer = Buffer::Create(indicesDescription);
 	}
 
