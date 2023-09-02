@@ -86,6 +86,7 @@ namespace MKEngine {
         depthState.depthCompareOp = description.ColorAttachment.HasDepthAttachment() ? description.ColorAttachment.GetDepthAttachmentInfo().DepthTestPassCondition : VK_COMPARE_OP_ALWAYS;
         depthState.depthBoundsTestEnable = false;
         depthState.stencilTestEnable = false;
+
 		MK_LOG_INFO("DEPTH: {0}", description.ColorAttachment.HasDepthAttachment());
         return depthState;
     }
@@ -97,7 +98,7 @@ namespace MKEngine {
         pipelineRenderingCreateInfo.colorAttachmentCount = colorAttachmentsFormat.size();
         pipelineRenderingCreateInfo.pColorAttachmentFormats = colorAttachmentsFormat.data();
         pipelineRenderingCreateInfo.depthAttachmentFormat = description.ColorAttachment.HasDepthAttachment() ? description.ColorAttachment.GetDepthAttachmentInfo().Format : VK_FORMAT_UNDEFINED;
-        pipelineRenderingCreateInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+        pipelineRenderingCreateInfo.stencilAttachmentFormat = VK_FORMAT_D32_SFLOAT_S8_UINT;
         return pipelineRenderingCreateInfo;
     }
 
@@ -124,7 +125,9 @@ namespace MKEngine {
                     | VK_COLOR_COMPONENT_A_BIT;
             }
             else
+				
             {
+				
                 blending.blendEnable = false;
                 blending.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
                 blending.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -207,6 +210,7 @@ namespace MKEngine {
 		//Color attachments
 		auto colorBlendState = GetColorBlendState(description, colorAttachmentsBlending);
 		createInfo.pColorBlendState = &colorBlendState;
+		MK_LOG_INFO("ATTACHMENTS: {0}", colorBlendState.attachmentCount );
 
 		//Dynamic rendering
 		auto dynamicRendering = GetDynamicRenderingInfo(description, colorAttachmentsFormat);

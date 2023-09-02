@@ -6,7 +6,7 @@
 #include "MKEngine/Platform/RendererAPI/Vulkan/vkContext.h"
 
 namespace MKEngine {
-    ImageView ImageView::CreateImageView(ImageViewDescription description)
+    ImageView ImageView::Create(ImageViewDescription description)
     {
         ImageView imageView;
 		imageView.Image = description.Image;
@@ -15,7 +15,7 @@ namespace MKEngine {
 		VkImageViewCreateInfo viewInfo{ VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
 		viewInfo.pNext = nullptr;
 		viewInfo.format = description.Format;
-		viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		viewInfo.subresourceRange.aspectMask = description.Aspect;
 		viewInfo.subresourceRange.baseMipLevel = 0;
 		viewInfo.subresourceRange.levelCount = 1;
 		viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -40,7 +40,7 @@ namespace MKEngine {
         return imageView;
     }
 
-    void ImageView::DestroyImageView(ImageView view)
+    void ImageView::Destroy(ImageView view)
     {
 		vkDestroyImageView(VkContext::API->LogicalDevice, view.Resource, nullptr);
     }

@@ -120,6 +120,7 @@
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\camera.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\CommandBuffer.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetDescription.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSet.h" />
@@ -162,6 +163,7 @@
     <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\camera.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\CommandBuffer.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSet.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayout.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.cpp" />

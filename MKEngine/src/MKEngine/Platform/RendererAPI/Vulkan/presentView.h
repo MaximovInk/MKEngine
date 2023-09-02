@@ -26,6 +26,7 @@ namespace MKEngine {
 
 	typedef struct SwapChainBuffers {
 		ImageView View;
+		ImageView Depth;
 		VkCommandBuffer CommandBuffer;
 		ViewSync Sync;
 		Buffer UniformBuffer;
@@ -71,7 +72,7 @@ namespace MKEngine {
 		void CleanupSwapChain(bool destroySwapChain = true) const;
 
 		void CreateUniformBuffers();
-		void UpdateUniformBuffer(uint32_t currentImage) const;
+		void UpdateUniformBuffer() const;
 		void CreateDescriptorSets();
 
 		VkCommandBuffer m_currentBufferDraw;

@@ -154,6 +154,7 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingColorAttachment.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\ImageView.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\Image.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\CommandBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -233,5 +234,6 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingInfo.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\ImageView.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\Image.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\CommandBuffer.cpp" />
   </ItemGroup>
 </Project>

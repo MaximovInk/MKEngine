@@ -9,8 +9,9 @@ namespace MKEngine
 	struct ImageViewDescription
 	{
 		Image Image;
-		bool IsSwapchain;
+		bool IsSwapchain = false;
 		VkFormat Format = VK_FORMAT_R8G8B8A8_SRGB;
+		VkImageAspectFlags Aspect = VK_IMAGE_ASPECT_COLOR_BIT;
 	};
 
 	class ImageView
@@ -19,7 +20,7 @@ namespace MKEngine
 		VkImageView Resource;
 		Image Image;
 
-		static ImageView CreateImageView(ImageViewDescription description);
-		static void DestroyImageView(ImageView view);
+		static ImageView Create(ImageViewDescription description);
+		static void Destroy(ImageView view);
 	};
 }

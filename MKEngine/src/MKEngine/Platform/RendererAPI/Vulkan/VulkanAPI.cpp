@@ -58,10 +58,15 @@ namespace MKEngine {
 		description.VertexInput.DefineAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Position));
 		description.VertexInput.DefineAttribute(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Color));
 		description.VertexInput.DefineAttribute(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, TexCoord));
-		description.FrontFace = VK_FRONT_FACE_CLOCKWISE;
+		description.FrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		description.PipelineLayout = layout;
 
-		description.ColorAttachment.SetDepthAttachment(VK_FORMAT_D32_SFLOAT, VK_COMPARE_OP_LESS, true);
+		description.ColorAttachment.SetDepthAttachment(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_COMPARE_OP_LESS, true);
+
+		//PipelineBlendingInfo blendingInfo;
+		
+
+		//description.ColorAttachment.AddColorAttachment(VK_FORMAT_B8G8R8A8_SRGB);
 
 		description.VertexInput.VertexDefineSlot(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
 
@@ -83,7 +88,7 @@ namespace MKEngine {
 		testModel = Model::LoadModel("models/scene.gltf");
 
 		testCamera.FlipY = true;
-		testCamera.SetPerspective(75, 1, 0.1, 100);
+		testCamera.SetPerspective(75, 1, 0.1, 1000);
 		testCamera.SetPosition(glm::vec3(0.0f, 2.5f, -10.25f));
 		testCamera.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 
