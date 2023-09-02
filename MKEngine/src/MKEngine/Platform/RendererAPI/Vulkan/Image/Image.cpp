@@ -27,9 +27,8 @@ namespace MKEngine {
 		VmaAllocationCreateInfo imageAllocCreateInfo = {};
 		imageAllocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-		VkResult result = vmaCreateImage(VkContext::API->VmaAllocator, &imageInfo, &imageAllocCreateInfo, &image.Resource, &image.Allocation, nullptr);
-		if (result != VK_SUCCESS)
-			MK_LOG_ERROR("Failed to create vkImage! {0}", result);
+		if (vmaCreateImage(VkContext::API->VmaAllocator, &imageInfo, &imageAllocCreateInfo, &image.Resource, &image.Allocation, nullptr))
+			MK_LOG_ERROR("Failed to create vkImage!");
 
 		image.m_description = { description };
 
@@ -41,6 +40,15 @@ namespace MKEngine {
 		if (image.Resource != VK_NULL_HANDLE)
 			vmaDestroyImage(VkContext::API->VmaAllocator, image.Resource, image.Allocation);
     }
+
+	Image Image::Create( VkImage source)
+	{
+		Image image;
+
+		image.Resource = source;
+
+		return image;
+	}
 
     void Image::CopyBufferToImage(const VkBuffer buffer, const Image& image)
 	{

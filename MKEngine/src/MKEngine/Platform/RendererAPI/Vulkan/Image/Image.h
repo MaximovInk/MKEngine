@@ -29,6 +29,7 @@ namespace MKEngine
 		Image() = default;
 
 		static Image Create(const ImageDescription& description);
+		static Image Create( VkImage source);
 		static void Destroy(const Image& image);
 
 		static void CopyBufferToImage(VkBuffer buffer, const Image& image);

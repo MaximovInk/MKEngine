@@ -221,7 +221,8 @@ namespace MKEngine {
 
 		for (uint32_t i = 0; i < ImageCount; i++)
 		{
-			VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
+			/*
+			  VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
 			viewInfo.pNext = nullptr;
 			viewInfo.format = ColorFormat;
 			viewInfo.components = {
@@ -242,8 +243,15 @@ namespace MKEngine {
 
 			viewInfo.image = Buffers[i].Image;
 
-			vkCreateImageView(VkContext::API->LogicalDevice, &viewInfo, nullptr, &Buffers[i].View);
+			vkCreateImageView(VkContext::API->LogicalDevice, &viewInfo, nullptr, &Buffers[i].Resource);
+			 */
 
+			ImageViewDescription imageViewDescription;
+			imageViewDescription.Format = ColorFormat;
+			imageViewDescription.IsSwapchain = true;
+			imageViewDescription.Image = Image::Create(images[i]);
+
+			Buffers[i].View = ImageView::CreateImageView(imageViewDescription);
 			
 		}
 
@@ -334,7 +342,7 @@ namespace MKEngine {
 		//const glm::mat4 model = glm::mat4(1.0f);
 
 		
-		//const glm::mat4 model = VulkanAPI::testCamera.Matrices.Perspective * VulkanAPI::testCamera.Matrices.View * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -1));
+		//const glm::mat4 model = VulkanAPI::testCamera.Matrices.Perspective * VulkanAPI::testCamera.Matrices.Resource * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -1));
 
 		ObjectData data;
 		data.Model = model;
@@ -351,7 +359,7 @@ namespace MKEngine {
 
 		for (uint32_t i = 0; i < ImageCount; i++)
 		{
-			vkDestroyImageView(VkContext::API->LogicalDevice, Buffers[i].View, VK_NULL_HANDLE);
+			ImageView::DestroyImageView(Buffers[i].View);
 			vkDestroyFence(VkContext::API->LogicalDevice, Buffers[i].Sync.InFlightFence, VK_NULL_HANDLE);
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
@@ -484,7 +492,7 @@ namespace MKEngine {
 .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-.image = Buffers[imageIndex].Image,
+.image = Buffers[imageIndex].View.Image.Resource,
 .subresourceRange = {
   .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
   .baseMipLevel = 0,
@@ -600,7 +608,7 @@ namespace MKEngine {
 			.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 			.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 			.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			.image = Buffers[imageIndex].Image,
+			.image = Buffers[imageIndex].View.Image.Resource,
 			.subresourceRange = {
 			  .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 			  .baseMipLevel = 0,
@@ -630,7 +638,7 @@ namespace MKEngine {
 
 		
 		 VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
-		colorAttachment.imageView = Buffers[imageIndex].View;
+		colorAttachment.imageView = Buffers[imageIndex].View.Resource;
 		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -646,7 +654,7 @@ namespace MKEngine {
 
 		//RenderingInfo renderingInfo({ 0, 0, Width, Height });
 
-		//renderingInfo.AddColorAttachment(Buffers[imageIndex].View);
+		//renderingInfo.AddColorAttachment(Buffers[imageIndex].Resource);
 		//renderingInfo.SetDepthAttachment(Buffers[imageIndex].);
 
 

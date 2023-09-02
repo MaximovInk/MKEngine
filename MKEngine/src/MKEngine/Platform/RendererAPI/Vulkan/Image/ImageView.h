@@ -1,23 +1,23 @@
 #pragma once
 #include <vulkan/vulkan.h>
 
+#include "Image.h"
+
 namespace MKEngine
 {
 
 	struct ImageViewDescription
 	{
-		VkImage Image;
+		Image Image;
 		bool IsSwapchain;
-		uint32_t Width;
-		uint32_t Height;
-		VkImageType Type = VK_IMAGE_TYPE_2D;
-
+		VkFormat Format = VK_FORMAT_R8G8B8A8_SRGB;
 	};
 
 	class ImageView
 	{
-		VkImageView View;
-		VkImage Image;
+	public:
+		VkImageView Resource;
+		Image Image;
 
 		static ImageView CreateImageView(ImageViewDescription description);
 		static void DestroyImageView(ImageView view);

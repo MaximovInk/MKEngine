@@ -3,6 +3,7 @@
 #include "MKEngine/Platform/Window.h"
 #include "buffer.h"
 #include "DescriptorSet/descriptorSet.h"
+#include "Image/ImageView.h"
 
 namespace MKEngine {
 
@@ -24,8 +25,9 @@ namespace MKEngine {
 	};
 
 	typedef struct SwapChainBuffers {
-		VkImage Image;
-		VkImageView View;
+		//VkImage Image;
+		//VkImageView Resource;
+		ImageView View;
 		VkCommandBuffer CommandBuffer;
 		ViewSync Sync;
 		Buffer UniformBuffer;
