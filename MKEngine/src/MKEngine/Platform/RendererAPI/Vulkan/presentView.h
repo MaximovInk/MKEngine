@@ -4,6 +4,7 @@
 #include "buffer.h"
 #include "DescriptorSet/descriptorSet.h"
 #include "Image/ImageView.h"
+#include "VkContext.h"
 
 namespace MKEngine {
 
@@ -14,7 +15,7 @@ namespace MKEngine {
 	{
 		VkSemaphore ImageAvailableSemaphore = VK_NULL_HANDLE;
 		VkSemaphore RenderFinishedSemaphore = VK_NULL_HANDLE;
-		VkFence InFlightFence = VK_NULL_HANDLE;
+		//VkFence InFlightFence = VK_NULL_HANDLE;
 	};
 
 	struct SwapChainInput {
@@ -27,7 +28,7 @@ namespace MKEngine {
 	typedef struct SwapChainBuffers {
 		ImageView View;
 		ImageView Depth;
-		VkCommandBuffer CommandBuffer;
+		CommandBuffer CmdBuffer;
 		ViewSync Sync;
 		Buffer UniformBuffer;
 		DescriptorSet DescriptorSet;
@@ -75,7 +76,7 @@ namespace MKEngine {
 		void UpdateUniformBuffer() const;
 		void CreateDescriptorSets();
 
-		VkCommandBuffer m_currentBufferDraw;
+		CommandBuffer m_currentBufferDraw;
 		uint32_t m_currentImageIndexDraw;
 
 		bool m_renderIsBegin = false;

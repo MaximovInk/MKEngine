@@ -1,8 +1,6 @@
 #include "mkpch.h"
 #include "Image.h"
 
-#include <vulkan/vk_enum_string_helper.h>
-
 #include "MKEngine/Core/Log.h"
 #include "MKEngine/Platform/RendererAPI/Vulkan/vkContext.h"
 
@@ -33,6 +31,8 @@ namespace MKEngine {
 			MK_LOG_ERROR("Failed to create vkImage!");
 
 		image.m_description = { description };
+		image.m_layout = description.InitialLayout;
+		image.m_aspectFlags = VK_IMAGE_ASPECT_NONE;
 
         return image;
     }
@@ -43,53 +43,21 @@ namespace MKEngine {
 			vmaDestroyImage(VkContext::API->VmaAllocator, image.Resource, image.Allocation);
     }
 
-	Image Image::Create( VkImage source)
+	Image Image::Create(const VkImage source, const VkImageAspectFlags aspectFlags)
 	{
 		Image image;
 
 		image.Resource = source;
+		image.m_aspectFlags = aspectFlags;
 
 		return image;
 	}
 
-    void Image::CopyBufferToImage(const VkBuffer buffer, const Image& image)
-	{
-		ImmediateSubmit([&](const VkCommandBuffer commandBuffer)
-			{
-				VkBufferImageCopy region{};
-				region.bufferOffset = 0;
-				region.bufferRowLength = 0;
-				region.bufferImageHeight = 0;
-
-				region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				region.imageSubresource.mipLevel = 0;
-				region.imageSubresource.baseArrayLayer = 0;
-				region.imageSubresource.layerCount = 1;
-
-				region.imageOffset = { 0, 0, 0 };
-				region.imageExtent = {
-					image.GetDescription().Width,
-					image.GetDescription().Height,
-					1
-				};
-
-				vkCmdCopyBufferToImage(
-					commandBuffer,
-					buffer,
-					image.Resource,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					1,
-					&region
-				);
-			});
-
-	}
-
-	bool hasStencilComponent(VkFormat format) {
+	bool HasStencilComponent(const VkFormat format) {
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 
-	void Image::TransitionImageLayout(const Image image, VkFormat format, const VkImageLayout oldLayout, const VkImageLayout newLayout)
+	void Image::TransitionImageLayout(const VkFormat format, const VkImageLayout oldLayout, const VkImageLayout newLayout)
 	{
 		ImmediateSubmit([&](const VkCommandBuffer commandBuffer)
 			{
@@ -104,7 +72,7 @@ namespace MKEngine {
 				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-				barrier.image = image.Resource;
+				barrier.image = Resource;
 				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				barrier.subresourceRange.baseMipLevel = 0;
 				barrier.subresourceRange.levelCount = 1;
@@ -139,8 +107,8 @@ namespace MKEngine {
 
 				if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
 					barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-					
-					if (hasStencilComponent(format)) {
+
+					if (HasStencilComponent(format)) {
 						barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 					}
 				}
@@ -148,6 +116,7 @@ namespace MKEngine {
 					barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				}
 
+				m_aspectFlags = barrier.subresourceRange.aspectMask;
 
 				vkCmdPipelineBarrier(
 					commandBuffer,
@@ -165,4 +134,19 @@ namespace MKEngine {
 	{
 		return m_description;
 	}
+
+    VkImageAspectFlags Image::GetAspectFlags() const
+    {
+		return m_aspectFlags;
+    }
+
+    VkImageLayout Image::GetLayout() const
+    {
+		return m_layout;
+    }
+
+    void Image::SetLayout(const VkImageLayout newLayout)
+    {
+		m_layout = newLayout;
+    }
 }

@@ -10,7 +10,7 @@ namespace MKEngine {
 	struct GraphicsPipeline {
 	public:
 		VkPipelineLayout PipelineLayout = VK_NULL_HANDLE;
-		VkPipeline Reference = VK_NULL_HANDLE;
+		VkPipeline Resource = VK_NULL_HANDLE;
 		//VkDescriptorSetLayout DescriptorSetLayout;
 
 		static void DestroyGraphicsPipeline(const GraphicsPipeline& graphicsPipeline);

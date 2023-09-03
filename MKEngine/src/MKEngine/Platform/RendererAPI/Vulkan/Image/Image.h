@@ -29,14 +29,21 @@ namespace MKEngine
 		Image() = default;
 
 		static Image Create(const ImageDescription& description);
-		static Image Create( VkImage source);
+		static Image Create( VkImage source, VkImageAspectFlags aspectFlags);
 		static void Destroy(const Image& image);
 
-		static void CopyBufferToImage(VkBuffer buffer, const Image& image);
-		static void TransitionImageLayout(Image image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void CopyBufferToImage(VkBuffer buffer) const;
+		void TransitionImageLayout(VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 		ImageDescription GetDescription() const;
+
+		VkImageAspectFlags GetAspectFlags() const;
+		VkImageLayout GetLayout() const;
+		void SetLayout(VkImageLayout newLayout);
+
 	private:
 		ImageDescription m_description;
+		VkImageAspectFlags m_aspectFlags;
+		VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 	};
 }

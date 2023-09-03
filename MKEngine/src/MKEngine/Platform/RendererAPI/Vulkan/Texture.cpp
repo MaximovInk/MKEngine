@@ -50,13 +50,13 @@ namespace MKEngine {
 		texture.Image = Image::Create(imageDescription);
 
 		//Set TransitionLayout for copy
-		Image::TransitionImageLayout(texture.Image, description.Format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		texture.Image.TransitionImageLayout(description.Format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 		//Copy from buffer to image
-		Image::CopyBufferToImage(stagingBuffer.Resource, texture.Image);
+		CommandBuffer::CopyBufferToImage(stagingBuffer.Resource, texture.Image);
 
 		//Set TransitionLayout for shaders 
-		Image::TransitionImageLayout(texture.Image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		texture.Image.TransitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 		Buffer::Destroy(stagingBuffer);
 

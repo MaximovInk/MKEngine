@@ -146,7 +146,7 @@ namespace MKEngine {
 
 	void GraphicsPipeline::DestroyGraphicsPipeline(const GraphicsPipeline& graphicsPipeline)
 	{
-		vkDestroyPipeline(VkContext::API->LogicalDevice, graphicsPipeline.Reference, nullptr);
+		vkDestroyPipeline(VkContext::API->LogicalDevice, graphicsPipeline.Resource, nullptr);
 	}
 
 	GraphicsPipeline GraphicsPipeline::CreateGraphicsPipeline(GraphicsPipelineDescription& description)
@@ -223,7 +223,7 @@ namespace MKEngine {
 			MK_LOG_ERROR("Failed to create graphics pipeline");
 
 		GraphicsPipeline output;
-		output.Reference = vkPipeline;
+		output.Resource = vkPipeline;
 		output.PipelineLayout = pipelineLayout;
 
 		//Maybe not destroy for multiply usage

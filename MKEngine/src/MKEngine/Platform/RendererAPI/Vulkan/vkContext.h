@@ -4,6 +4,7 @@
 
 #include "vk_mem_alloc.h"
 #include "DescriptorSet/descriptorSet.h"
+#include "CommandBuffer/commandBuffer.h"
 
 namespace MKEngine
 {
@@ -14,11 +15,9 @@ namespace MKEngine
 		VkPhysicalDevice PhysicalDevice = nullptr;
 		VkDevice LogicalDevice = nullptr;
 
-		VkCommandPool CommandPool = nullptr;
-		VkCommandBuffer MainCommandBuffer = nullptr;
+		CommandBuffer CommandBuffer;
 
-		VkPipeline GraphicsPipeline = nullptr;
-		VkPipelineLayout PipelineLayout = nullptr;
+		GraphicsPipeline GraphicsPipeline;
 
 		VkQueue GraphicsQueue{};
 		VkQueue PresentQueue{};

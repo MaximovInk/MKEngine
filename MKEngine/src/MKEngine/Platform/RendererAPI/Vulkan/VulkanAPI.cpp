@@ -32,6 +32,14 @@ namespace MKEngine {
 
 		Device = Device::Create();
 
+		CommandBufferDescription commandBufferDescription;
+		commandBufferDescription.FamilyIndex = VkContext::API->QueueFamilyIndices.Graphics;
+
+		VkContext::API->CommandBuffer = CommandBuffer::Create(commandBufferDescription);
+
+		VkContext::API->Begin = reinterpret_cast<PFN_vkCmdBeginRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdBeginRendering"));
+		VkContext::API->End = reinterpret_cast<PFN_vkCmdEndRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdEndRendering"));
+
 		VmaAllocatorCreateInfo allocatorCreateInfo{};
 		allocatorCreateInfo.device = VkContext::API->LogicalDevice;
 		allocatorCreateInfo.instance = VkContext::API->Instance;
@@ -63,17 +71,11 @@ namespace MKEngine {
 
 		description.ColorAttachment.SetDepthAttachment(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_COMPARE_OP_LESS, true);
 
-		//PipelineBlendingInfo blendingInfo;
-		
-
-		//description.ColorAttachment.AddColorAttachment(VK_FORMAT_B8G8R8A8_SRGB);
-
 		description.VertexInput.VertexDefineSlot(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
 
 		GraphicsPipeline = GraphicsPipeline::CreateGraphicsPipeline(description);
 
-		VkContext::API->GraphicsPipeline = GraphicsPipeline.Reference;
-		VkContext::API->PipelineLayout = GraphicsPipeline.PipelineLayout;
+		VkContext::API->GraphicsPipeline = GraphicsPipeline;
 
 		testMesh.Indices = INDICES;
 		testMesh.Vertices = VERTICES;
@@ -111,11 +113,10 @@ namespace MKEngine {
 			vkDestroyPipelineLayout(VkContext::API->LogicalDevice, GraphicsPipeline.PipelineLayout, nullptr);
 		if (VkContext::API->DescriptorSetLayout.Resource)
 			DescriptorSetLayout::DestroyDescriptorSetLayout(VkContext::API->DescriptorSetLayout);
-		if (GraphicsPipeline.Reference)
+		if (GraphicsPipeline.Resource)
 			GraphicsPipeline::DestroyGraphicsPipeline(GraphicsPipeline);
-
-		if (VkContext::API->CommandPool)
-			vkDestroyCommandPool(VkContext::API->LogicalDevice, VkContext::API->CommandPool, nullptr);
+		if (VkContext::API->CommandBuffer.CommandPool)
+			CommandBuffer::Destroy(VkContext::API->CommandBuffer);
 
 		vmaDestroyAllocator(VkContext::API->VmaAllocator);
 

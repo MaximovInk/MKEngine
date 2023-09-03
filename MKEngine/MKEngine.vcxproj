@@ -120,7 +120,7 @@
     <ClInclude Include="src\MKEngine\Platform\PlatformBackend.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\camera.h" />
-    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\CommandBuffer.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\commandBuffer.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetDescription.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSet.h" />
@@ -134,6 +134,7 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingColorAttachment.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingDepthAttachment.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingInfo.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Fence.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
@@ -163,7 +164,7 @@
     <ClCompile Include="src\MKEngine\Platform\PlatformBackend.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\camera.cpp" />
-    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\CommandBuffer.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\commandBuffer.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSet.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayout.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\DescriptorSet\descriptorSetLayoutDescription.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Pipeline\vertexInputDescription.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingInfo.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\shader.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Fence.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Texture.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.cpp" />

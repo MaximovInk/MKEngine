@@ -1,12 +1,13 @@
 #include <mkpch.h>
 
 #include <vulkan/vk_enum_string_helper.h>
-#include "VkContext.h"
+
 #include "presentView.h"
 #include "MKEngine/Platform/PlatformBackend.h"
 #include "vkExtern.h"
 #include "VulkanAPI.h"
 #include "MKEngine/Input/input.h"
+#include "Rendering/RenderingInfo.h"
 
 namespace MKEngine {
 
@@ -214,9 +215,10 @@ namespace MKEngine {
 			ImageViewDescription imageViewDescription;
 			imageViewDescription.Format = ColorFormat;
 			imageViewDescription.IsSwapchain = true;
-			imageViewDescription.Image = Image::Create(images[i]);
+			imageViewDescription.Image = Image::Create(images[i], VK_IMAGE_ASPECT_COLOR_BIT);
 
 			Buffers[i].View = ImageView::Create(imageViewDescription);
+			//Buffers[i].View.Image.TransitionImageLayout(ColorFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
 
 		SwapChainExtent = swapchainExtent;
@@ -231,17 +233,17 @@ namespace MKEngine {
 		CreateSync();
 		CreateDescriptorSets();
 
-		auto wndData = m_windowRef->GetData();
+		const auto [Title, Width, Height, VSync] = m_windowRef->GetData();
 
 		for (size_t i = 0; i < Buffers.size(); i++)
 		{
 			ImageDescription imageDescription;
-			imageDescription.Width = wndData.Width;
-			imageDescription.Height = wndData.Height;
+			imageDescription.Width = Width;
+			imageDescription.Height = Height;
 			imageDescription.Format = VK_FORMAT_D32_SFLOAT_S8_UINT;
 			imageDescription.Usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-			Image depthImage = Image::Create(imageDescription);
+			const Image depthImage = Image::Create(imageDescription);
 
 			ImageViewDescription imageViewDescription;
 			imageViewDescription.Format = VK_FORMAT_D32_SFLOAT_S8_UINT;
@@ -250,7 +252,7 @@ namespace MKEngine {
 
 			Buffers[i].Depth = ImageView::Create(imageViewDescription);
 
-			Image::TransitionImageLayout(Buffers[i].Depth.Image, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+			Buffers[i].Depth.Image.TransitionImageLayout(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 		}
 	}
 
@@ -283,7 +285,6 @@ namespace MKEngine {
 		for (size_t i = 0; i < ImageCount; i++)
 		{
 			ViewSync sync{};
-			sync.InFlightFence = VkExtern::CreateFence(VkContext::API->LogicalDevice);
 			sync.ImageAvailableSemaphore = VkExtern::CreateSemaphore(VkContext::API->LogicalDevice);
 			sync.RenderFinishedSemaphore = VkExtern::CreateSemaphore(VkContext::API->LogicalDevice);
 			Buffers[i].Sync = sync;
@@ -315,7 +316,6 @@ namespace MKEngine {
 
 	void PresentView::Render()
 	{
-
 		if(m_renderIsBegin)
 		{
 			EndRender();
@@ -325,20 +325,16 @@ namespace MKEngine {
 		BeginRender();
 
 		const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(1, 1, 1));
-		//const glm::mat4 model = glm::mat4(1.0f);
-
-		
-		//const glm::mat4 model = VulkanAPI::testCamera.Matrices.Perspective * VulkanAPI::testCamera.Matrices.Resource * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -1));
-
 		ObjectData data;
 		data.Model = model;
-		vkCmdPushConstants(m_currentBufferDraw, VkContext::API->PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
 
-		VulkanAPI::testModel.Draw(m_currentBufferDraw);
+		vkCmdPushConstants(m_currentBufferDraw.Resource, VkContext::API->GraphicsPipeline.PipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(data), &data);
+
+		VulkanAPI::testModel.Draw(m_currentBufferDraw.Resource);
 
 		m_renderIsBegin = true;
 	}
-
+	
 	void PresentView::CleanupSwapChain(const bool destroySwapChain) const
 	{
 		WaitDeviceIdle();
@@ -347,35 +343,29 @@ namespace MKEngine {
 		{
 			ImageView::Destroy(Buffers[i].Depth);
 			Image::Destroy(Buffers[i].Depth.Image);
-
 			ImageView::Destroy(Buffers[i].View);
-			vkDestroyFence(VkContext::API->LogicalDevice, Buffers[i].Sync.InFlightFence, VK_NULL_HANDLE);
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
-			vkFreeCommandBuffers(VkContext::API->LogicalDevice, VkContext::API->CommandPool, 1, &Buffers[i].CommandBuffer);
+			CommandBuffer::Destroy(Buffers[i].CmdBuffer);
 			Buffer::Destroy(Buffers[i].UniformBuffer);
 			DescriptorSet::Destroy(Buffers[i].DescriptorSet);
 		}
 
-		
 		if(destroySwapChain)
 			vkDestroySwapchainKHR(VkContext::API->LogicalDevice, SwapChain, VK_NULL_HANDLE);
-
-
 	}
 
 	void PresentView::CreateCommandBuffers() {
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = VkContext::API->CommandPool;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = 1;
+
+		CommandBufferDescription description;
+		description.Level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		description.FamilyIndex = VkContext::API->QueueFamilyIndices.Graphics;
+		description.Flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		//description.CommandPool = VkContext::API->CommandBuffer.CommandPool;
 
 		for (size_t i = 0; i < ImageCount; i++)
 		{
-			if (vkAllocateCommandBuffers(VkContext::API->LogicalDevice, &allocInfo, &(Buffers[i].CommandBuffer)) != VK_SUCCESS) {
-				MK_LOG_ERROR("Failed to allocate command buffers!");
-			}
+			Buffers[i].CmdBuffer = CommandBuffer::Create(description);
 		}
 	}
 
@@ -471,39 +461,19 @@ namespace MKEngine {
 
 	void PresentView::EndRender()
 	{
-		VkContext::API->End(m_currentBufferDraw);
+		m_currentBufferDraw.EndRendering();
 
-		const VkImageMemoryBarrier imageMemoryBarrier{
-.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-.image = Buffers[m_currentImageIndexDraw].View.Image.Resource,
-.subresourceRange = {
-  .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-  .baseMipLevel = 0,
-  .levelCount = 1,
-  .baseArrayLayer = 0,
-  .layerCount = 1,
-}
-		};
-
-		vkCmdPipelineBarrier(
-			m_currentBufferDraw,
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // srcStageMask
-			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, // dstStageMask
-			0,
-			0,
-			nullptr,
-			0,
-			nullptr,
-			1, // imageMemoryBarrierCount
-			&imageMemoryBarrier // pImageMemoryBarriers
+		m_currentBufferDraw.ImageMemoryBarrier(
+			Buffers[m_currentImageIndexDraw].View.Image,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			0, 
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 		);
 
-		if (vkEndCommandBuffer(m_currentBufferDraw) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to record command buffer!");
-		}
+		m_currentBufferDraw.End();
 
 		VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
 
@@ -513,13 +483,14 @@ namespace MKEngine {
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &m_currentBufferDraw;
+		submitInfo.pCommandBuffers = &m_currentBufferDraw.Resource;
 		const VkSemaphore signalSemaphores[] = { Buffers[FrameNumber].Sync.RenderFinishedSemaphore };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		vkResetFences(VkContext::API->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence));
-		if (vkQueueSubmit(VkContext::API->GraphicsQueue, 1, &submitInfo, (Buffers[FrameNumber].Sync.InFlightFence)) != VK_SUCCESS) {
+		m_currentBufferDraw.WaitFence.Reset();
+
+		if (vkQueueSubmit(VkContext::API->GraphicsQueue, 1, &submitInfo, m_currentBufferDraw.WaitFence.Resource) != VK_SUCCESS) {
 			MK_LOG_ERROR("failed to submit draw command buffer!");
 		}
 
@@ -528,9 +499,8 @@ namespace MKEngine {
 		presentInfo.waitSemaphoreCount = 1;
 		presentInfo.pWaitSemaphores = signalSemaphores;
 
-		const VkSwapchainKHR swapChains[] = { SwapChain };
 		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapChains;
+		presentInfo.pSwapchains = &SwapChain;
 		presentInfo.pImageIndices = &m_currentImageIndexDraw;
 
 		const VkResult result = vkQueuePresentKHR(VkContext::API->PresentQueue, &presentInfo);
@@ -547,8 +517,10 @@ namespace MKEngine {
 
 	void PresentView::BeginRender()
 	{
+		m_currentBufferDraw = Buffers[FrameNumber].CmdBuffer;
+
 		//Wait CPU unlock 
-		vkWaitForFences(VkContext::API->LogicalDevice, 1, &(Buffers[FrameNumber].Sync.InFlightFence), TRUE, UINT64_MAX);
+		m_currentBufferDraw.WaitForExecute();
 
 		//Get image to draw
 
@@ -563,159 +535,51 @@ namespace MKEngine {
 		}
 
 		//Reset command buffer
-		m_currentBufferDraw = Buffers[FrameNumber].CommandBuffer;
-
-		//MK_LOG_INFO("frame {0} index {1}", FrameNumber, imageIndex);
-
-		vkResetCommandBuffer(m_currentBufferDraw, 0);
+		m_currentBufferDraw.Reset();
 
 		const auto [Title, Width, Height, VSync] = m_windowRef->GetData();
 
-		VkViewport viewport = {
-			0,
-			0,
-			static_cast<float>(Width),
-			static_cast<float>(Height) };
-		viewport.minDepth = 0;
-		viewport.maxDepth = 1;
-
 		//Begin command buffer
-		VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		beginInfo.flags = 0; // Optional
-		beginInfo.pInheritanceInfo = nullptr; // Optional
+		m_currentBufferDraw.Begin();
 
-		if (vkBeginCommandBuffer(m_currentBufferDraw, &beginInfo) != VK_SUCCESS) {
-			MK_LOG_ERROR("failed to begin recording command buffer!");
-		}
-
-		const VkImageMemoryBarrier imageMemoryBarrier{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-			.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-			.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-			.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			.image = Buffers[m_currentImageIndexDraw].View.Image.Resource,
-			.subresourceRange = {
-			  .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-			  .baseMipLevel = 0,
-			  .levelCount = 1,
-			  .baseArrayLayer = 0,
-			  .layerCount = 1,
-			}
-		};
-		vkCmdPipelineBarrier(
-			m_currentBufferDraw,
+		m_currentBufferDraw.ImageMemoryBarrier(
+			Buffers[m_currentImageIndexDraw].View.Image,
 			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+			0,
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			0,
-			0,
-			nullptr,
-			0,
-			nullptr,
-			1,
-			&imageMemoryBarrier
-		);
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+			);
 
-		const VkImageMemoryBarrier depthMemoryBarrier{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-			.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-			.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-			.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-			.image = Buffers[m_currentImageIndexDraw].Depth.Image.Resource,
-			.subresourceRange = {
-			  .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT ,
-			  .baseMipLevel = 0,
-			  .levelCount = 1,
-			  .baseArrayLayer = 0,
-			  .layerCount = 1,
-			}
-		};
-		vkCmdPipelineBarrier(
-			m_currentBufferDraw,
-			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+		m_currentBufferDraw.ImageMemoryBarrier(
+			Buffers[m_currentImageIndexDraw].Depth.Image,
 			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
 			0,
-			0,
-			nullptr,
-			0,
-			nullptr,
-			1,
-			&depthMemoryBarrier
-		);
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+			);
 
-		//VkClearValue color;
-		//color.color = {0.5, 0.5, 0.5, 0.5};
-		//color.depthStencil = {1, 0};
-
-		//VkClearValue color1;
-		//color.color = { 1, 1, 1, 1 };
-		//color.depthStencil = { 1, 0 };
-
-		VkClearValue colorClear;
-		colorClear.color = VkClearColorValue({ 0, 0, 0, 0 });
-
-		VkClearValue depthClear;
-		depthClear.depthStencil = VkClearDepthStencilValue({ 1.0f, 0 });
-
-
-		VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
-		colorAttachment.imageView = Buffers[m_currentImageIndexDraw].View.Resource;
-		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.clearValue = colorClear;
-
-		VkRenderingAttachmentInfo depthAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
-		depthAttachment.imageView = Buffers[m_currentImageIndexDraw].Depth.Resource;
-		depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		depthAttachment.clearValue = depthClear;
 		
 
-		VkRenderingInfoKHR renderingInfo{ VK_STRUCTURE_TYPE_RENDERING_INFO };
-		renderingInfo.viewMask = 0;
-		renderingInfo.renderArea = {{0, 0}, {Width, Height}};
-		renderingInfo.layerCount = 1;
-		renderingInfo.colorAttachmentCount = 1;
-		renderingInfo.pColorAttachments = &colorAttachment;
-		renderingInfo.pDepthAttachment = &depthAttachment;
-		renderingInfo.pStencilAttachment = &depthAttachment;
+		RenderingInfo info({0,0,Width,Height});
+		info.AddColorAttachment(Buffers[m_currentImageIndexDraw].View.Resource);
+		info.SetDepthAttachment(Buffers[m_currentImageIndexDraw].Depth.Resource);
 
-		/*
-		 RenderingInfo renderingInfo({ 0, 0, Width, Height });
+		m_currentBufferDraw.BeginRendering(info);
 
-		renderingInfo.AddColorAttachment(Buffers[imageIndex].View.Resource);
+		m_currentBufferDraw.BindPipeline(VkContext::API->GraphicsPipeline);
 
-		auto createInfo = renderingInfo.GetRenderingInfo();
+		m_currentBufferDraw.SetViewport(0, 0, Width, Height);
 
-		 */
-
-
-		VkContext::API->Begin(m_currentBufferDraw, &renderingInfo);
-
-		vkCmdBindPipeline(m_currentBufferDraw, VK_PIPELINE_BIND_POINT_GRAPHICS, VkContext::API->GraphicsPipeline);
-
-		vkCmdSetViewport(m_currentBufferDraw, 0, 1, &viewport);
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		scissor.extent = VkExtent2D{
-			Width,
-			Height
-		};
-
-		vkCmdSetScissor(m_currentBufferDraw, 0, 1, &scissor);
+		m_currentBufferDraw.SetScissor(0, 0, Width, Height);
 
 		UpdateUniformBuffer();
 
-		vkCmdBindDescriptorSets(
-			m_currentBufferDraw,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			VkContext::API->PipelineLayout,
-			0,
-			1,
-			&Buffers[m_currentImageIndexDraw].DescriptorSet.Resource,
-			0,
-			nullptr);
+		m_currentBufferDraw.BindDescriptorSet(Buffers[m_currentImageIndexDraw].DescriptorSet);
+
 	}
 
 }

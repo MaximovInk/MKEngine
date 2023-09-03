@@ -54,13 +54,6 @@ namespace MKEngine {
 		VkContext::API->GraphicsQueue = VkExtern::GetQueue(VkContext::API->LogicalDevice, VkContext::API->QueueFamilyIndices.Graphics, 0);
 		VkContext::API->PresentQueue = VkExtern::GetQueue(VkContext::API->LogicalDevice, VkContext::API->QueueFamilyIndices.Present, 0);
 
-		VkContext::API->CommandPool = device.CreateCommandPool(VkContext::API->QueueFamilyIndices.Graphics, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-
-		device.CreateCommandBuffer();
-
-		VkContext::API->Begin = reinterpret_cast<PFN_vkCmdBeginRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdBeginRendering"));
-		VkContext::API->End = reinterpret_cast<PFN_vkCmdEndRendering>(vkGetInstanceProcAddr(VkContext::API->Instance, "vkCmdEndRendering"));
-
 		return device;
 	}
 
@@ -218,6 +211,7 @@ namespace MKEngine {
 		*/
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 		deviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+		deviceExtensions.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
 
 		VkDeviceCreateInfo deviceCreateInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());;
@@ -234,6 +228,12 @@ namespace MKEngine {
 		DynamicRenderingFeaturesKhr.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
 		DynamicRenderingFeaturesKhr.dynamicRendering = VK_TRUE;
 		deviceCreateInfo.pNext = &DynamicRenderingFeaturesKhr;
+
+		VkPhysicalDeviceSynchronization2Features sync2Features{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES };
+		sync2Features.synchronization2 = VK_TRUE;
+
+		DynamicRenderingFeaturesKhr.pNext = &sync2Features;
+
 
 		if (!deviceExtensions.empty())
 		{
@@ -253,6 +253,8 @@ namespace MKEngine {
 		return vkCreateDevice(VkContext::API->PhysicalDevice, &deviceCreateInfo, nullptr, &VkContext::API->LogicalDevice);
 	}
 
+	/*
+	 
 	VkCommandPool   Device::CreateCommandPool(const uint32_t queueFamilyIndex,
 	                                                const VkCommandPoolCreateFlags createFlags)
 	{
@@ -282,4 +284,6 @@ namespace MKEngine {
 		}
 	}
 
+	 
+	 */
 }

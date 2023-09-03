@@ -9,7 +9,7 @@ namespace MKEngine {
 	{
 		VkCommandBufferAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = VkContext::API->CommandPool;
+		allocInfo.commandPool = VkContext::API->CommandBuffer.CommandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = 1;
 
@@ -34,7 +34,7 @@ namespace MKEngine {
 		vkQueueSubmit(VkContext::API->GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(VkContext::API->GraphicsQueue);
 
-		vkFreeCommandBuffers(VkContext::API->LogicalDevice, VkContext::API->CommandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(VkContext::API->LogicalDevice, VkContext::API->CommandBuffer.CommandPool, 1, &commandBuffer);
 	}
 
 	void WaitDeviceIdle()
