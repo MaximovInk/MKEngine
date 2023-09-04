@@ -3,6 +3,8 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+MKEngine/vendor/assimp/lib/assimp-vc143-mtd.lib
+
 # User-specific files
 *.rsuser
 *.suo
@@ -30,6 +32,8 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Bb]in-int/
+
+
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
