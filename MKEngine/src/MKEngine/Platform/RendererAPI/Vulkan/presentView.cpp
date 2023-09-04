@@ -346,7 +346,7 @@ namespace MKEngine {
 			ImageView::Destroy(Buffers[i].View);
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
 			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
-			CommandBuffer::Destroy(Buffers[i].CmdBuffer);
+			CommandBuffer::Destroy(Buffers[i].CommandBuffer);
 			Buffer::Destroy(Buffers[i].UniformBuffer);
 			DescriptorSet::Destroy(Buffers[i].DescriptorSet);
 		}
@@ -365,7 +365,7 @@ namespace MKEngine {
 
 		for (size_t i = 0; i < ImageCount; i++)
 		{
-			Buffers[i].CmdBuffer = CommandBuffer::Create(description);
+			Buffers[i].CommandBuffer = CommandBuffer::Create(description);
 		}
 	}
 
@@ -392,11 +392,16 @@ namespace MKEngine {
 		const auto [Title, Width, Height, VSync] = m_windowRef->GetData();
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
-		const auto currentTime = std::chrono::high_resolution_clock::now();
+		auto currentTime = std::chrono::high_resolution_clock::now();
 		const float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
+		static float clickedTime;
+
+		if(!Input::getMouseButton(Mouse::Button0))
+			clickedTime = time;
+
 		UniformBufferObject ubo{};
-		ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		ubo.model = glm::rotate(glm::mat4(1.0f), clickedTime * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		const auto wnd = m_windowRef->GetData();
 
@@ -412,9 +417,6 @@ namespace MKEngine {
 			input.moveInput.y += 1;
 		if (Input::getKey(Key::S))
 			input.moveInput.y -= 1;
-
-		glm::vec3 delta;
-		delta.y = time * glm::radians(90.0f);
 
 		VulkanAPI::testCamera.Update(Application::DeltaTime, input);
 
@@ -517,7 +519,7 @@ namespace MKEngine {
 
 	void PresentView::BeginRender()
 	{
-		m_currentBufferDraw = Buffers[FrameNumber].CmdBuffer;
+		m_currentBufferDraw = Buffers[FrameNumber].CommandBuffer;
 
 		//Wait CPU unlock 
 		m_currentBufferDraw.WaitForExecute();

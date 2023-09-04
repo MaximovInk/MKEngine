@@ -15,7 +15,6 @@ namespace MKEngine {
 	{
 		VkSemaphore ImageAvailableSemaphore = VK_NULL_HANDLE;
 		VkSemaphore RenderFinishedSemaphore = VK_NULL_HANDLE;
-		//VkFence InFlightFence = VK_NULL_HANDLE;
 	};
 
 	struct SwapChainInput {
@@ -28,7 +27,7 @@ namespace MKEngine {
 	typedef struct SwapChainBuffers {
 		ImageView View;
 		ImageView Depth;
-		CommandBuffer CmdBuffer;
+		CommandBuffer CommandBuffer;
 		ViewSync Sync;
 		Buffer UniformBuffer;
 		DescriptorSet DescriptorSet;
