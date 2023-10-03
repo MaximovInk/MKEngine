@@ -57,7 +57,7 @@ namespace MKEngine
 	void CommandBuffer::Begin() const
 	{
 		VkCommandBufferBeginInfo beginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		//beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		beginInfo.pInheritanceInfo = nullptr;
 
 		if (vkBeginCommandBuffer(Resource, &beginInfo) != VK_SUCCESS) {
@@ -162,32 +162,50 @@ namespace MKEngine
 		VkClearValue depthClear;
 		depthClear.depthStencil = VkClearDepthStencilValue({ 1.0f, 0 });
 
+		VkRenderingInfoKHR createInfo{ VK_STRUCTURE_TYPE_RENDERING_INFO };
 
-		VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
-		colorAttachment.imageView = _wip.GetColorAttachmentInfos()[0].ImageView;
-		colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.clearValue = colorClear;
+		std::vector<VkRenderingAttachmentInfo> colorAttachments;
+		colorAttachments.reserve(_wip.GetColorAttachmentInfos().size());
 
-		VkRenderingAttachmentInfo depthAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
-		depthAttachment.imageView = _wip.GetDepthAttachmentInfo().ImageView;
-		depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		depthAttachment.clearValue = depthClear;
+		createInfo.viewMask = 0;
+		createInfo.renderArea = _wip.GetRenderArea();
+		createInfo.layerCount = 1;
 
+		for (auto attachmentCreateInfo : _wip.GetColorAttachmentInfos())
+		{
+			VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
+			colorAttachment.imageView = attachmentCreateInfo.ImageView;
+			colorAttachment.imageLayout = attachmentCreateInfo.Layout;
+			colorAttachment.loadOp = attachmentCreateInfo.LoadOp;
+			colorAttachment.storeOp = attachmentCreateInfo.StoreOp;
+			colorAttachment.clearValue = colorClear;
 
-		VkRenderingInfoKHR renderingInfo{ VK_STRUCTURE_TYPE_RENDERING_INFO };
-		renderingInfo.viewMask = 0;
-		renderingInfo.renderArea = _wip.GetRenderArea();
-		renderingInfo.layerCount = 1;
-		renderingInfo.colorAttachmentCount = 1;
-		renderingInfo.pColorAttachments = &colorAttachment;
-		renderingInfo.pDepthAttachment = &depthAttachment;
-		renderingInfo.pStencilAttachment = &depthAttachment;
+			colorAttachments.emplace_back(colorAttachment);
+		}
 
-		VkContext::API->Begin(Resource, &renderingInfo);
+		createInfo.colorAttachmentCount = colorAttachments.size();
+		createInfo.pColorAttachments = colorAttachments.data();
+
+		if(_wip.HasDepthAttachment())
+		{
+			const auto& depthAttachmentInfo = _wip.GetDepthAttachmentInfo();
+
+			VkRenderingAttachmentInfo depthAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
+			depthAttachment.imageView = depthAttachmentInfo.ImageView;
+			depthAttachment.loadOp = depthAttachmentInfo.LoadOp;
+			depthAttachment.storeOp = depthAttachmentInfo.StoreOp;
+			depthAttachment.imageLayout = depthAttachmentInfo.Layout;
+			depthAttachment.clearValue = depthClear;
+
+			createInfo.pDepthAttachment = &depthAttachment;
+			createInfo.pStencilAttachment = &depthAttachment;
+		}else
+		{
+			createInfo.pDepthAttachment = VK_NULL_HANDLE;
+			createInfo.pStencilAttachment = VK_NULL_HANDLE;
+		}
+
+		VkContext::API->Begin(Resource, &createInfo);
 	}
 
 	void CommandBuffer::EndRendering() const

@@ -1,5 +1,7 @@
 #pragma once
 #include "Mesh.h"
+#include "Texture.h"
+#include "DescriptorSet/descriptorSet.h"
 
 namespace MKEngine
 {
@@ -11,8 +13,15 @@ namespace MKEngine
 		static void DestroyModel(const Model& model);
 
 		void AddMesh(Mesh& mesh);
+		void AddTexture(Texture& texture);
 
+		DescriptorSet CreateDescriptorSet();
 	private:
+		DescriptorSetLayout m_descriptorSetLayout;
+
 		std::vector< Mesh> m_meshes;
+		std::vector<Texture> m_textures;
+
+		
 	};
 }

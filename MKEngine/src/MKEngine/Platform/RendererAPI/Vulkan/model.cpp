@@ -78,6 +78,16 @@ namespace MKEngine {
         return mesh;
     }
 
+    Texture ProcessTexture(const aiTexture* aiTexture, const aiScene* scene)
+    {
+        TextureDescription description;
+        description.Data = aiTexture->pcData;
+        description.Width = aiTexture->mWidth;
+        description.Height = aiTexture->mHeight;
+
+        return  Texture::CreateTexture(description);
+    }
+
     void ProcessNode(Model& model, const aiNode* node, const aiScene* scene)
     {
         for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -87,10 +97,19 @@ namespace MKEngine {
             model.AddMesh(processedMesh);
         }
 
+    	for (unsigned int i = 0; i < scene->mNumTextures; i++)
+        {
+	        const aiTexture* texture = scene->mTextures[i];
+            auto processedTexture = ProcessTexture(texture, scene);
+            model.AddTexture(processedTexture);
+        }
+
         for (unsigned int i = 0; i < node->mNumChildren; i++)
         {
             ProcessNode(model, node->mChildren[i], scene);
         }
+
+
     }
 
     Model Model::LoadModel(const char* filepath)
@@ -108,6 +127,24 @@ namespace MKEngine {
 
         MK_LOG_INFO("Successfully loaded model: {0}", filepath);
 
+		/*
+		  DescriptorSetLayoutDescription descriptorSetLayoutDescription;
+
+       
+
+        DescriptorSetLayout::CreateDescriptorSetLayout(descriptorSetLayoutDescription);
+
+	    for (auto texture : model.m_textures)
+	    {
+          
+            descriptorSetLayoutDescription.AddBinding();
+	    }
+        descriptorSetLayoutDescription.AddBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
+        descriptorSetLayoutDescription.AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+        m_descriptorSetLayout.CreateDescriptorSetLayout();
+		 */
+
         return model;
     }
 
@@ -123,4 +160,17 @@ namespace MKEngine {
     {
         m_meshes.emplace_back(mesh);
     }
+
+    void Model::AddTexture(Texture& texture)
+    {
+        m_textures.emplace_back(texture);
+    }
+
+   /*
+     DescriptorSet Model::CreateDescriptorSet()
+    {  //auto descriptorSet = DescriptorSet::Create(desc);
+            //descriptorSet.BindBuffer(0, Buffers[i].UniformBuffer.Resource, 0, sizeof(UniformBufferObject));
+            //descriptorSet.BindCombinedImageSampler(1, VulkanAPI::testTexture.View, VulkanAPI::testTexture.Sampler);
+    }
+    */
 }

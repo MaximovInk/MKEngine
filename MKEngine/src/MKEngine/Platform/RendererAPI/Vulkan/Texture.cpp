@@ -13,16 +13,28 @@
 namespace MKEngine {
     Texture Texture::CreateTexture(const TextureDescription& description)
     {
+		int texWidth, texHeight, texChannels;
 
 		MK_LOG_INFO("CREATING TEXTURE");
-		//Load from file
-		int texWidth, texHeight, texChannels;
-		stbi_uc* pixels = stbi_load(description.Path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+
+		void* pixels;
+
+		if(description.Data == nullptr)
+		{
+			pixels = stbi_load(description.Path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+			
+			if (!pixels) {
+				MK_LOG_ERROR("failed to load texture image! {0}", description.Path);
+			}
+		}else
+		{
+			pixels = description.Data;
+			texWidth = description.Width;
+			texHeight = description.Height;
+		}
+
 		const VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-		if (!pixels) {
-			MK_LOG_ERROR("failed to load texture image!");
-		}
 
 		//Create staging buffer
 		BufferDescription stagingBufferDescription{};
@@ -31,8 +43,10 @@ namespace MKEngine {
 		stagingBufferDescription.Data = pixels;
 		stagingBufferDescription.Size = imageSize;
 		const Buffer stagingBuffer = Buffer::Create(stagingBufferDescription);
-		//Free stbi image 
-		stbi_image_free(pixels);
+
+
+		if(description.Data == nullptr)
+			stbi_image_free(pixels);
 
 		//Create image
 		Texture texture;

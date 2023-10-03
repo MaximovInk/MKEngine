@@ -156,6 +156,7 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\Image.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\commandBuffer.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Fence.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Semaphore.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MKEngine\Content\contentPipeline.cpp">
@@ -237,5 +238,6 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Image\Image.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\CommandBuffer\commandBuffer.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Fence.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Semaphore.cpp" />
   </ItemGroup>
 </Project>

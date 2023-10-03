@@ -135,6 +135,7 @@
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingDepthAttachment.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingInfo.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Fence.h" />
+    <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Semaphore.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.h" />
     <ClInclude Include="src\MKEngine\Platform\RendererAPI\Vulkan\device.h" />
@@ -176,6 +177,7 @@
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Rendering\RenderingInfo.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\shader.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Fence.cpp" />
+    <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Syncronization\Semaphore.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\Texture.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\VulkanAPI.cpp" />
     <ClCompile Include="src\MKEngine\Platform\RendererAPI\Vulkan\buffer.cpp" />

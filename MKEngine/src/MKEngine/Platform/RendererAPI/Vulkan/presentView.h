@@ -5,17 +5,12 @@
 #include "DescriptorSet/descriptorSet.h"
 #include "Image/ImageView.h"
 #include "VkContext.h"
+#include "Syncronization/Semaphore.h"
 
 namespace MKEngine {
 
 	class Device;
 	class Window;
-
-	struct ViewSync
-	{
-		VkSemaphore ImageAvailableSemaphore = VK_NULL_HANDLE;
-		VkSemaphore RenderFinishedSemaphore = VK_NULL_HANDLE;
-	};
 
 	struct SwapChainInput {
 		uint32_t Width; 
@@ -28,7 +23,8 @@ namespace MKEngine {
 		ImageView View;
 		ImageView Depth;
 		CommandBuffer CommandBuffer;
-		ViewSync Sync;
+		Semaphore ImageAvailableSemaphore;
+		Semaphore RenderFinishSemaphore;
 		Buffer UniformBuffer;
 		DescriptorSet DescriptorSet;
 

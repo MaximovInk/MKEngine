@@ -9,8 +9,8 @@ namespace MKEngine
 		VkImageView ImageView;
 		VkImageView ResolveImageView;
 		VkResolveModeFlagBits ResolveMode = VK_RESOLVE_MODE_NONE;
-		VkAttachmentLoadOp LoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		VkAttachmentStoreOp StoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		VkClearValue ClearValue;
+		VkAttachmentLoadOp LoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		VkAttachmentStoreOp StoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+		VkImageLayout Layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	};
 }

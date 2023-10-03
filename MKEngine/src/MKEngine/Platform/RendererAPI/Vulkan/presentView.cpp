@@ -284,10 +284,8 @@ namespace MKEngine {
 	{
 		for (size_t i = 0; i < ImageCount; i++)
 		{
-			ViewSync sync{};
-			sync.ImageAvailableSemaphore = VkExtern::CreateSemaphore(VkContext::API->LogicalDevice);
-			sync.RenderFinishedSemaphore = VkExtern::CreateSemaphore(VkContext::API->LogicalDevice);
-			Buffers[i].Sync = sync;
+			Buffers[i].ImageAvailableSemaphore = Semaphore::Create();
+			Buffers[i].RenderFinishSemaphore = Semaphore::Create();
 		}
 	}
 
@@ -344,8 +342,8 @@ namespace MKEngine {
 			ImageView::Destroy(Buffers[i].Depth);
 			Image::Destroy(Buffers[i].Depth.Image);
 			ImageView::Destroy(Buffers[i].View);
-			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.ImageAvailableSemaphore, VK_NULL_HANDLE);
-			vkDestroySemaphore(VkContext::API->LogicalDevice, Buffers[i].Sync.RenderFinishedSemaphore, VK_NULL_HANDLE);
+			Semaphore::Destroy(Buffers[i].ImageAvailableSemaphore);
+			Semaphore::Destroy(Buffers[i].RenderFinishSemaphore);
 			CommandBuffer::Destroy(Buffers[i].CommandBuffer);
 			Buffer::Destroy(Buffers[i].UniformBuffer);
 			DescriptorSet::Destroy(Buffers[i].DescriptorSet);
@@ -392,7 +390,7 @@ namespace MKEngine {
 		const auto [Title, Width, Height, VSync] = m_windowRef->GetData();
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
-		auto currentTime = std::chrono::high_resolution_clock::now();
+		const auto currentTime = std::chrono::high_resolution_clock::now();
 		const float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 		static float clickedTime;
@@ -479,14 +477,14 @@ namespace MKEngine {
 
 		VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
 
-		const VkSemaphore waitSemaphores[] = { Buffers[FrameNumber].Sync.ImageAvailableSemaphore };
+		const VkSemaphore waitSemaphores[] = { Buffers[FrameNumber].ImageAvailableSemaphore.Resource };
 		constexpr VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphores;
 		submitInfo.pWaitDstStageMask = waitStages;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &m_currentBufferDraw.Resource;
-		const VkSemaphore signalSemaphores[] = { Buffers[FrameNumber].Sync.RenderFinishedSemaphore };
+		const VkSemaphore signalSemaphores[] = { Buffers[FrameNumber].RenderFinishSemaphore.Resource };
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -527,7 +525,7 @@ namespace MKEngine {
 		//Get image to draw
 
 		if (const VkResult result =
-			vkAcquireNextImageKHR(VkContext::API->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[FrameNumber].Sync.ImageAvailableSemaphore), nullptr, &m_currentImageIndexDraw);
+			vkAcquireNextImageKHR(VkContext::API->LogicalDevice, SwapChain, UINT64_MAX, (Buffers[FrameNumber].ImageAvailableSemaphore.Resource), nullptr, &m_currentImageIndexDraw);
 			result == VK_ERROR_OUT_OF_DATE_KHR) {
 			RecreateSwapChain();
 			return;
@@ -583,5 +581,4 @@ namespace MKEngine {
 		m_currentBufferDraw.BindDescriptorSet(Buffers[m_currentImageIndexDraw].DescriptorSet);
 
 	}
-
 }

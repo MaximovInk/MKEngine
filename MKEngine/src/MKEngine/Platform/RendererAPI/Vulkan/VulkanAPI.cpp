@@ -47,33 +47,34 @@ namespace MKEngine {
 
 		vmaCreateAllocator(&allocatorCreateInfo, &VkContext::API->VmaAllocator);
 
-		GraphicsPipelineDescription description{};
+		GraphicsPipelineDescription graphicsPipelineDescription{};
 		ShaderCreateDescription vertDesc;
 		vertDesc.Path = "shaders/vert.spv";
 		ShaderCreateDescription fragDesc;
 		fragDesc.Path = "shaders/frag.spv";
 
-		DescriptorSetLayoutDescription desc;
-		desc.AddBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
-		desc.AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+		DescriptorSetLayoutDescription descriptorSetLayoutDescription;
+		descriptorSetLayoutDescription.AddBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
+		descriptorSetLayoutDescription.AddBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		VkContext::API->DescriptorSetLayout = DescriptorSetLayout::CreateDescriptorSetLayout(desc);
+		VkContext::API->DescriptorSetLayout = DescriptorSetLayout::CreateDescriptorSetLayout(descriptorSetLayoutDescription);
+
 		const auto layout = CreatePipelineLayout(VkContext::API->LogicalDevice, VkContext::API->DescriptorSetLayout.Resource);
 
-		description.Shaders.emplace_back(Shader::CreateShader(vertDesc));
-		description.Shaders.emplace_back(Shader::CreateShader(fragDesc));
+		graphicsPipelineDescription.Shaders.emplace_back(Shader::CreateShader(vertDesc));
+		graphicsPipelineDescription.Shaders.emplace_back(Shader::CreateShader(fragDesc));
 
-		description.VertexInput.DefineAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Position));
-		description.VertexInput.DefineAttribute(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Color));
-		description.VertexInput.DefineAttribute(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, TexCoord));
-		description.FrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		description.PipelineLayout = layout;
+		graphicsPipelineDescription.VertexInput.DefineAttribute(0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Position));
+		graphicsPipelineDescription.VertexInput.DefineAttribute(0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, Color));
+		graphicsPipelineDescription.VertexInput.DefineAttribute(0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, TexCoord));
+		graphicsPipelineDescription.FrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		graphicsPipelineDescription.PipelineLayout = layout;
 
-		description.ColorAttachment.SetDepthAttachment(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_COMPARE_OP_LESS, true);
+		graphicsPipelineDescription.ColorAttachment.SetDepthAttachment(VK_FORMAT_D32_SFLOAT_S8_UINT, VK_COMPARE_OP_LESS, true);
 
-		description.VertexInput.VertexDefineSlot(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+		graphicsPipelineDescription.VertexInput.VertexDefineSlot(0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
 
-		GraphicsPipeline = GraphicsPipeline::CreateGraphicsPipeline(description);
+		GraphicsPipeline = GraphicsPipeline::CreateGraphicsPipeline(graphicsPipelineDescription);
 
 		VkContext::API->GraphicsPipeline = GraphicsPipeline;
 

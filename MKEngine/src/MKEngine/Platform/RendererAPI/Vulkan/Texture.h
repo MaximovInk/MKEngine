@@ -17,7 +17,13 @@ namespace MKEngine
 
 	struct TextureDescription
 	{
+		//Load from file
 		const char* Path = "";
+		//OR set data manually
+		void* Data = nullptr;
+		uint32_t Width;
+		uint32_t Height;
+
 		uint32_t MipCount = 1;
 		VkFormat Format = VK_FORMAT_UNDEFINED;
 		VkImageUsageFlags Usage = 0;
